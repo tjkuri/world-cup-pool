@@ -35,8 +35,8 @@ async function main() {
     return;
   }
 
-  const fixtures = JSON.parse(await readFile('fixtures.json', 'utf8'));
-  const existing = JSON.parse(await readFile('results.json', 'utf8'));
+  const fixtures = JSON.parse(await readFile('public/fixtures.json', 'utf8'));
+  const existing = JSON.parse(await readFile('public/results.json', 'utf8'));
   const matchIds = new Set(Object.keys(fixtures.matches));
 
   // Index match IDs by date for cheap "is this date fully final?" checks.
@@ -82,7 +82,7 @@ async function main() {
 
   if (changed) {
     const out = { updated_at: new Date().toISOString(), matches: merged };
-    await writeFile('results.json', JSON.stringify(out, null, 2) + '\n');
+    await writeFile('public/results.json', JSON.stringify(out, null, 2) + '\n');
     console.log(`Updated results.json (${Object.keys(merged).length} matches tracked).`);
   } else {
     console.log('No changes.');

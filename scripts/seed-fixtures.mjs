@@ -99,7 +99,7 @@ async function main() {
   }
 
   await writeFile(
-    new URL('../fixtures.json', import.meta.url),
+    new URL('../public/fixtures.json', import.meta.url),
     JSON.stringify(out, null, 2) + '\n'
   );
   console.log('Wrote fixtures.json');
