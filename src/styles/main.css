@@ -158,19 +158,81 @@ main {
   border-radius: 6px;
 }
 
+.standings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.standings-header h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9em;
+}
+
+.standings-hint {
+  color: var(--muted);
+  font-size: 0.85em;
+  margin: 4px 0 12px;
+}
+
 .standings-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.standings-list li {
-  padding: 6px 0;
+
+.standings-row {
+  padding: 10px 8px;
   border-bottom: 1px solid var(--border);
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border-radius: 4px;
+  user-select: none;
+  touch-action: manipulation;
 }
-.standings-list li:last-child { border-bottom: none; }
-.standings-rank { color: var(--muted); width: 24px; }
+
+.standings-row:last-child {
+  border-bottom: none;
+}
+
+.standings-row .grip {
+  cursor: grab;
+  color: var(--muted);
+  font-size: 18px;
+  padding: 0 4px;
+  touch-action: none;
+}
+
+.standings-row.dragging .grip { cursor: grabbing; }
+
+.standings-row.dragging {
+  background: var(--tab-active);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.standings-rank {
+  color: var(--muted);
+  width: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings-team {
+  font-weight: 600;
+}
 
 .tiebreaker-widget {
   margin-top: 12px;

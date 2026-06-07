@@ -14,21 +14,23 @@ const initial = {
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_MATCH_SCORE': {
-      const { matchId, side, value, group } = action;
+      const { matchId, side, value } = action;
       const prior = state.matches[matchId] || { home_score: null, away_score: null };
-      const tiebreakers = { ...state.manualTiebreakers };
-      if (group) delete tiebreakers[group];
       return {
         ...state,
         matches: { ...state.matches, [matchId]: { ...prior, [side]: value } },
-        manualTiebreakers: tiebreakers,
       };
     }
-    case 'SET_MANUAL_TIEBREAKER':
+    case 'SET_MANUAL_STANDINGS':
       return {
         ...state,
-        manualTiebreakers: { ...state.manualTiebreakers, [action.group]: { ...action.ranks } },
+        manualTiebreakers: { ...state.manualTiebreakers, [action.group]: [...action.order] },
       };
+    case 'CLEAR_MANUAL_STANDINGS': {
+      const next = { ...state.manualTiebreakers };
+      delete next[action.group];
+      return { ...state, manualTiebreakers: next };
+    }
     case 'SET_IDENTITY':
       return { ...state, identity: { ...state.identity, ...action.patch } };
     case 'SET_ACTIVE_GROUP':

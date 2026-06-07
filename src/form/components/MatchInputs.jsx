@@ -32,7 +32,6 @@ export function MatchInputs({ fixtures }) {
             matchId: mid,
             side,
             value: parseScore(e.target.value),
-            group: letter,
           });
         return (
           <div key={mid} className="match-row">
