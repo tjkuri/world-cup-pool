@@ -1,0 +1,630 @@
+{
+  "groups": {
+    "A": {
+      "teams": [
+        "CZE",
+        "KOR",
+        "MEX",
+        "RSA"
+      ],
+      "matches": [
+        "760414",
+        "760415",
+        "760438",
+        "760441",
+        "760466",
+        "760467"
+      ]
+    },
+    "B": {
+      "teams": [
+        "BIH",
+        "CAN",
+        "QAT",
+        "SUI"
+      ],
+      "matches": [
+        "760416",
+        "760420",
+        "760439",
+        "760440",
+        "760462",
+        "760463"
+      ]
+    },
+    "C": {
+      "teams": [
+        "BRA",
+        "HAI",
+        "MAR",
+        "SCO"
+      ],
+      "matches": [
+        "760418",
+        "760419",
+        "760444",
+        "760445",
+        "760464",
+        "760465"
+      ]
+    },
+    "D": {
+      "teams": [
+        "AUS",
+        "PAR",
+        "TUR",
+        "USA"
+      ],
+      "matches": [
+        "760417",
+        "760421",
+        "760442",
+        "760443",
+        "760469",
+        "760470"
+      ]
+    },
+    "E": {
+      "teams": [
+        "CIV",
+        "CUW",
+        "ECU",
+        "GER"
+      ],
+      "matches": [
+        "760422",
+        "760423",
+        "760446",
+        "760448",
+        "760468",
+        "760473"
+      ]
+    },
+    "F": {
+      "teams": [
+        "JPN",
+        "NED",
+        "SWE",
+        "TUN"
+      ],
+      "matches": [
+        "760424",
+        "760425",
+        "760447",
+        "760449",
+        "760471",
+        "760472"
+      ]
+    },
+    "G": {
+      "teams": [
+        "BEL",
+        "EGY",
+        "IRN",
+        "NZL"
+      ],
+      "matches": [
+        "760426",
+        "760427",
+        "760451",
+        "760452",
+        "760476",
+        "760477"
+      ]
+    },
+    "H": {
+      "teams": [
+        "CPV",
+        "ESP",
+        "KSA",
+        "URU"
+      ],
+      "matches": [
+        "760428",
+        "760429",
+        "760450",
+        "760453",
+        "760478",
+        "760479"
+      ]
+    },
+    "I": {
+      "teams": [
+        "FRA",
+        "IRQ",
+        "NOR",
+        "SEN"
+      ],
+      "matches": [
+        "760430",
+        "760432",
+        "760454",
+        "760457",
+        "760474",
+        "760475"
+      ]
+    },
+    "J": {
+      "teams": [
+        "ALG",
+        "ARG",
+        "AUT",
+        "JOR"
+      ],
+      "matches": [
+        "760431",
+        "760433",
+        "760455",
+        "760456",
+        "760483",
+        "760484"
+      ]
+    },
+    "K": {
+      "teams": [
+        "COD",
+        "COL",
+        "POR",
+        "UZB"
+      ],
+      "matches": [
+        "760435",
+        "760436",
+        "760459",
+        "760461",
+        "760481",
+        "760482"
+      ]
+    },
+    "L": {
+      "teams": [
+        "CRO",
+        "ENG",
+        "GHA",
+        "PAN"
+      ],
+      "matches": [
+        "760434",
+        "760437",
+        "760458",
+        "760460",
+        "760480",
+        "760485"
+      ]
+    }
+  },
+  "matches": {
+    "760414": {
+      "group": "A",
+      "home": "KOR",
+      "away": "CZE",
+      "kickoff_iso": "2026-06-12T02:00Z"
+    },
+    "760415": {
+      "group": "A",
+      "home": "MEX",
+      "away": "RSA",
+      "kickoff_iso": "2026-06-11T19:00Z"
+    },
+    "760416": {
+      "group": "B",
+      "home": "CAN",
+      "away": "BIH",
+      "kickoff_iso": "2026-06-12T19:00Z"
+    },
+    "760417": {
+      "group": "D",
+      "home": "USA",
+      "away": "PAR",
+      "kickoff_iso": "2026-06-13T01:00Z"
+    },
+    "760418": {
+      "group": "C",
+      "home": "HAI",
+      "away": "SCO",
+      "kickoff_iso": "2026-06-14T01:00Z"
+    },
+    "760419": {
+      "group": "C",
+      "home": "BRA",
+      "away": "MAR",
+      "kickoff_iso": "2026-06-13T22:00Z"
+    },
+    "760420": {
+      "group": "B",
+      "home": "QAT",
+      "away": "SUI",
+      "kickoff_iso": "2026-06-13T19:00Z"
+    },
+    "760421": {
+      "group": "D",
+      "home": "AUS",
+      "away": "TUR",
+      "kickoff_iso": "2026-06-14T04:00Z"
+    },
+    "760422": {
+      "group": "E",
+      "home": "GER",
+      "away": "CUW",
+      "kickoff_iso": "2026-06-14T17:00Z"
+    },
+    "760423": {
+      "group": "E",
+      "home": "CIV",
+      "away": "ECU",
+      "kickoff_iso": "2026-06-14T23:00Z"
+    },
+    "760424": {
+      "group": "F",
+      "home": "SWE",
+      "away": "TUN",
+      "kickoff_iso": "2026-06-15T02:00Z"
+    },
+    "760425": {
+      "group": "F",
+      "home": "NED",
+      "away": "JPN",
+      "kickoff_iso": "2026-06-14T20:00Z"
+    },
+    "760426": {
+      "group": "G",
+      "home": "BEL",
+      "away": "EGY",
+      "kickoff_iso": "2026-06-15T19:00Z"
+    },
+    "760427": {
+      "group": "G",
+      "home": "IRN",
+      "away": "NZL",
+      "kickoff_iso": "2026-06-16T01:00Z"
+    },
+    "760428": {
+      "group": "H",
+      "home": "ESP",
+      "away": "CPV",
+      "kickoff_iso": "2026-06-15T16:00Z"
+    },
+    "760429": {
+      "group": "H",
+      "home": "KSA",
+      "away": "URU",
+      "kickoff_iso": "2026-06-15T22:00Z"
+    },
+    "760430": {
+      "group": "I",
+      "home": "IRQ",
+      "away": "NOR",
+      "kickoff_iso": "2026-06-16T22:00Z"
+    },
+    "760431": {
+      "group": "J",
+      "home": "AUT",
+      "away": "JOR",
+      "kickoff_iso": "2026-06-17T04:00Z"
+    },
+    "760432": {
+      "group": "I",
+      "home": "FRA",
+      "away": "SEN",
+      "kickoff_iso": "2026-06-16T19:00Z"
+    },
+    "760433": {
+      "group": "J",
+      "home": "ARG",
+      "away": "ALG",
+      "kickoff_iso": "2026-06-17T01:00Z"
+    },
+    "760434": {
+      "group": "L",
+      "home": "GHA",
+      "away": "PAN",
+      "kickoff_iso": "2026-06-17T23:00Z"
+    },
+    "760435": {
+      "group": "K",
+      "home": "POR",
+      "away": "COD",
+      "kickoff_iso": "2026-06-17T17:00Z"
+    },
+    "760436": {
+      "group": "K",
+      "home": "UZB",
+      "away": "COL",
+      "kickoff_iso": "2026-06-18T02:00Z"
+    },
+    "760437": {
+      "group": "L",
+      "home": "ENG",
+      "away": "CRO",
+      "kickoff_iso": "2026-06-17T20:00Z"
+    },
+    "760438": {
+      "group": "A",
+      "home": "CZE",
+      "away": "RSA",
+      "kickoff_iso": "2026-06-18T16:00Z"
+    },
+    "760439": {
+      "group": "B",
+      "home": "SUI",
+      "away": "BIH",
+      "kickoff_iso": "2026-06-18T19:00Z"
+    },
+    "760440": {
+      "group": "B",
+      "home": "CAN",
+      "away": "QAT",
+      "kickoff_iso": "2026-06-18T22:00Z"
+    },
+    "760441": {
+      "group": "A",
+      "home": "MEX",
+      "away": "KOR",
+      "kickoff_iso": "2026-06-19T01:00Z"
+    },
+    "760442": {
+      "group": "D",
+      "home": "USA",
+      "away": "AUS",
+      "kickoff_iso": "2026-06-19T19:00Z"
+    },
+    "760443": {
+      "group": "D",
+      "home": "TUR",
+      "away": "PAR",
+      "kickoff_iso": "2026-06-20T03:00Z"
+    },
+    "760444": {
+      "group": "C",
+      "home": "BRA",
+      "away": "HAI",
+      "kickoff_iso": "2026-06-20T00:30Z"
+    },
+    "760445": {
+      "group": "C",
+      "home": "SCO",
+      "away": "MAR",
+      "kickoff_iso": "2026-06-19T22:00Z"
+    },
+    "760446": {
+      "group": "E",
+      "home": "ECU",
+      "away": "CUW",
+      "kickoff_iso": "2026-06-21T00:00Z"
+    },
+    "760447": {
+      "group": "F",
+      "home": "NED",
+      "away": "SWE",
+      "kickoff_iso": "2026-06-20T17:00Z"
+    },
+    "760448": {
+      "group": "E",
+      "home": "GER",
+      "away": "CIV",
+      "kickoff_iso": "2026-06-20T20:00Z"
+    },
+    "760449": {
+      "group": "F",
+      "home": "TUN",
+      "away": "JPN",
+      "kickoff_iso": "2026-06-21T04:00Z"
+    },
+    "760450": {
+      "group": "H",
+      "home": "URU",
+      "away": "CPV",
+      "kickoff_iso": "2026-06-21T22:00Z"
+    },
+    "760451": {
+      "group": "G",
+      "home": "BEL",
+      "away": "IRN",
+      "kickoff_iso": "2026-06-21T19:00Z"
+    },
+    "760452": {
+      "group": "G",
+      "home": "NZL",
+      "away": "EGY",
+      "kickoff_iso": "2026-06-22T01:00Z"
+    },
+    "760453": {
+      "group": "H",
+      "home": "ESP",
+      "away": "KSA",
+      "kickoff_iso": "2026-06-21T16:00Z"
+    },
+    "760454": {
+      "group": "I",
+      "home": "NOR",
+      "away": "SEN",
+      "kickoff_iso": "2026-06-23T00:00Z"
+    },
+    "760455": {
+      "group": "J",
+      "home": "JOR",
+      "away": "ALG",
+      "kickoff_iso": "2026-06-23T03:00Z"
+    },
+    "760456": {
+      "group": "J",
+      "home": "ARG",
+      "away": "AUT",
+      "kickoff_iso": "2026-06-22T17:00Z"
+    },
+    "760457": {
+      "group": "I",
+      "home": "FRA",
+      "away": "IRQ",
+      "kickoff_iso": "2026-06-22T21:00Z"
+    },
+    "760458": {
+      "group": "L",
+      "home": "ENG",
+      "away": "GHA",
+      "kickoff_iso": "2026-06-23T20:00Z"
+    },
+    "760459": {
+      "group": "K",
+      "home": "COL",
+      "away": "COD",
+      "kickoff_iso": "2026-06-24T02:00Z"
+    },
+    "760460": {
+      "group": "L",
+      "home": "PAN",
+      "away": "CRO",
+      "kickoff_iso": "2026-06-23T23:00Z"
+    },
+    "760461": {
+      "group": "K",
+      "home": "POR",
+      "away": "UZB",
+      "kickoff_iso": "2026-06-23T17:00Z"
+    },
+    "760462": {
+      "group": "B",
+      "home": "BIH",
+      "away": "QAT",
+      "kickoff_iso": "2026-06-24T19:00Z"
+    },
+    "760463": {
+      "group": "B",
+      "home": "SUI",
+      "away": "CAN",
+      "kickoff_iso": "2026-06-24T19:00Z"
+    },
+    "760464": {
+      "group": "C",
+      "home": "MAR",
+      "away": "HAI",
+      "kickoff_iso": "2026-06-24T22:00Z"
+    },
+    "760465": {
+      "group": "C",
+      "home": "SCO",
+      "away": "BRA",
+      "kickoff_iso": "2026-06-24T22:00Z"
+    },
+    "760466": {
+      "group": "A",
+      "home": "RSA",
+      "away": "KOR",
+      "kickoff_iso": "2026-06-25T01:00Z"
+    },
+    "760467": {
+      "group": "A",
+      "home": "CZE",
+      "away": "MEX",
+      "kickoff_iso": "2026-06-25T01:00Z"
+    },
+    "760468": {
+      "group": "E",
+      "home": "ECU",
+      "away": "GER",
+      "kickoff_iso": "2026-06-25T20:00Z"
+    },
+    "760469": {
+      "group": "D",
+      "home": "PAR",
+      "away": "AUS",
+      "kickoff_iso": "2026-06-26T02:00Z"
+    },
+    "760470": {
+      "group": "D",
+      "home": "TUR",
+      "away": "USA",
+      "kickoff_iso": "2026-06-26T02:00Z"
+    },
+    "760471": {
+      "group": "F",
+      "home": "JPN",
+      "away": "SWE",
+      "kickoff_iso": "2026-06-25T23:00Z"
+    },
+    "760472": {
+      "group": "F",
+      "home": "TUN",
+      "away": "NED",
+      "kickoff_iso": "2026-06-25T23:00Z"
+    },
+    "760473": {
+      "group": "E",
+      "home": "CUW",
+      "away": "CIV",
+      "kickoff_iso": "2026-06-25T20:00Z"
+    },
+    "760474": {
+      "group": "I",
+      "home": "SEN",
+      "away": "IRQ",
+      "kickoff_iso": "2026-06-26T19:00Z"
+    },
+    "760475": {
+      "group": "I",
+      "home": "NOR",
+      "away": "FRA",
+      "kickoff_iso": "2026-06-26T19:00Z"
+    },
+    "760476": {
+      "group": "G",
+      "home": "EGY",
+      "away": "IRN",
+      "kickoff_iso": "2026-06-27T03:00Z"
+    },
+    "760477": {
+      "group": "G",
+      "home": "NZL",
+      "away": "BEL",
+      "kickoff_iso": "2026-06-27T03:00Z"
+    },
+    "760478": {
+      "group": "H",
+      "home": "CPV",
+      "away": "KSA",
+      "kickoff_iso": "2026-06-27T00:00Z"
+    },
+    "760479": {
+      "group": "H",
+      "home": "URU",
+      "away": "ESP",
+      "kickoff_iso": "2026-06-27T00:00Z"
+    },
+    "760480": {
+      "group": "L",
+      "home": "CRO",
+      "away": "GHA",
+      "kickoff_iso": "2026-06-27T21:00Z"
+    },
+    "760481": {
+      "group": "K",
+      "home": "COL",
+      "away": "POR",
+      "kickoff_iso": "2026-06-27T23:30Z"
+    },
+    "760482": {
+      "group": "K",
+      "home": "COD",
+      "away": "UZB",
+      "kickoff_iso": "2026-06-27T23:30Z"
+    },
+    "760483": {
+      "group": "J",
+      "home": "JOR",
+      "away": "ARG",
+      "kickoff_iso": "2026-06-28T02:00Z"
+    },
+    "760484": {
+      "group": "J",
+      "home": "ALG",
+      "away": "AUT",
+      "kickoff_iso": "2026-06-28T02:00Z"
+    },
+    "760485": {
+      "group": "L",
+      "home": "PAN",
+      "away": "ENG",
+      "kickoff_iso": "2026-06-27T21:00Z"
+    }
+  }
+}
