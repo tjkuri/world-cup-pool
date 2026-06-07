@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test lib/",
+    "test": "node --test lib/*.test.js",
     "seed": "node scripts/seed-fixtures.mjs",
     "fetch": "node scripts/fetch-results.mjs"
   }
