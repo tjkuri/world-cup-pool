@@ -1,0 +1,11 @@
+{
+  "name": "world-cup-pool",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test lib/",
+    "seed": "node scripts/seed-fixtures.mjs",
+    "fetch": "node scripts/fetch-results.mjs"
+  }
+}
