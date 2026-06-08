@@ -51,14 +51,9 @@ export function PredictedStandings({ fixtures }) {
       {allFilled && scoreOnlyTies.length === 0 && (
         <p className="mb-3 text-sm text-slate-400">Derived from your scores.</p>
       )}
-      {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length > 0 && (
+      {allFilled && scoreOnlyTies.length > 0 && (
         <p className="mb-3 text-sm text-slate-400">
-          <strong className="text-slate-200">Tie to break.</strong> Drag the highlighted teams to choose their finishing order.
-        </p>
-      )}
-      {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length === 0 && (
-        <p className="mb-3 text-sm text-slate-400">
-          Tied on scores — your manual order shown. Drag any highlighted team to change your mind.
+          Tied on scores — drag the highlighted teams if you want a different order.
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} autoScroll={false}>
