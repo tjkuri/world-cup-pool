@@ -49,13 +49,12 @@ export function RulesDrawer({ onClose }) {
             to drag-rank them.
           </p>
           <ul className="mb-2 list-disc pl-5 text-sm text-slate-300">
-            <li><strong className="text-slate-100">Correct 1st place:</strong> 20 points.</li>
-            <li><strong className="text-slate-100">Correct 2nd place:</strong> 10 points.</li>
-            <li><strong className="text-slate-100">Correct 3rd place:</strong> 5 points.</li>
-            <li><strong className="text-slate-100">Correct 4th place:</strong> 2 points.</li>
-            <li><strong className="text-slate-100">Perfect group order (1st–4th all correct):</strong> +10 bonus.</li>
+            <li><strong className="text-slate-100">Correct 1st place:</strong> 15 points.</li>
+            <li><strong className="text-slate-100">Correct 2nd place:</strong> 8 points.</li>
+            <li><strong className="text-slate-100">Correct 3rd place:</strong> 4 points.</li>
+            <li><strong className="text-slate-100">Perfect group order (1st–4th all correct):</strong> +8 bonus.</li>
           </ul>
-          <p className="mb-2 text-xs text-slate-400">Max per group: 36 (matches) + 47 (standings) = 83 pts. Across all 12 groups: 996 pts max.</p>
+          <p className="mb-2 text-xs text-slate-400">Max per group: 36 (matches) + 35 (standings) = 71 pts. Across all 12 groups: 852 pts max.</p>
 
           <h3 className="mt-4 mb-2 text-base font-semibold text-slate-100">Knockout Bracket</h3>
           <p className="mb-2 text-sm text-slate-300">
@@ -72,7 +71,7 @@ export function RulesDrawer({ onClose }) {
             <li><strong className="text-slate-100">Exact score on any knockout match:</strong> +3 bonus.</li>
             <li><strong className="text-slate-100">Exact score on the Final:</strong> +5 bonus (instead of +3).</li>
           </ul>
-          <p className="mb-2 text-xs text-slate-400">Knockout max: ~531 pts. Total tournament max: ~1,527 pts.</p>
+          <p className="mb-2 text-xs text-slate-400">Knockout max: ~531 pts. Total tournament max: ~1,383 pts.</p>
 
           <h3 className="mt-4 mb-2 text-base font-semibold text-slate-100">Submissions</h3>
           <p className="mb-2 text-sm text-slate-300">
