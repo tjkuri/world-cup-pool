@@ -1,20 +1,19 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-07 (during long conversation, after refactor + Cloudflare deploy + tiebreaker UX iterations).
+Last updated: 2026-06-07 (UI restyle complete — Tailwind v4, dark sports-app theme, gated submit modal; on branch `feat/ui-restyle`, not yet merged to main).
 
 ## TL;DR for next-session-Claude
 
 > Friends pool for the 2026 World Cup, ~20 entrants. Live at
 > https://world-cup-pool.tjkuri99.workers.dev. Backend = Google Apps Script web
 > app writing to a Google Sheet (URL in `public/config.json`). Frontend = React
-> 19 + Vite 6 deployed to Cloudflare Pages via Workers Builds (`wrangler.toml`).
-> Lib is vanilla JS pure functions with `node --test`. 36 lib tests pass.
+> 19 + Vite 6 + **Tailwind v4** deployed to Cloudflare Pages via Workers Builds
+> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
+> tests pass.
 
-> **Right now we're in the middle of polishing the standings tiebreaker UX.**
-> Latest known state: just fixed a runtime crash (`scoreOnlyTies is not
-> iterable`) in `src/form/resolveStandings.js`. User had not yet confirmed
-> whether the drag now sticks the way they want. **Resume by asking them to
-> confirm.**
+> **UI restyle is complete** (branch `feat/ui-restyle`). Dark sports-app theme,
+> Tailwind v4, gated submit modal (SubmitModal + useReadyCount). Not yet merged
+> to main — user controls the deploy.
 
 ## Architecture
 
@@ -63,13 +62,16 @@ world-cup-pool/
 │   │   │                             #   SET_SUBMIT_STATE, HYDRATE)
 │   │   ├── useAutosave.js            # Debounced 500ms localStorage + blur/visibility/unload
 │   │   ├── useDerivedStandings.js    # Thin wrapper around resolveGroupStandings
+│   │   ├── useReadyCount.js          # Counts filled match scores; gates submit modal
 │   │   ├── resolveStandings.js       # SHARED logic for standings panel + submit
 │   │   ├── submit.js                 # POST to Apps Script, response handling
 │   │   └── components/
 │   │       ├── TopBar.jsx, ProgressBar.jsx, LockBanner.jsx
 │   │       ├── GroupTabs.jsx, MatchInputs.jsx
-│   │       ├── PredictedStandings.jsx  # The current iteration ground zero
-│   │       ├── ErrorSummary.jsx, IdentityPanel.jsx, SubmittedView.jsx
+│   │       ├── PredictedStandings.jsx
+│   │       ├── ErrorSummary.jsx, SubmittedView.jsx
+│   │       ├── SubmitModal.jsx        # Gated submit modal (replaced IdentityPanel)
+│   │       # deleted: IdentityPanel.jsx
 │   ├── leaderboard/
 │   │   ├── main.jsx, App.jsx, useDeepLink.js
 │   │   └── components/{LeaderboardTable, PickModal}.jsx
@@ -114,53 +116,30 @@ Africa @ Mexico). Stored in two places that MUST stay in sync:
 To extend the lock, edit the Apps Script script property in the UI; client UI
 will follow after redeploy of config.json.
 
-## Currently in progress — tiebreaker UX
+## Currently in progress — UI restyle
 
-User iterated on this *three times* over the conversation. Final desired
-semantics (codified in `src/form/resolveStandings.js`):
+Branch `feat/ui-restyle`. Not yet merged to main. Merging triggers a CF Pages
+deploy. All work is committed and the branch is clean.
 
-1. Predicted Standings panel **always renders all 4 rows**, even before any
-   scores are entered (so the page layout never jumps).
-2. Highlight + drag handle appear **only on rows that are part of a score-based
-   tie** — i.e., subsets that the FIFA chain (pts → GD → GS → H2H pts → H2H GD)
-   couldn't separate.
-3. Tied rows stay **draggable forever** — no "lock" after the user has resolved
-   a tie. They can keep changing their mind.
-4. Score changes **do NOT wipe** the user's manual order. The `manualTiebreakers`
-   map persists.
-5. If scores change such that the tie naturally goes away, the highlight
-   disappears and the derived order is shown. If scores change back to recreate
-   the tie, the user's prior manual order comes back.
-
-**Implementation note for next-session-Claude:** The `lib/standings.js`
-`computeStandings` function has a quirk: it only applies `manualTiebreakers`
-*within tied subsets*. Once teams have distinguishing manual ranks, the
-function considers them "not tied" and falls back to FIFA-chain order, which
-discards the manual ordering. That was a real bug.
-
-**The fix is in `src/form/resolveStandings.js`** — we call `computeStandings`
-*without* manual ranks to get the score-only standings + tied subsets, then we
-manually reorder within each tied subset according to the user's ranks. This
-bypasses the lib quirk entirely. **Do not change `lib/standings.js` — the lib
-tests assume the old semantics.**
-
-The most recent fix (just pushed via Vite HMR, not yet confirmed working) added
-`scoreOnlyTies: []` to the early-return branches of `resolveGroupStandings` so
-the destructure `{ scoreOnlyTies }` doesn't crash with "not iterable" before
-scores are filled in.
-
-**Resume by asking the user: "Did the drag stick after the latest fix?"**
+What shipped in this branch:
+- Tailwind v4 (`@import "tailwindcss"` in `src/styles/main.css`)
+- Dark sports-app theme across form + leaderboard
+- `SubmitModal` component + `useReadyCount` hook replacing `IdentityPanel`
+- Gated submit: modal opens only when all 72 match scores are filled
+- Leaderboard restyled to match
 
 ## Pending items
 
 | ID | What | Notes |
 |---|---|---|
-| 1 | Verify latest tiebreaker fix works | Just pushed; HMR delivered to the browser. Ask user. |
-| 2 | Auto-scroll-to-bottom bug | Theory: page-grew-suddenly. Mitigated by always-rendered standings panel. User hadn't confirmed if still present. |
-| 3 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Do AFTER CF deploy is fully smoke-tested. |
-| 4 | v2 — knockout bracket challenge | Build between Jun 11 (group stage start) and ~Jun 27 (group stage end). Bracket only, no survivor. Sketch in spec §13. |
-| 5 | Pre-launch smoke tests (full suite) | User did some of these manually. Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
+| 1 | ~~Verify latest tiebreaker fix works~~ | Fixed; tiebreaker UX complete. |
+| 2 | Decide when to merge `feat/ui-restyle` to main | Merge triggers CF Pages deploy. User controls this. |
+| 3 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
+| 4 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Do AFTER CF deploy is fully smoke-tested. |
+| 5 | v2 — knockout bracket challenge | Build between Jun 11 (group stage start) and ~Jun 27 (group stage end). Bracket only, no survivor. Sketch in spec §13. |
 | 6 | Brother content decisions | Entry fee, payout split, R32 handling (recommend: skip R32, score from R16). |
+| 7 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs — worth a quick extract-to-variable pass. |
+| 8 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`; these are enhancement-level. |
 
 ## Important quirks / gotchas
 
@@ -191,8 +170,8 @@ scores are filled in.
 
 1. Read this file (`docs/HANDOFF.md`).
 2. (Optional) Read the design spec: `docs/superpowers/specs/2026-06-07-world-cup-pool-design.md`.
-3. Confirm with user where they are. Most likely: testing the latest tiebreaker
-   fix on localhost:5173.
+3. Confirm with user where they are. Most likely: deciding whether to merge
+   `feat/ui-restyle` to main and kick off a CF deploy.
 4. If dev server isn't running, `npm run dev` to start it.
 
 Memory entries from prior sessions:
