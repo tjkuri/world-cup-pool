@@ -188,6 +188,13 @@ main {
 .standings-row.draggable {
   background: #fef9c3;
   border-radius: 4px;
+  border-left: 3px solid #eab308;
+  padding-left: 5px;
+}
+
+.standings-row.draggable.tie-1 {
+  background: #dbeafe;
+  border-left-color: #3b82f6;
 }
 
 .standings-row .grip {

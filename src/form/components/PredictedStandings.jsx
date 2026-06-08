@@ -32,13 +32,13 @@ export function PredictedStandings({ fixtures }) {
     dispatch({ type: 'SET_MANUAL_TIEBREAKER', group: letter, ranks });
   }
 
-  // Flatten scoreOnlyTies into a set of "draggable team codes" for fast lookup.
-  // These rows stay draggable even after the user has resolved them, so they can
-  // keep changing their mind.
-  const draggableSet = new Set();
-  for (const subset of scoreOnlyTies) {
-    for (const team of subset) draggableSet.add(team);
-  }
+  // Map each tied team to its subset index so distinct ties get distinct visuals.
+  // Rows stay draggable even after the user has resolved them, so they can keep
+  // changing their mind.
+  const tieIndexByTeam = new Map();
+  scoreOnlyTies.forEach((subset, i) => {
+    for (const team of subset) tieIndexByTeam.set(team, i);
+  });
 
   return (
     <div className="standings-panel">
@@ -63,7 +63,13 @@ export function PredictedStandings({ fixtures }) {
         <SortableContext items={standings} strategy={verticalListSortingStrategy}>
           <ol className="standings-list">
             {standings.map((team, i) => (
-              <SortableRow key={team} id={team} rank={i + 1} draggable={draggableSet.has(team)} />
+              <SortableRow
+                key={team}
+                id={team}
+                rank={i + 1}
+                draggable={tieIndexByTeam.has(team)}
+                tieIndex={tieIndexByTeam.get(team)}
+              />
             ))}
           </ol>
         </SortableContext>
@@ -72,14 +78,19 @@ export function PredictedStandings({ fixtures }) {
   );
 }
 
-function SortableRow({ id, rank, draggable }) {
+function SortableRow({ id, rank, draggable, tieIndex }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: !draggable });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
   };
-  const cls = ['standings-row', draggable && 'draggable', isDragging && 'dragging'].filter(Boolean).join(' ');
+  const cls = [
+    'standings-row',
+    draggable && 'draggable',
+    draggable && `tie-${tieIndex}`,
+    isDragging && 'dragging',
+  ].filter(Boolean).join(' ');
   return (
     <li ref={setNodeRef} style={style} className={cls}>
       {draggable ? (
