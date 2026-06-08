@@ -62,9 +62,9 @@ export function App() {
     return (
       <>
         <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)} />
-        <main>
-          <p>Couldn't load. <button type="button" onClick={() => location.reload()}>Retry</button></p>
-          <pre style={{ fontSize: 12, color: '#71717a' }}>{error}</pre>
+        <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+          <p className="text-slate-300">Couldn't load. <button type="button" className="text-emerald-400 hover:underline" onClick={() => location.reload()}>Retry</button></p>
+          <pre className="mt-2 text-xs text-slate-500">{error}</pre>
         </main>
         {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
       </>
@@ -74,18 +74,18 @@ export function App() {
     return (
       <>
         <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)} />
-        <main><p className="loading">Loading…</p></main>
+        <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6"><p className="text-slate-400">Loading…</p></main>
       </>
     );
   }
   return (
     <>
       <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)}>
-        {lastUpdated && <div className="progress-count">Last updated: {lastUpdated}</div>}
+        {lastUpdated && <div className="text-sm text-slate-400">Last updated: {lastUpdated}</div>}
       </TopBar>
-      <main>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         {!locked ? (
-          <p>The leaderboard goes live after submissions close at {config.group_lock_iso}.</p>
+          <p className="text-slate-300">The leaderboard goes live after submissions close at {config.group_lock_iso}.</p>
         ) : (
           <LeaderboardTable
             fixtures={fixtures}

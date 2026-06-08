@@ -15,29 +15,33 @@ export function LeaderboardTable({ fixtures, results, submissions, onRowClick })
     return rows;
   }, [fixtures, results, submissions]);
 
-  if (!scored.length) return <p>No submissions to display yet.</p>;
+  if (!scored.length) return <p className="text-slate-400">No submissions to display yet.</p>;
 
   return (
-    <table className="leaderboard-table">
+    <table className="w-full border-collapse text-sm">
       <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Match pts</th>
-          <th>Group pts</th>
-          <th>Total</th>
-          <th>Exact scores</th>
+        <tr className="border-b border-slate-700 bg-slate-900 text-slate-300">
+          <th className="px-3 py-2 text-left font-medium">Rank</th>
+          <th className="px-3 py-2 text-left font-medium">Name</th>
+          <th className="px-3 py-2 text-right font-medium">Match pts</th>
+          <th className="px-3 py-2 text-right font-medium">Group pts</th>
+          <th className="px-3 py-2 text-right font-medium">Total</th>
+          <th className="px-3 py-2 text-right font-medium">Exact scores</th>
         </tr>
       </thead>
       <tbody>
         {scored.map((entry, i) => (
-          <tr key={entry.email_hash} onClick={() => onRowClick(entry)}>
-            <td>{i + 1}</td>
-            <td>{entry.name}</td>
-            <td>{entry.scoring.match_total}</td>
-            <td>{entry.scoring.group_total}</td>
-            <td><strong>{entry.scoring.total}</strong></td>
-            <td>{entry.scoring.exact_score_count}</td>
+          <tr
+            key={entry.email_hash}
+            className="border-b border-slate-800 hover:bg-slate-900 cursor-pointer"
+            onClick={() => onRowClick(entry)}
+          >
+            <td className="px-3 py-2 tabular-nums text-slate-400">{i + 1}</td>
+            <td className="px-3 py-2 text-slate-100">{entry.name}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring.match_total}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring.group_total}</td>
+            <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-300">{entry.scoring.total}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-400">{entry.scoring.exact_score_count}</td>
           </tr>
         ))}
       </tbody>
