@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useFormState } from '../state.jsx';
 import { useReadyCount } from '../useReadyCount.js';
-import { resolveGroupStandings } from '../resolveStandings.js';
 import { submitPicks } from '../submit.js';
 
 export function SubmitModal({ fixtures, appsScriptUrl, onClearDraft }) {
   const { state, dispatch } = useFormState();
-  const { ready, total } = useReadyCount(state, fixtures);
+  const { ready, total, byLetter } = useReadyCount(state, fixtures);
   const dialogRef = useRef(null);
   const isReady = ready === total;
   const submitting = state.submitState === 'submitting';
@@ -34,10 +33,10 @@ export function SubmitModal({ fixtures, appsScriptUrl, onClearDraft }) {
     ? 'rounded-full bg-emerald-500 px-6 py-3 font-semibold text-slate-950 hover:bg-emerald-400'
     : 'cursor-not-allowed rounded-full bg-slate-800 px-6 py-3 font-semibold text-slate-500';
 
-  const recapRows = Object.keys(fixtures.groups).sort().map((letter) => {
-    const { standings } = resolveGroupStandings(letter, state, fixtures);
-    return { letter, standings };
-  });
+  const recapRows = Object.keys(fixtures.groups).sort().map((letter) => ({
+    letter,
+    standings: byLetter[letter].standings,
+  }));
 
   return (
     <div className="mt-6 flex justify-center">
