@@ -41,27 +41,29 @@ export function PredictedStandings({ fixtures }) {
   });
 
   return (
-    <div className="standings-panel">
-      <h3>Predicted standings — Group {letter}</h3>
+    <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-300">
+        Predicted standings — Group {letter}
+      </h3>
       {!allFilled && (
-        <p className="standings-hint">Fill in all 6 match scores to derive the standings.</p>
+        <p className="mb-3 text-sm text-slate-400">Fill in all 6 match scores to derive the standings.</p>
       )}
       {allFilled && scoreOnlyTies.length === 0 && (
-        <p className="standings-hint">Derived from your scores.</p>
+        <p className="mb-3 text-sm text-slate-400">Derived from your scores.</p>
       )}
       {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length > 0 && (
-        <p className="standings-hint">
-          <strong>Tie to break.</strong> Drag the highlighted teams to choose their finishing order.
+        <p className="mb-3 text-sm text-slate-400">
+          <strong className="text-slate-200">Tie to break.</strong> Drag the highlighted teams to choose their finishing order.
         </p>
       )}
       {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length === 0 && (
-        <p className="standings-hint">
+        <p className="mb-3 text-sm text-slate-400">
           Tied on scores — your manual order shown. Drag any highlighted team to change your mind.
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} autoScroll={false}>
         <SortableContext items={standings} strategy={verticalListSortingStrategy}>
-          <ol className="standings-list">
+          <ol className="space-y-1.5">
             {standings.map((team, i) => (
               <SortableRow
                 key={team}
@@ -83,23 +85,34 @@ function SortableRow({ id, rank, draggable, tieIndex }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
   };
+
+  const tieBg = !draggable
+    ? 'bg-slate-900'
+    : tieIndex === 1
+    ? 'bg-blue-400/15 ring-1 ring-inset ring-blue-400/50 border-l-4 border-blue-400'
+    : 'bg-amber-400/15 ring-1 ring-inset ring-amber-400/50 border-l-4 border-amber-400';
+
   const cls = [
-    'standings-row',
-    draggable && 'draggable',
-    draggable && `tie-${tieIndex}`,
-    isDragging && 'dragging',
+    'flex items-center gap-3 rounded-md px-3 py-2 select-none touch-manipulation',
+    tieBg,
+    isDragging && 'opacity-40 shadow-lg',
   ].filter(Boolean).join(' ');
+
   return (
     <li ref={setNodeRef} style={style} className={cls}>
       {draggable ? (
-        <span className="grip" {...attributes} {...listeners} aria-label="Drag to reorder">⠿</span>
+        <span
+          className="w-5 text-center text-lg text-slate-400 cursor-grab touch-none"
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder"
+        >⠿</span>
       ) : (
-        <span className="grip placeholder" aria-hidden></span>
+        <span className="w-5" aria-hidden></span>
       )}
-      <span className="standings-rank">{rank}.</span>
-      <span className="standings-team">{id}</span>
+      <span className="w-6 tabular-nums text-slate-400">{rank}.</span>
+      <span className="text-slate-100 font-medium">{id}</span>
     </li>
   );
 }
