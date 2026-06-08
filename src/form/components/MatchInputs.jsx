@@ -44,8 +44,13 @@ export function MatchInputs({ fixtures, odds }) {
               side,
               value: parseScore(e.target.value),
             });
+          const decided = Number.isInteger(pick.home_score) && Number.isInteger(pick.away_score);
+          const rowCls = [
+            'rounded-lg border border-slate-800 bg-slate-900 px-3 py-2',
+            decided && 'border-l-4 border-l-emerald-500/70',
+          ].filter(Boolean).join(' ');
           return (
-            <li key={mid} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
+            <li key={mid} className={rowCls}>
               <div className="flex items-center gap-3">
                 <span className="flex-1 text-right text-sm text-slate-200">
                   {teamName(fixture.home)} <span className="ml-1">{teamFlag(fixture.home)}</span>
