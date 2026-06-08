@@ -8,7 +8,7 @@ import { GroupTabs } from './components/GroupTabs.jsx';
 import { MatchInputs } from './components/MatchInputs.jsx';
 import { PredictedStandings } from './components/PredictedStandings.jsx';
 import { ErrorSummary } from './components/ErrorSummary.jsx';
-import { IdentityPanel } from './components/IdentityPanel.jsx';
+import { SubmitModal } from './components/SubmitModal.jsx';
 import { SubmittedView } from './components/SubmittedView.jsx';
 import { RulesDrawer } from '../shared/RulesDrawer.jsx';
 
@@ -114,7 +114,7 @@ function FormBody({ config, fixtures }) {
         <GroupTabs fixtures={fixtures} />
         <MatchInputs fixtures={fixtures} />
         <PredictedStandings fixtures={fixtures} />
-        <IdentityPanel
+        <SubmitModal
           fixtures={fixtures}
           appsScriptUrl={config.apps_script_url}
           onClearDraft={clearDraft}
