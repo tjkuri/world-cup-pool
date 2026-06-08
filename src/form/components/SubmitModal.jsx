@@ -47,6 +47,7 @@ export function SubmitModal({ fixtures, appsScriptUrl, onClearDraft }) {
       <dialog
         ref={dialogRef}
         className="rounded-lg bg-slate-900 p-0 text-slate-100 backdrop:bg-slate-950/70 backdrop:backdrop-blur-sm w-[min(90vw,520px)]"
+        onClick={(e) => { if (e.target === dialogRef.current) closeModal(); }}
         onClose={() => dispatch({ type: 'SET_SUBMIT_STATE', value: 'idle', message: null })}
       >
         <div className="flex items-center justify-between border-b border-slate-800 px-5 py-3">
