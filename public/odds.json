@@ -1,0 +1,438 @@
+{
+  "cached_at": "2026-06-08T03:34:26.855Z",
+  "source": "https://api.the-odds-api.com (h2h, decimal, region=us)",
+  "matches": {
+    "760414": {
+      "home_implied": 0.358,
+      "draw_implied": 0.306,
+      "away_implied": 0.336,
+      "bookmaker_count": 7
+    },
+    "760415": {
+      "home_implied": 0.666,
+      "draw_implied": 0.219,
+      "away_implied": 0.115,
+      "bookmaker_count": 7
+    },
+    "760416": {
+      "home_implied": 0.527,
+      "draw_implied": 0.265,
+      "away_implied": 0.208,
+      "bookmaker_count": 7
+    },
+    "760417": {
+      "home_implied": 0.479,
+      "draw_implied": 0.282,
+      "away_implied": 0.239,
+      "bookmaker_count": 7
+    },
+    "760418": {
+      "home_implied": 0.146,
+      "draw_implied": 0.219,
+      "away_implied": 0.635,
+      "bookmaker_count": 7
+    },
+    "760419": {
+      "home_implied": 0.574,
+      "draw_implied": 0.251,
+      "away_implied": 0.174,
+      "bookmaker_count": 7
+    },
+    "760420": {
+      "home_implied": 0.076,
+      "draw_implied": 0.149,
+      "away_implied": 0.775,
+      "bookmaker_count": 7
+    },
+    "760421": {
+      "home_implied": 0.198,
+      "draw_implied": 0.263,
+      "away_implied": 0.539,
+      "bookmaker_count": 7
+    },
+    "760422": {
+      "home_implied": 0.925,
+      "draw_implied": 0.054,
+      "away_implied": 0.021,
+      "bookmaker_count": 5
+    },
+    "760423": {
+      "home_implied": 0.265,
+      "draw_implied": 0.337,
+      "away_implied": 0.398,
+      "bookmaker_count": 7
+    },
+    "760424": {
+      "home_implied": 0.494,
+      "draw_implied": 0.281,
+      "away_implied": 0.225,
+      "bookmaker_count": 7
+    },
+    "760425": {
+      "home_implied": 0.475,
+      "draw_implied": 0.264,
+      "away_implied": 0.261,
+      "bookmaker_count": 7
+    },
+    "760426": {
+      "home_implied": 0.573,
+      "draw_implied": 0.244,
+      "away_implied": 0.183,
+      "bookmaker_count": 7
+    },
+    "760427": {
+      "home_implied": 0.497,
+      "draw_implied": 0.282,
+      "away_implied": 0.221,
+      "bookmaker_count": 7
+    },
+    "760428": {
+      "home_implied": 0.875,
+      "draw_implied": 0.087,
+      "away_implied": 0.038,
+      "bookmaker_count": 7
+    },
+    "760429": {
+      "home_implied": 0.136,
+      "draw_implied": 0.22,
+      "away_implied": 0.644,
+      "bookmaker_count": 7
+    },
+    "760430": {
+      "home_implied": 0.074,
+      "draw_implied": 0.141,
+      "away_implied": 0.785,
+      "bookmaker_count": 7
+    },
+    "760431": {
+      "home_implied": 0.724,
+      "draw_implied": 0.174,
+      "away_implied": 0.102,
+      "bookmaker_count": 7
+    },
+    "760432": {
+      "home_implied": 0.651,
+      "draw_implied": 0.214,
+      "away_implied": 0.135,
+      "bookmaker_count": 7
+    },
+    "760433": {
+      "home_implied": 0.68,
+      "draw_implied": 0.208,
+      "away_implied": 0.112,
+      "bookmaker_count": 7
+    },
+    "760434": {
+      "home_implied": 0.461,
+      "draw_implied": 0.278,
+      "away_implied": 0.261,
+      "bookmaker_count": 7
+    },
+    "760435": {
+      "home_implied": 0.75,
+      "draw_implied": 0.164,
+      "away_implied": 0.086,
+      "bookmaker_count": 7
+    },
+    "760436": {
+      "home_implied": 0.117,
+      "draw_implied": 0.209,
+      "away_implied": 0.675,
+      "bookmaker_count": 7
+    },
+    "760437": {
+      "home_implied": 0.551,
+      "draw_implied": 0.253,
+      "away_implied": 0.196,
+      "bookmaker_count": 7
+    },
+    "760438": {
+      "home_implied": 0.483,
+      "draw_implied": 0.285,
+      "away_implied": 0.232,
+      "bookmaker_count": 7
+    },
+    "760439": {
+      "home_implied": 0.585,
+      "draw_implied": 0.241,
+      "away_implied": 0.174,
+      "bookmaker_count": 7
+    },
+    "760440": {
+      "home_implied": 0.718,
+      "draw_implied": 0.186,
+      "away_implied": 0.096,
+      "bookmaker_count": 7
+    },
+    "760441": {
+      "home_implied": 0.522,
+      "draw_implied": 0.272,
+      "away_implied": 0.207,
+      "bookmaker_count": 7
+    },
+    "760442": {
+      "home_implied": 0.541,
+      "draw_implied": 0.252,
+      "away_implied": 0.207,
+      "bookmaker_count": 7
+    },
+    "760443": {
+      "home_implied": 0.426,
+      "draw_implied": 0.297,
+      "away_implied": 0.278,
+      "bookmaker_count": 7
+    },
+    "760444": {
+      "home_implied": 0.883,
+      "draw_implied": 0.082,
+      "away_implied": 0.036,
+      "bookmaker_count": 6
+    },
+    "760445": {
+      "home_implied": 0.234,
+      "draw_implied": 0.288,
+      "away_implied": 0.478,
+      "bookmaker_count": 7
+    },
+    "760446": {
+      "home_implied": 0.785,
+      "draw_implied": 0.142,
+      "away_implied": 0.073,
+      "bookmaker_count": 7
+    },
+    "760447": {
+      "home_implied": 0.575,
+      "draw_implied": 0.24,
+      "away_implied": 0.186,
+      "bookmaker_count": 7
+    },
+    "760448": {
+      "home_implied": 0.609,
+      "draw_implied": 0.223,
+      "away_implied": 0.167,
+      "bookmaker_count": 7
+    },
+    "760449": {
+      "home_implied": 0.199,
+      "draw_implied": 0.272,
+      "away_implied": 0.529,
+      "bookmaker_count": 7
+    },
+    "760450": {
+      "home_implied": 0.659,
+      "draw_implied": 0.212,
+      "away_implied": 0.129,
+      "bookmaker_count": 7
+    },
+    "760451": {
+      "home_implied": 0.676,
+      "draw_implied": 0.204,
+      "away_implied": 0.12,
+      "bookmaker_count": 7
+    },
+    "760452": {
+      "home_implied": 0.197,
+      "draw_implied": 0.256,
+      "away_implied": 0.547,
+      "bookmaker_count": 7
+    },
+    "760453": {
+      "home_implied": 0.857,
+      "draw_implied": 0.101,
+      "away_implied": 0.042,
+      "bookmaker_count": 7
+    },
+    "760454": {
+      "home_implied": 0.452,
+      "draw_implied": 0.272,
+      "away_implied": 0.276,
+      "bookmaker_count": 7
+    },
+    "760455": {
+      "home_implied": 0.154,
+      "draw_implied": 0.23,
+      "away_implied": 0.616,
+      "bookmaker_count": 7
+    },
+    "760456": {
+      "home_implied": 0.574,
+      "draw_implied": 0.248,
+      "away_implied": 0.178,
+      "bookmaker_count": 7
+    },
+    "760457": {
+      "home_implied": 0.842,
+      "draw_implied": 0.115,
+      "away_implied": 0.043,
+      "bookmaker_count": 7
+    },
+    "760458": {
+      "home_implied": 0.716,
+      "draw_implied": 0.18,
+      "away_implied": 0.104,
+      "bookmaker_count": 7
+    },
+    "760459": {
+      "home_implied": 0.642,
+      "draw_implied": 0.227,
+      "away_implied": 0.131,
+      "bookmaker_count": 7
+    },
+    "760460": {
+      "home_implied": 0.137,
+      "draw_implied": 0.231,
+      "away_implied": 0.632,
+      "bookmaker_count": 7
+    },
+    "760461": {
+      "home_implied": 0.76,
+      "draw_implied": 0.152,
+      "away_implied": 0.088,
+      "bookmaker_count": 7
+    },
+    "760462": {
+      "home_implied": 0.609,
+      "draw_implied": 0.238,
+      "away_implied": 0.153,
+      "bookmaker_count": 7
+    },
+    "760463": {
+      "home_implied": 0.452,
+      "draw_implied": 0.284,
+      "away_implied": 0.264,
+      "bookmaker_count": 7
+    },
+    "760464": {
+      "home_implied": 0.714,
+      "draw_implied": 0.186,
+      "away_implied": 0.1,
+      "bookmaker_count": 6
+    },
+    "760465": {
+      "home_implied": 0.148,
+      "draw_implied": 0.201,
+      "away_implied": 0.651,
+      "bookmaker_count": 6
+    },
+    "760466": {
+      "home_implied": 0.244,
+      "draw_implied": 0.28,
+      "away_implied": 0.476,
+      "bookmaker_count": 6
+    },
+    "760467": {
+      "home_implied": 0.213,
+      "draw_implied": 0.269,
+      "away_implied": 0.518,
+      "bookmaker_count": 6
+    },
+    "760468": {
+      "home_implied": 0.191,
+      "draw_implied": 0.246,
+      "away_implied": 0.563,
+      "bookmaker_count": 6
+    },
+    "760469": {
+      "home_implied": 0.432,
+      "draw_implied": 0.295,
+      "away_implied": 0.273,
+      "bookmaker_count": 6
+    },
+    "760470": {
+      "home_implied": 0.352,
+      "draw_implied": 0.274,
+      "away_implied": 0.373,
+      "bookmaker_count": 6
+    },
+    "760471": {
+      "home_implied": 0.459,
+      "draw_implied": 0.277,
+      "away_implied": 0.264,
+      "bookmaker_count": 6
+    },
+    "760472": {
+      "home_implied": 0.148,
+      "draw_implied": 0.225,
+      "away_implied": 0.627,
+      "bookmaker_count": 6
+    },
+    "760473": {
+      "home_implied": 0.078,
+      "draw_implied": 0.159,
+      "away_implied": 0.763,
+      "bookmaker_count": 6
+    },
+    "760474": {
+      "home_implied": 0.659,
+      "draw_implied": 0.211,
+      "away_implied": 0.13,
+      "bookmaker_count": 6
+    },
+    "760475": {
+      "home_implied": 0.217,
+      "draw_implied": 0.261,
+      "away_implied": 0.522,
+      "bookmaker_count": 6
+    },
+    "760476": {
+      "home_implied": 0.412,
+      "draw_implied": 0.311,
+      "away_implied": 0.278,
+      "bookmaker_count": 6
+    },
+    "760477": {
+      "home_implied": 0.1,
+      "draw_implied": 0.169,
+      "away_implied": 0.731,
+      "bookmaker_count": 6
+    },
+    "760478": {
+      "home_implied": 0.364,
+      "draw_implied": 0.288,
+      "away_implied": 0.348,
+      "bookmaker_count": 6
+    },
+    "760479": {
+      "home_implied": 0.178,
+      "draw_implied": 0.24,
+      "away_implied": 0.583,
+      "bookmaker_count": 6
+    },
+    "760480": {
+      "home_implied": 0.572,
+      "draw_implied": 0.254,
+      "away_implied": 0.174,
+      "bookmaker_count": 6
+    },
+    "760481": {
+      "home_implied": 0.274,
+      "draw_implied": 0.285,
+      "away_implied": 0.441,
+      "bookmaker_count": 6
+    },
+    "760482": {
+      "home_implied": 0.409,
+      "draw_implied": 0.29,
+      "away_implied": 0.3,
+      "bookmaker_count": 6
+    },
+    "760483": {
+      "home_implied": 0.07,
+      "draw_implied": 0.137,
+      "away_implied": 0.793,
+      "bookmaker_count": 6
+    },
+    "760484": {
+      "home_implied": 0.283,
+      "draw_implied": 0.3,
+      "away_implied": 0.418,
+      "bookmaker_count": 6
+    },
+    "760485": {
+      "home_implied": 0.112,
+      "draw_implied": 0.157,
+      "away_implied": 0.731,
+      "bookmaker_count": 6
+    }
+  }
+}

@@ -15,6 +15,7 @@ import { RulesDrawer } from '../shared/RulesDrawer.jsx';
 export function App() {
   const [config, setConfig] = useState(null);
   const [fixtures, setFixtures] = useState(null);
+  const [odds, setOdds] = useState(null);
   const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
@@ -27,6 +28,8 @@ export function App() {
         setFixtures(f);
       })
       .catch((err) => setLoadError(String(err)));
+    // Odds are optional — silently degrade if missing.
+    fetch('/odds.json').then((r) => (r.ok ? r.json() : null)).then(setOdds).catch(() => {});
   }, []);
 
   if (loadError) {
@@ -45,12 +48,12 @@ export function App() {
   }
   return (
     <FormStateProvider>
-      <FormBody config={config} fixtures={fixtures} />
+      <FormBody config={config} fixtures={fixtures} odds={odds} />
     </FormStateProvider>
   );
 }
 
-function FormBody({ config, fixtures }) {
+function FormBody({ config, fixtures, odds }) {
   const { state, dispatch } = useFormState();
   const [rulesOpen, setRulesOpen] = useState(false);
   const lockTime = new Date(config.group_lock_iso);
@@ -112,7 +115,7 @@ function FormBody({ config, fixtures }) {
         <ProgressBar state={state} fixtures={fixtures} />
         <ErrorSummary errors={state.errors} />
         <GroupTabs fixtures={fixtures} />
-        <MatchInputs fixtures={fixtures} />
+        <MatchInputs fixtures={fixtures} odds={odds} />
         <PredictedStandings fixtures={fixtures} />
         <SubmitModal
           fixtures={fixtures}

@@ -17,14 +17,22 @@ function parseScore(raw) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function MatchInputs({ fixtures }) {
+export function MatchInputs({ fixtures, odds }) {
   const { state, dispatch } = useFormState();
   const letter = state.activeGroup;
   const group = fixtures.groups[letter];
   if (!group) return <p>Unknown group: {letter}</p>;
+  const oddsCachedAt = odds?.cached_at
+    ? new Date(odds.cached_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : null;
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Group {letter}</h2>
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Group {letter}</h2>
+        {oddsCachedAt && (
+          <span className="text-[10px] text-slate-600">odds cached {oddsCachedAt}</span>
+        )}
+      </div>
       <ol className="space-y-2">
         {group.matches.map((mid) => {
           const fixture = fixtures.matches[mid];
@@ -68,10 +76,24 @@ export function MatchInputs({ fixtures }) {
                 </span>
               </div>
               <p className="mt-1 text-center text-xs text-slate-500">{formatKickoff(fixture.kickoff_iso)}</p>
+              {odds?.matches?.[mid] && <ImpliedProbs fx={fixture} probs={odds.matches[mid]} />}
             </li>
           );
         })}
       </ol>
     </div>
+  );
+}
+
+function ImpliedProbs({ fx, probs }) {
+  const pct = (x) => Math.round(x * 100);
+  return (
+    <p className="mt-0.5 text-center text-[11px] text-slate-500">
+      {teamName(fx.home)} {pct(probs.home_implied)}%
+      <span className="mx-1.5 text-slate-700">·</span>
+      Draw {pct(probs.draw_implied)}%
+      <span className="mx-1.5 text-slate-700">·</span>
+      {teamName(fx.away)} {pct(probs.away_implied)}%
+    </p>
   );
 }
