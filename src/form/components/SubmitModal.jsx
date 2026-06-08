@@ -46,7 +46,7 @@ export function SubmitModal({ fixtures, appsScriptUrl, onClearDraft }) {
 
       <dialog
         ref={dialogRef}
-        className="rounded-lg bg-slate-900 p-0 text-slate-100 backdrop:bg-slate-950/70 backdrop:backdrop-blur-sm w-[min(90vw,520px)]"
+        className="fixed inset-0 m-auto h-fit max-h-[90vh] w-[min(90vw,520px)] rounded-lg bg-slate-900 p-0 text-slate-100 backdrop:bg-slate-950/70 backdrop:backdrop-blur-sm"
         onClick={(e) => { if (e.target === dialogRef.current) closeModal(); }}
         onClose={() => dispatch({ type: 'SET_SUBMIT_STATE', value: 'idle', message: null })}
       >
