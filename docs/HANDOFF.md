@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-08 (UI restyle + odds pipeline + clear-picks + favicon all merged and deployed to main).
+Last updated: 2026-06-08 (v2 scoring rules locked in: group + knockout phases, 62/38 split, deployed to main).
 
 ## TL;DR for next-session-Claude
 
@@ -11,12 +11,14 @@ Last updated: 2026-06-08 (UI restyle + odds pipeline + clear-picks + favicon all
 > (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
 > tests pass.
 
-> **Most recently shipped**: dark sports-app theme, gated `SubmitModal` with
-> compact recap, country names + flag emoji + kickoff times, cached implied
-> probabilities under each match row, picks_json embeds `home`/`away` team-code
-> stubs per match for ID-drift resilience, "Clear all picks" confirm modal,
-> soccer-ball favicon, emerald left-border on rows with both scores entered.
-> All on `main`, pushed to origin, deployed via Cloudflare.
+> **Most recently shipped**: v2 scoring locked in (62% group / 38% knockout
+> phase split, see "Scoring rules" section below), full knockout bracket rules
+> in the Rules drawer (backend still TBD), match exact-bonus bumped 2→3, group
+> standings trimmed to 3 positions (15/8/4 + 8 perfect, dropped 4th place).
+> Previously: dark sports-app theme, gated `SubmitModal` with compact recap,
+> country names + flag emoji + kickoff times, cached implied probabilities,
+> picks_json team-code stubs, "Clear all picks" confirm modal, soccer-ball
+> favicon, emerald left-border on rows with both scores entered. All on `main`.
 
 ## Architecture
 
@@ -122,6 +124,54 @@ world-cup-pool/
 | Google Sheet | User's Google account, titled "World Cup Pool", tab "submissions" |
 | The Odds API console | https://the-odds-api.com (free tier; 500 req/mo) |
 
+## Scoring rules (LOCKED — brother-approved 2026-06-08)
+
+Pool format: two phases, points carry over. Prize split: **30% to group-stage
+points leader**, **70% to overall (group + knockout) points leader**. No
+survivor, no R32 advancement bonus, everyone plays both phases.
+
+### Group stage (implemented in `lib/score.js`)
+
+| | Pts |
+|---|---|
+| Correct winner/draw, wrong score | 3 |
+| Exact score | 6 (3 + 3 bonus) |
+| Wrong winner | 0 |
+| Standings 1st correct | 15 |
+| Standings 2nd correct | 8 |
+| Standings 3rd correct | 4 |
+| Perfect 1-2-3-4 order | +8 bonus |
+
+Per-group max: 71. × 12 groups = **852 pts group-stage max**.
+
+### Knockout (rules in UI, **backend not yet implemented**)
+
+| | Pts |
+|---|---|
+| R32 winner (16 matches) | 4 each |
+| R16 winner (8 matches) | 8 each |
+| QF winner (4 matches) | 16 each |
+| SF winner (2 matches) | 32 each |
+| Correct finalist | 50 each (100 max) |
+| Correct champion | 80 |
+| Exact score on knockout match | +3 bonus |
+| Exact score on the Final | +5 bonus (replaces +3) |
+
+Knockout max: **~531 pts**. Total tournament max: **~1,383 pts**.
+
+Phase split: **62% group / 38% knockout** — group leader has a real edge for
+the overall title but the bracket is heavy enough that comebacks are possible.
+
+Why these numbers (don't re-litigate without reason):
+- Original spec had standings at 5/3/2/1 + 3 perfect — too small relative to
+  match scoring with 12 groups.
+- Brother proposed 20/10/5 + no 4th. We trimmed to 15/8/4 + 8 perfect to push
+  the phase split from 65/35 closer to the 30/70 prize split.
+- 4th-place pt dropped because it was the most token reward and brother's
+  original spec didn't include it.
+- Bracket scoring uses the doubling pattern (industry standard) at 2x the
+  brother's original bracket weights so knockout has real swing on the title.
+
 ## Lock time
 
 `2026-06-11T19:00:00Z` — pinned to ESPN's earliest group-stage kickoff (South
@@ -170,8 +220,8 @@ In rough commit order. All on main:
 | 1 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
 | 2 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Old URL still points there. |
 | 3 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. |
-| 4 | v2 — knockout bracket challenge | Build between Jun 11 (group stage start) and ~Jun 27 (group stage end). Bracket only, no survivor. Sketch in v1 spec §13. |
-| 5 | Brother content decisions | Entry fee, payout split, R32 handling (recommend: skip R32, score from R16). |
+| 4 | **v2 knockout backend — primary next-session task** | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: Jun 11 → ~Jul 5 (R32 starts). |
+| 5 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
 | 6 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
 | 7 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
 
