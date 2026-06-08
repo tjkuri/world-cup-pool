@@ -1,5 +1,6 @@
 import { useFormState } from '../state.jsx';
 import { deriveWinner } from '../../../lib/derive.js';
+import { teamName } from '../../shared/teamNames.js';
 
 function labelFor(pick) {
   if (!Number.isInteger(pick.home_score) || !Number.isInteger(pick.away_score)) return 'vs';
@@ -36,7 +37,7 @@ export function MatchInputs({ fixtures }) {
             });
           return (
             <li key={mid} className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
-              <span className="flex-1 text-right text-sm text-slate-200">{fixture.home}</span>
+              <span className="flex-1 text-right text-sm text-slate-200">{teamName(fixture.home)}</span>
               <input
                 type="number"
                 min={0}
@@ -58,7 +59,7 @@ export function MatchInputs({ fixtures }) {
                 onChange={onChange('away_score')}
                 className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
-              <span className="flex-1 text-sm text-slate-200">{fixture.away}</span>
+              <span className="flex-1 text-sm text-slate-200">{teamName(fixture.away)}</span>
             </li>
           );
         })}

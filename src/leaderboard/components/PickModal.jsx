@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { computeStandings } from '../../../lib/standings.js';
+import { teamName } from '../../shared/teamNames.js';
 
 export function PickModal({ entry, fixtures, results, onClose }) {
   useEffect(() => {
@@ -100,12 +101,12 @@ function GroupCard({ letter, entry, fixtures, results }) {
           const actualStr = result && result.status === 'STATUS_FINAL' ? `${result.home_score}-${result.away_score}` : '—';
           return (
             <div key={mid} className="flex items-center justify-between gap-2 font-mono text-sm">
-              <span className="w-24 truncate text-right text-slate-300">{fx.home}</span>
+              <span className="w-24 truncate text-right text-slate-300">{teamName(fx.home)}</span>
               <span className={`flex-shrink-0 ${OUTCOME_CLASSES[cls]}`}>
                 <strong>{predictedStr}</strong>
                 <span className="ml-1 text-xs text-slate-500">(actual {actualStr})</span>
               </span>
-              <span className="w-24 truncate text-slate-300">{fx.away}</span>
+              <span className="w-24 truncate text-slate-300">{teamName(fx.away)}</span>
             </div>
           );
         })}
@@ -118,7 +119,7 @@ function GroupCard({ letter, entry, fixtures, results }) {
               key={team}
               className={`rounded px-1.5 py-0.5 text-xs font-mono ${correct ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40' : 'bg-slate-800 text-slate-400'}`}
             >
-              {i + 1}. {team}
+              {i + 1}. {teamName(team)}
             </span>
           );
         })}

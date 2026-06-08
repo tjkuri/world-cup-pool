@@ -25,6 +25,19 @@ export async function submitPicks({ state, fixtures, appsScriptUrl, dispatch, on
     return;
   }
 
+  // Embed home/away team codes alongside each match's scores so the row is
+  // self-describing if ESPN ever renumbers fixture IDs.
+  const matchesWithStubs = {};
+  for (const [mid, pick] of Object.entries(state.matches)) {
+    const fx = fixtures.matches[mid];
+    matchesWithStubs[mid] = {
+      home_score: pick.home_score,
+      away_score: pick.away_score,
+      home: fx?.home,
+      away: fx?.away,
+    };
+  }
+
   dispatch({ type: 'SET_SUBMIT_STATE', value: 'submitting' });
   try {
     const res = await fetch(appsScriptUrl, {
@@ -34,7 +47,7 @@ export async function submitPicks({ state, fixtures, appsScriptUrl, dispatch, on
         name: state.identity.name,
         email: state.identity.email,
         secret: state.identity.secret,
-        picks: { matches: state.matches, group_standings: groupStandings },
+        picks: { matches: matchesWithStubs, group_standings: groupStandings },
         phase: 'group',
         client_version: '2',
       }),

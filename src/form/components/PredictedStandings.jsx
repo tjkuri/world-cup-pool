@@ -3,6 +3,7 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalList
 import { CSS } from '@dnd-kit/utilities';
 import { useFormState } from '../state.jsx';
 import { useDerivedStandings } from '../useDerivedStandings.js';
+import { teamName } from '../../shared/teamNames.js';
 
 export function PredictedStandings({ fixtures }) {
   const { state, dispatch } = useFormState();
@@ -107,7 +108,7 @@ function SortableRow({ id, rank, draggable, tieIndex }) {
         <span className="w-5" aria-hidden></span>
       )}
       <span className="w-6 tabular-nums text-slate-400">{rank}.</span>
-      <span className="text-slate-100 font-medium">{id}</span>
+      <span className="text-slate-100 font-medium">{teamName(id)}</span>
     </li>
   );
 }
