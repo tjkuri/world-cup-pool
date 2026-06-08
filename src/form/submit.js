@@ -11,12 +11,6 @@ export async function submitPicks({ state, fixtures, appsScriptUrl, dispatch, on
       dispatch({ type: 'SET_SUBMIT_STATE', value: 'error', message: 'Please fix the errors above before submitting.' });
       return;
     }
-    if (res.unresolvedTies.length > 0) {
-      const message = `Group ${letter} has unresolved ties — drag the highlighted teams in the standings panel to set their order.`;
-      dispatch({ type: 'SET_ERRORS', errors: [{ code: 'standings_tied', group: letter, message }] });
-      dispatch({ type: 'SET_SUBMIT_STATE', value: 'error', message: 'Please fix the errors above before submitting.' });
-      return;
-    }
     groupStandings[letter] = res.standings;
   }
 
