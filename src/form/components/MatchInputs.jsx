@@ -1,6 +1,7 @@
 import { useFormState } from '../state.jsx';
 import { deriveWinner } from '../../../lib/derive.js';
-import { teamName } from '../../shared/teamNames.js';
+import { teamName, teamFlag } from '../../shared/teamNames.js';
+import { formatKickoff } from '../../shared/formatKickoff.js';
 
 function labelFor(pick) {
   if (!Number.isInteger(pick.home_score) || !Number.isInteger(pick.away_score)) return 'vs';
@@ -36,30 +37,37 @@ export function MatchInputs({ fixtures }) {
               value: parseScore(e.target.value),
             });
           return (
-            <li key={mid} className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
-              <span className="flex-1 text-right text-sm text-slate-200">{teamName(fixture.home)}</span>
-              <input
-                type="number"
-                min={0}
-                max={20}
-                step={1}
-                inputMode="numeric"
-                value={pick.home_score == null ? '' : String(pick.home_score)}
-                onChange={onChange('home_score')}
-                className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
-              <span className="text-slate-500">{labelFor(pick)}</span>
-              <input
-                type="number"
-                min={0}
-                max={20}
-                step={1}
-                inputMode="numeric"
-                value={pick.away_score == null ? '' : String(pick.away_score)}
-                onChange={onChange('away_score')}
-                className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
-              <span className="flex-1 text-sm text-slate-200">{teamName(fixture.away)}</span>
+            <li key={mid} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2">
+              <div className="flex items-center gap-3">
+                <span className="flex-1 text-right text-sm text-slate-200">
+                  {teamName(fixture.home)} <span className="ml-1">{teamFlag(fixture.home)}</span>
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={20}
+                  step={1}
+                  inputMode="numeric"
+                  value={pick.home_score == null ? '' : String(pick.home_score)}
+                  onChange={onChange('home_score')}
+                  className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+                <span className="text-slate-500">{labelFor(pick)}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={20}
+                  step={1}
+                  inputMode="numeric"
+                  value={pick.away_score == null ? '' : String(pick.away_score)}
+                  onChange={onChange('away_score')}
+                  className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+                <span className="flex-1 text-sm text-slate-200">
+                  <span className="mr-1">{teamFlag(fixture.away)}</span> {teamName(fixture.away)}
+                </span>
+              </div>
+              <p className="mt-1 text-center text-xs text-slate-500">{formatKickoff(fixture.kickoff_iso)}</p>
             </li>
           );
         })}
