@@ -31,14 +31,14 @@ export function App() {
 
   if (loadError) {
     return (
-      <main>
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <p>Failed to load: {loadError}. Refresh to retry.</p>
       </main>
     );
   }
   if (!config || !fixtures) {
     return (
-      <main>
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <p className="loading">Loading…</p>
       </main>
     );
@@ -77,7 +77,7 @@ function FormBody({ config, fixtures }) {
     return (
       <>
         <TopBar pageLabel="World Cup 2026 Pool" otherPage="./leaderboard.html" otherLabel="Leaderboard" onOpenRules={() => setRulesOpen(true)} />
-        <main>
+        <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <h2>Submissions are closed.</h2>
           <p>The tournament has begun. <a href="./leaderboard.html">View the leaderboard.</a></p>
         </main>
@@ -90,7 +90,7 @@ function FormBody({ config, fixtures }) {
     return (
       <>
         <TopBar pageLabel="World Cup 2026 Pool" otherPage="./leaderboard.html" otherLabel="Leaderboard" onOpenRules={() => setRulesOpen(true)} />
-        <main>
+        <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <SubmittedView submittedAt={state.submittedAt} />
         </main>
         {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
@@ -108,7 +108,7 @@ function FormBody({ config, fixtures }) {
       >
         <LockBanner lockTime={lockTime} now={now} />
       </TopBar>
-      <main>
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <ProgressBar state={state} fixtures={fixtures} />
         <ErrorSummary errors={state.errors} />
         <GroupTabs fixtures={fixtures} />
