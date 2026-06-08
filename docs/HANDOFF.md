@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-07 (UI restyle complete — Tailwind v4, dark sports-app theme, gated submit modal; on branch `feat/ui-restyle`, not yet merged to main).
+Last updated: 2026-06-08 (UI restyle + odds pipeline + clear-picks + favicon all merged and deployed to main).
 
 ## TL;DR for next-session-Claude
 
@@ -11,9 +11,12 @@ Last updated: 2026-06-07 (UI restyle complete — Tailwind v4, dark sports-app t
 > (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
 > tests pass.
 
-> **UI restyle is complete** (branch `feat/ui-restyle`). Dark sports-app theme,
-> Tailwind v4, gated submit modal (SubmitModal + useReadyCount). Not yet merged
-> to main — user controls the deploy.
+> **Most recently shipped**: dark sports-app theme, gated `SubmitModal` with
+> compact recap, country names + flag emoji + kickoff times, cached implied
+> probabilities under each match row, picks_json embeds `home`/`away` team-code
+> stubs per match for ID-drift resilience, "Clear all picks" confirm modal,
+> soccer-ball favicon, emerald left-border on rows with both scores entered.
+> All on `main`, pushed to origin, deployed via Cloudflare.
 
 ## Architecture
 
@@ -35,63 +38,76 @@ Last updated: 2026-06-07 (UI restyle complete — Tailwind v4, dark sports-app t
 
 [Cloudflare Pages on every push to main]
   └─ npm run build → npx wrangler deploy → live site
+
+[Manual one-shot, refresh as needed]
+  └─ npm run cache-odds → public/odds.json (h2h implied probs)
 ```
 
 **External services:** CF Pages (free), GH Actions (free), Google Sheets +
-Apps Script (free), ESPN public scoreboard API (no auth). $0/mo total.
+Apps Script (free), ESPN public scoreboard API (no auth), The Odds API
+(free tier 500 req/mo). $0/mo total.
 
 ## File map
 
 ```
 world-cup-pool/
-├── index.html, leaderboard.html      # Vite multi-page entry points
-├── vite.config.js                    # Multi-page rollup input config
+├── index.html, leaderboard.html      # Vite multi-page entry points (incl. soccer-ball favicon)
+├── vite.config.js                    # Multi-page rollup input + @tailwindcss/vite plugin
 ├── wrangler.toml                     # CF Workers Builds (assets dir = ./dist)
-├── package.json                      # type: module; deps react, vite, dnd-kit; devDep wrangler
+├── package.json                      # type: module; deps react, vite, dnd-kit, tailwindcss
 ├── public/
 │   ├── config.json                   # group_lock_iso, apps_script_url — SERVED AS-IS
 │   ├── fixtures.json                 # 12 groups × 4 teams × 6 matches = 72 (seeded once)
-│   └── results.json                  # Updated by cron; empty pre-tournament
+│   ├── results.json                  # Updated by cron; empty pre-tournament
+│   └── odds.json                     # Manually refreshed; vig-removed implied probs per match
 ├── src/
-│   ├── styles/main.css               # Global stylesheet
+│   ├── styles/main.css               # Just `@import "tailwindcss";` + html/body base
 │   ├── form/
-│   │   ├── main.jsx, App.jsx         # Entry + top-level component
+│   │   ├── main.jsx, App.jsx         # App fetches config.json, fixtures.json, odds.json (graceful)
 │   │   ├── state.jsx                 # useReducer + Context (actions: SET_MATCH_SCORE,
 │   │   │                             #   SET_MANUAL_TIEBREAKER, CLEAR_MANUAL_TIEBREAKER,
-│   │   │                             #   SET_IDENTITY, SET_ACTIVE_GROUP, SET_ERRORS,
-│   │   │                             #   SET_SUBMIT_STATE, HYDRATE)
+│   │   │                             #   CLEAR_PICKS, SET_IDENTITY, SET_ACTIVE_GROUP,
+│   │   │                             #   SET_ERRORS, SET_SUBMIT_STATE, HYDRATE)
 │   │   ├── useAutosave.js            # Debounced 500ms localStorage + blur/visibility/unload
 │   │   ├── useDerivedStandings.js    # Thin wrapper around resolveGroupStandings
-│   │   ├── useReadyCount.js          # Counts filled match scores; gates submit modal
+│   │   ├── useReadyCount.js          # Returns {ready, total, byLetter}; gates submit modal
 │   │   ├── resolveStandings.js       # SHARED logic for standings panel + submit
-│   │   ├── submit.js                 # POST to Apps Script, response handling
+│   │   ├── submit.js                 # POST to Apps Script (text/plain to dodge CORS preflight)
 │   │   └── components/
 │   │       ├── TopBar.jsx, ProgressBar.jsx, LockBanner.jsx
-│   │       ├── GroupTabs.jsx, MatchInputs.jsx
+│   │       ├── GroupTabs.jsx         # Centered responsive pill grid (3/4/6 cols)
+│   │       ├── MatchInputs.jsx       # Flags + names + kickoff + implied-probs + decided border
 │   │       ├── PredictedStandings.jsx
 │   │       ├── ErrorSummary.jsx, SubmittedView.jsx
-│   │       ├── SubmitModal.jsx        # Gated submit modal (replaced IdentityPanel)
+│   │       ├── SubmitModal.jsx       # Native <dialog>; compact recap (codes) + identity form
+│   │       ├── ClearPicksButton.jsx  # Confirm modal; resets matches + ties, keeps identity
 │   │       # deleted: IdentityPanel.jsx
 │   ├── leaderboard/
 │   │   ├── main.jsx, App.jsx, useDeepLink.js
-│   │   └── components/{LeaderboardTable, PickModal}.jsx
-│   └── shared/RulesDrawer.jsx        # Used by both pages
-├── lib/                              # PURE LOGIC (untouched since v1) — 36 tests pass
-│   ├── derive.js + .test.js          # deriveWinner(h,a) → 'home'|'away'|'draw'
-│   ├── standings.js + .test.js       # computeStandings(letter, matches, fixtures, manualTiebreakers)
-│   ├── score.js + .test.js           # scoreSubmission(submission, fixtures, results)
-│   └── validate.js + .test.js        # validateSubmission(submission, fixtures)
+│   │   └── components/{LeaderboardTable, PickModal}.jsx  # PickModal uses flags + names
+│   └── shared/
+│       ├── RulesDrawer.jsx           # Used by both pages
+│       ├── teamNames.js              # TEAM_NAMES + TEAM_FLAGS maps + teamName/teamFlag helpers
+│       └── formatKickoff.js          # Date+time formatter for fixture.kickoff_iso
+├── lib/                              # PURE LOGIC (untouched) — 36 tests pass
+│   ├── derive.js + .test.js
+│   ├── standings.js + .test.js
+│   ├── score.js + .test.js
+│   └── validate.js + .test.js
 ├── scripts/                          # Node-only dev/ops tools
-│   ├── lib/espn.mjs                  # fetchScoreboard, parseEvent(evt, teamGroupMap), fetchTeamGroupMap
-│   ├── seed-fixtures.mjs             # One-shot — already ran; wrote public/fixtures.json
-│   └── fetch-results.mjs             # Cron-driven — writes public/results.json
+│   ├── lib/espn.mjs
+│   ├── seed-fixtures.mjs             # One-shot (done)
+│   ├── fetch-results.mjs             # Cron-driven
+│   └── cache-odds.mjs                # Manual; needs ODDS_API_KEY env var
 ├── apps_script/
 │   ├── Code.gs                       # Pasted into Apps Script editor; doPost + doGet
-│   └── README.md                     # Deployment instructions
+│   └── README.md
 ├── .github/workflows/fetch-results.yml  # cron '0 */2 * * *'
 └── docs/
-    ├── superpowers/specs/2026-06-07-world-cup-pool-design.md   # Full design spec
-    ├── superpowers/plans/2026-06-07-world-cup-pool-v1.md       # v1 implementation plan (historical)
+    ├── superpowers/specs/2026-06-07-world-cup-pool-design.md   # v1 design spec
+    ├── superpowers/specs/2026-06-07-ui-restyle-design.md       # Restyle spec
+    ├── superpowers/plans/2026-06-07-world-cup-pool-v1.md       # v1 plan (historical)
+    ├── superpowers/plans/2026-06-07-ui-restyle.md              # Restyle plan (historical)
     └── HANDOFF.md                    # This file
 ```
 
@@ -104,6 +120,7 @@ world-cup-pool/
 | Old GH Pages (broken — needs teardown) | https://tjkuri.github.io/world-cup-pool/ |
 | Apps Script web app | In `public/config.json` (`apps_script_url`) |
 | Google Sheet | User's Google account, titled "World Cup Pool", tab "submissions" |
+| The Odds API console | https://the-odds-api.com (free tier; 500 req/mo) |
 
 ## Lock time
 
@@ -116,65 +133,97 @@ Africa @ Mexico). Stored in two places that MUST stay in sync:
 To extend the lock, edit the Apps Script script property in the UI; client UI
 will follow after redeploy of config.json.
 
-## Currently in progress — UI restyle
+## Recent additions (post-restyle)
 
-Branch `feat/ui-restyle`. Not yet merged to main. Merging triggers a CF Pages
-deploy. All work is committed and the branch is clean.
-
-What shipped in this branch:
-- Tailwind v4 (`@import "tailwindcss"` in `src/styles/main.css`)
-- Dark sports-app theme across form + leaderboard
-- `SubmitModal` component + `useReadyCount` hook replacing `IdentityPanel`
-- Gated submit: modal opens only when all 72 match scores are filled
-- Leaderboard restyled to match
+In rough commit order. All on main:
+- Tie resolution is **optional** — submit doesn't gate on unresolved ties.
+  `useReadyCount` only requires `allFilled`; standings panel hint copy softened.
+  Within still-tied subsets, the FIFA chain + alphabetical fallback determines
+  the submitted order if the user doesn't drag.
+- CORS preflight on submit is dodged by sending `Content-Type:
+  text/plain;charset=utf-8`. Apps Script still parses `e.postData.contents`.
+- Full country names + flag emoji rendered everywhere (form match inputs,
+  standings panel, PickModal); SubmitModal recap stays as 3-letter codes for
+  density.
+- `public/odds.json` cached via `npm run cache-odds`. Vig-removed implied
+  probabilities for h2h (home / draw / away), averaged across all bookmakers
+  returned by The Odds API for region=us. Rendered under each match row as
+  `Mexico 67% · Draw 21% · South Africa 11%`. Small "odds cached <date>" stamp
+  appears at the top of the group heading. Graceful degrade if `odds.json` is
+  missing.
+- picks_json now includes `home`/`away` team-code stubs per match so the
+  Google Sheet row is self-describing even if ESPN fixture IDs ever drift.
+  Scoring path is unchanged (still matches by ID).
+- `ClearPicksButton` with confirm modal: wipes `state.matches`,
+  `state.manualTiebreakers`, localStorage draft. Keeps identity.
+- Soccer ball ⚽ favicon via SVG data URI in both HTML files.
+- Decided match rows (both scores filled) get an emerald-500/70 left border.
+- `SubmitModal` `<dialog>` centered via `fixed inset-0 m-auto h-fit
+  max-h-[90vh]` (Tailwind preflight kills the default `margin: auto`).
+- `.claude/settings.local.json` gitignored (it captured the Odds API key in
+  the permission allowlist).
 
 ## Pending items
 
 | ID | What | Notes |
 |---|---|---|
-| 1 | ~~Verify latest tiebreaker fix works~~ | Fixed; tiebreaker UX complete. |
-| 2 | Decide when to merge `feat/ui-restyle` to main | Merge triggers CF Pages deploy. User controls this. |
-| 3 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
-| 4 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Do AFTER CF deploy is fully smoke-tested. |
-| 5 | v2 — knockout bracket challenge | Build between Jun 11 (group stage start) and ~Jun 27 (group stage end). Bracket only, no survivor. Sketch in spec §13. |
-| 6 | Brother content decisions | Entry fee, payout split, R32 handling (recommend: skip R32, score from R16). |
-| 7 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs — worth a quick extract-to-variable pass. |
-| 8 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`; these are enhancement-level. |
+| 1 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
+| 2 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Old URL still points there. |
+| 3 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. |
+| 4 | v2 — knockout bracket challenge | Build between Jun 11 (group stage start) and ~Jun 27 (group stage end). Bracket only, no survivor. Sketch in v1 spec §13. |
+| 5 | Brother content decisions | Entry fee, payout split, R32 handling (recommend: skip R32, score from R16). |
+| 6 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
+| 7 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
 
 ## Important quirks / gotchas
 
-- **`npm test`**: runs `node --test lib/*.test.js` — NOT `node --test lib/`. The
-  directory form treats `lib` as a single file argument and fails. (Bug fixed
-  early in v1 implementation.)
+- **`npm test`**: runs `node --test lib/*.test.js` — NOT `node --test lib/`.
+  The directory form treats `lib` as a single file argument and fails.
+- **CORS on submit**: Apps Script web apps don't respond to preflight. We
+  send `Content-Type: text/plain;charset=utf-8` so the browser skips
+  preflight. Don't switch back to `application/json` without first verifying
+  Apps Script can return CORS headers (it can't on standard web apps).
 - **ESPN group letters**: scoreboard events don't include group info in their
   notes/name. We hit the standings endpoint separately and build a
   teamId→group map (`fetchTeamGroupMap` in `scripts/lib/espn.mjs`). The seed
   worked; the cron doesn't need it.
 - **Apps Script HTTP status codes**: web apps always return 200. The client
   checks `payload.error` and `payload.ok` instead.
-- **localStorage draft schema**: `wc-draft` key. Shape evolved during refactor
-  — current version uses `manualTiebreakers: { [groupLetter]: { [teamCode]: rank } }`.
-  HYDRATE action is defensive about old shapes (won't crash on arrays from
-  earlier refactor attempts).
-- **React 19 StrictMode**: enabled in both `main.jsx` files. Be aware effects
-  run twice in dev mode. Doesn't affect prod.
-- **Dev server**: `npm run dev` → http://localhost:5173/, http://localhost:5173/leaderboard.html
+- **Tie resolution is OPTIONAL**: `useReadyCount` and `submit.js` both ignore
+  unresolved ties. If the user doesn't drag, `resolveGroupStandings` still
+  returns a fully ordered array (FIFA chain → H2H → alphabetical fallback).
+- **localStorage draft schema**: `wc-draft` key. Shape evolved during
+  refactor — current version uses `manualTiebreakers: { [groupLetter]: {
+  [teamCode]: rank } }`. HYDRATE action is defensive about old shapes.
+- **React 19 StrictMode**: enabled in both `main.jsx` files. Effects run twice
+  in dev mode. Doesn't affect prod.
+- **Dev server**: `npm run dev` → http://localhost:5173/ + /leaderboard.html
 - **Build**: `npm run build` → `dist/`. Output is what CF deploys via wrangler.
 - **Tests**: `npm test`. 36 pass. Only `lib/` is tested. React components are
   manually tested via the dev server.
 - **Apps Script salt**: random hex string in the Apps Script's script
-  properties. User generated their own — not stored in repo. Don't worry about
-  it.
+  properties. User generated their own — not stored in repo.
+- **Odds API key**: NOT in this repo. Lives in yggdrasil's `.env`. Run via
+  `ODDS_API_KEY=$(grep ODDS_API_KEY ../yggdrasil/.env | cut -d= -f2) npm run
+  cache-odds` or just paste the key in inline. See memory entry
+  `reference_odds_api_key`.
+- **Native `<dialog>` centering**: Tailwind v4 preflight zeroes out the
+  default `margin: auto` on `dialog`. All modals (`SubmitModal`,
+  `ClearPicksButton`) explicitly center via `fixed inset-0 m-auto h-fit`.
 
 ## How to resume next session
 
-1. Read this file (`docs/HANDOFF.md`).
-2. (Optional) Read the design spec: `docs/superpowers/specs/2026-06-07-world-cup-pool-design.md`.
-3. Confirm with user where they are. Most likely: deciding whether to merge
-   `feat/ui-restyle` to main and kick off a CF deploy.
-4. If dev server isn't running, `npm run dev` to start it.
+1. Read this file.
+2. `git log --oneline -10` to see what's most recent.
+3. (Optional) Read the v1 design spec or the restyle spec if context is
+   needed about historical choices.
+4. Confirm with user what they want to work on. Likely candidates: v2
+   bracket, GH Pages teardown, pre-launch smoke pass, or brother-content
+   decisions.
+5. `npm run dev` if you need the dev server.
 
-Memory entries from prior sessions:
-- `user_stack_preferences` — React-ecosystem-leaning, values third-party libs
+Memory entries:
+- `user_stack_preferences` — React + modern tooling, third-party libs OK
 - `feedback_vibe_coded` — ship fast, low cost, willing to add infra if low-lift
-- `feedback_collaboration_style` — pushes back on thin answers, likes concrete cost/time, comfortable with terse confirms once context shared
+- `feedback_collaboration_style` — pushes back on thin answers, likes concrete cost/time, comfortable with terse confirms
+- `reference_odds_api_key` — Odds API key lives in yggdrasil's `.env`
