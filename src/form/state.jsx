@@ -31,6 +31,8 @@ function reducer(state, action) {
       delete next[action.group];
       return { ...state, manualTiebreakers: next };
     }
+    case 'CLEAR_PICKS':
+      return { ...state, matches: {}, manualTiebreakers: {}, errors: [] };
     case 'SET_IDENTITY':
       return { ...state, identity: { ...state.identity, ...action.patch } };
     case 'SET_ACTIVE_GROUP':

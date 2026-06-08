@@ -9,6 +9,7 @@ import { MatchInputs } from './components/MatchInputs.jsx';
 import { PredictedStandings } from './components/PredictedStandings.jsx';
 import { ErrorSummary } from './components/ErrorSummary.jsx';
 import { SubmitModal } from './components/SubmitModal.jsx';
+import { ClearPicksButton } from './components/ClearPicksButton.jsx';
 import { SubmittedView } from './components/SubmittedView.jsx';
 import { RulesDrawer } from '../shared/RulesDrawer.jsx';
 
@@ -122,6 +123,7 @@ function FormBody({ config, fixtures, odds }) {
           appsScriptUrl={config.apps_script_url}
           onClearDraft={clearDraft}
         />
+        <ClearPicksButton onClearDraft={clearDraft} />
       </main>
       {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
     </>
