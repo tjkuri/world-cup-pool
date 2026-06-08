@@ -158,29 +158,6 @@ main {
   border-radius: 6px;
 }
 
-.standings-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.standings-header h3 {
-  margin: 0;
-  flex: 1;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: var(--accent);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-  font: inherit;
-  font-size: 0.9em;
-}
-
 .standings-hint {
   color: var(--muted);
   font-size: 0.85em;
@@ -200,7 +177,6 @@ main {
   align-items: center;
   gap: 12px;
   background: white;
-  border-radius: 4px;
   user-select: none;
   touch-action: manipulation;
 }
@@ -209,19 +185,35 @@ main {
   border-bottom: none;
 }
 
+.standings-row.draggable {
+  background: #fef9c3;
+  border-radius: 4px;
+}
+
 .standings-row .grip {
-  cursor: grab;
-  color: var(--muted);
+  width: 18px;
   font-size: 18px;
-  padding: 0 4px;
+  color: var(--muted);
+  text-align: center;
   touch-action: none;
 }
 
-.standings-row.dragging .grip { cursor: grabbing; }
+.standings-row.draggable .grip {
+  cursor: grab;
+}
+
+.standings-row.dragging .grip {
+  cursor: grabbing;
+}
 
 .standings-row.dragging {
   background: var(--tab-active);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.standings-row .grip.placeholder {
+  visibility: hidden;
 }
 
 .standings-rank {

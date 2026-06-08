@@ -21,12 +21,12 @@ function reducer(state, action) {
         matches: { ...state.matches, [matchId]: { ...prior, [side]: value } },
       };
     }
-    case 'SET_MANUAL_STANDINGS':
+    case 'SET_MANUAL_TIEBREAKER':
       return {
         ...state,
-        manualTiebreakers: { ...state.manualTiebreakers, [action.group]: [...action.order] },
+        manualTiebreakers: { ...state.manualTiebreakers, [action.group]: { ...action.ranks } },
       };
-    case 'CLEAR_MANUAL_STANDINGS': {
+    case 'CLEAR_MANUAL_TIEBREAKER': {
       const next = { ...state.manualTiebreakers };
       delete next[action.group];
       return { ...state, manualTiebreakers: next };

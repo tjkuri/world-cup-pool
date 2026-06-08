@@ -7,7 +7,7 @@ import { useDerivedStandings } from '../useDerivedStandings.js';
 export function PredictedStandings({ fixtures }) {
   const { state, dispatch } = useFormState();
   const letter = state.activeGroup;
-  const { standings, source } = useDerivedStandings(letter, state, fixtures);
+  const { standings, unresolvedTies, scoreOnlyTies, allFilled } = useDerivedStandings(letter, state, fixtures);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -17,36 +17,53 @@ export function PredictedStandings({ fixtures }) {
   function onDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = standings.indexOf(active.id);
-    const newIndex = standings.indexOf(over.id);
-    const next = arrayMove(standings, oldIndex, newIndex);
-    dispatch({ type: 'SET_MANUAL_STANDINGS', group: letter, order: next });
+    // Drag is only valid within a single score-only tied subset (always draggable).
+    const subset = scoreOnlyTies.find((s) => s.includes(active.id) && s.includes(over.id));
+    if (!subset) return;
+    // Compute the new order of the tied teams using their current standings positions.
+    const subsetOrder = standings.filter((t) => subset.includes(t));
+    const oldIdx = subsetOrder.indexOf(active.id);
+    const newIdx = subsetOrder.indexOf(over.id);
+    const newOrder = arrayMove(subsetOrder, oldIdx, newIdx);
+    const ranks = { ...(state.manualTiebreakers[letter] || {}) };
+    newOrder.forEach((team, i) => {
+      ranks[team] = i + 1;
+    });
+    dispatch({ type: 'SET_MANUAL_TIEBREAKER', group: letter, ranks });
   }
 
-  function resetToAuto() {
-    dispatch({ type: 'CLEAR_MANUAL_STANDINGS', group: letter });
+  // Flatten scoreOnlyTies into a set of "draggable team codes" for fast lookup.
+  // These rows stay draggable even after the user has resolved them, so they can
+  // keep changing their mind.
+  const draggableSet = new Set();
+  for (const subset of scoreOnlyTies) {
+    for (const team of subset) draggableSet.add(team);
   }
 
   return (
     <div className="standings-panel">
-      <div className="standings-header">
-        <h3>Predicted standings — Group {letter}</h3>
-        {source === 'manual' && (
-          <button type="button" className="link-button" onClick={resetToAuto}>
-            Reset to auto
-          </button>
-        )}
-      </div>
-      <p className="standings-hint">
-        {source === 'placeholder' && 'Fill scores to derive standings — drag any time to override.'}
-        {source === 'derived' && 'Auto-derived from your scores. Drag to override.'}
-        {source === 'manual' && 'Manual order. Drag to adjust or reset to auto.'}
-      </p>
+      <h3>Predicted standings — Group {letter}</h3>
+      {!allFilled && (
+        <p className="standings-hint">Fill in all 6 match scores to derive the standings.</p>
+      )}
+      {allFilled && scoreOnlyTies.length === 0 && (
+        <p className="standings-hint">Derived from your scores.</p>
+      )}
+      {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length > 0 && (
+        <p className="standings-hint">
+          <strong>Tie to break.</strong> Drag the highlighted teams to choose their finishing order.
+        </p>
+      )}
+      {allFilled && scoreOnlyTies.length > 0 && unresolvedTies.length === 0 && (
+        <p className="standings-hint">
+          Tied on scores — your manual order shown. Drag any highlighted team to change your mind.
+        </p>
+      )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} autoScroll={false}>
         <SortableContext items={standings} strategy={verticalListSortingStrategy}>
           <ol className="standings-list">
             {standings.map((team, i) => (
-              <SortableRow key={team} id={team} rank={i + 1} />
+              <SortableRow key={team} id={team} rank={i + 1} draggable={draggableSet.has(team)} />
             ))}
           </ol>
         </SortableContext>
@@ -55,16 +72,21 @@ export function PredictedStandings({ fixtures }) {
   );
 }
 
-function SortableRow({ id, rank }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+function SortableRow({ id, rank, draggable }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: !draggable });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
   };
+  const cls = ['standings-row', draggable && 'draggable', isDragging && 'dragging'].filter(Boolean).join(' ');
   return (
-    <li ref={setNodeRef} style={style} className={'standings-row' + (isDragging ? ' dragging' : '')}>
-      <span className="grip" {...attributes} {...listeners} aria-label="Drag to reorder">⠿</span>
+    <li ref={setNodeRef} style={style} className={cls}>
+      {draggable ? (
+        <span className="grip" {...attributes} {...listeners} aria-label="Drag to reorder">⠿</span>
+      ) : (
+        <span className="grip placeholder" aria-hidden></span>
+      )}
       <span className="standings-rank">{rank}.</span>
       <span className="standings-team">{id}</span>
     </li>
