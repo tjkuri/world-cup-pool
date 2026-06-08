@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "node --test lib/*.test.js",
     "seed": "node scripts/seed-fixtures.mjs",
-    "fetch": "node scripts/fetch-results.mjs"
+    "fetch": "node scripts/fetch-results.mjs",
+    "cache-odds": "node scripts/cache-odds.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
