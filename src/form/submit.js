@@ -29,7 +29,7 @@ export async function submitPicks({ state, fixtures, appsScriptUrl, dispatch, on
   try {
     const res = await fetch(appsScriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         name: state.identity.name,
         email: state.identity.email,
