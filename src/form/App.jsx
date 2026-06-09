@@ -12,6 +12,7 @@ import { SubmitModal } from './components/SubmitModal.jsx';
 import { ClearPicksButton } from './components/ClearPicksButton.jsx';
 import { SubmittedView } from './components/SubmittedView.jsx';
 import { RulesDrawer } from '../shared/RulesDrawer.jsx';
+import { PotBar } from '../shared/PotBar.jsx';
 
 export function App() {
   const [config, setConfig] = useState(null);
@@ -82,6 +83,7 @@ function FormBody({ config, fixtures, odds }) {
       <>
         <TopBar pageLabel="World Cup 2026 Pool" otherPage="./leaderboard.html" otherLabel="Leaderboard" onOpenRules={() => setRulesOpen(true)} />
         <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+          <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
           <h2>Submissions are closed.</h2>
           <p>The tournament has begun. <a href="./leaderboard.html">View the leaderboard.</a></p>
         </main>
@@ -95,6 +97,7 @@ function FormBody({ config, fixtures, odds }) {
       <>
         <TopBar pageLabel="World Cup 2026 Pool" otherPage="./leaderboard.html" otherLabel="Leaderboard" onOpenRules={() => setRulesOpen(true)} />
         <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+          <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
           <SubmittedView submittedAt={state.submittedAt} />
         </main>
         {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
@@ -113,6 +116,7 @@ function FormBody({ config, fixtures, odds }) {
         <LockBanner lockTime={lockTime} now={now} />
       </TopBar>
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+        <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         <ProgressBar state={state} fixtures={fixtures} />
         <ErrorSummary errors={state.errors} />
         <GroupTabs fixtures={fixtures} />

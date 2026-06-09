@@ -18,6 +18,8 @@
 //   GET  /exec?action=submissions
 //                    → { locked: false, submissions: [] }      (pre-lock)
 //                    → { locked: true,  submissions: [...] }   (post-lock)
+//   GET  /exec?action=count
+//                    → { count: N }                            (any time; unique-email count, no identities exposed)
 
 const SHEET_NAME = 'submissions';
 
@@ -68,6 +70,9 @@ function doPost(e) {
 function doGet(e) {
   try {
     const action = (e.parameter && e.parameter.action) || '';
+    if (action === 'count') {
+      return jsonResponse(200, { count: countUniqueSubmitters(getSheet()) });
+    }
     if (action !== 'submissions') {
       return jsonResponse(400, { error: 'unknown_action' });
     }
@@ -82,6 +87,16 @@ function doGet(e) {
   } catch (err) {
     return jsonResponse(500, { error: 'server_error', message: String(err) });
   }
+}
+
+function countUniqueSubmitters(sheet) {
+  const data = sheet.getDataRange().getValues();
+  const emails = new Set();
+  for (let i = 1; i < data.length; i++) {
+    const email = String(data[i][2] || '').toLowerCase();
+    if (email) emails.add(email);
+  }
+  return emails.size;
 }
 
 // --- helpers ---

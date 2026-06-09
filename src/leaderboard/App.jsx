@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TopBar } from '../form/components/TopBar.jsx';
 import { RulesDrawer } from '../shared/RulesDrawer.jsx';
+import { PotBar } from '../shared/PotBar.jsx';
 import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
@@ -84,6 +85,7 @@ export function App() {
         {lastUpdated && <div className="text-sm text-slate-400">Last updated: {lastUpdated}</div>}
       </TopBar>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+        <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {!locked ? (
           <p className="text-slate-300">The leaderboard goes live after submissions close at {config.group_lock_iso}.</p>
         ) : (
