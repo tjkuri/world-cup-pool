@@ -123,7 +123,6 @@ world-cup-pool/
 |---|---|
 | Live site | https://world-cup-pool.tjkuri99.workers.dev |
 | GitHub repo | https://github.com/tjkuri/world-cup-pool |
-| Old GH Pages (broken — needs teardown) | https://tjkuri.github.io/world-cup-pool/ |
 | Apps Script web app | In `public/config.json` (`apps_script_url`) |
 | Google Sheet | User's Google account, titled "World Cup Pool", tab "submissions" |
 | The Odds API console | https://the-odds-api.com (free tier; 500 req/mo) |
@@ -222,12 +221,11 @@ In rough commit order. All on main:
 | ID | What | Notes |
 |---|---|---|
 | 1 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
-| 2 | Tear down old GH Pages | `gh api -X DELETE repos/tjkuri/world-cup-pool/pages`. Old URL still points there. |
-| 3 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. |
-| 4 | **v2 knockout backend — primary next-session task** | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: Jun 11 → ~Jul 5 (R32 starts). |
-| 5 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
-| 6 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
-| 7 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
+| 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. |
+| 3 | **v2 knockout backend — primary next-session task** | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: Jun 11 → ~Jul 5 (R32 starts). |
+| 4 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
+| 5 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
+| 6 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
 
 ## Important quirks / gotchas
 
