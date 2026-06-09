@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-08 (v2 scoring rules locked in: group + knockout phases, 62/38 split, deployed to main).
+Last updated: 2026-06-08 (v2 scoring rules + pot-counter widget on form + leaderboard, all deployed to main).
 
 ## TL;DR for next-session-Claude
 
@@ -11,14 +11,17 @@ Last updated: 2026-06-08 (v2 scoring rules locked in: group + knockout phases, 6
 > (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
 > tests pass.
 
-> **Most recently shipped**: v2 scoring locked in (62% group / 38% knockout
-> phase split, see "Scoring rules" section below), full knockout bracket rules
-> in the Rules drawer (backend still TBD), match exact-bonus bumped 2→3, group
-> standings trimmed to 3 positions (15/8/4 + 8 perfect, dropped 4th place).
-> Previously: dark sports-app theme, gated `SubmitModal` with compact recap,
-> country names + flag emoji + kickoff times, cached implied probabilities,
-> picks_json team-code stubs, "Clear all picks" confirm modal, soccer-ball
-> favicon, emerald left-border on rows with both scores entered. All on `main`.
+> **Most recently shipped**: PotBar widget (`src/shared/PotBar.jsx`) on form +
+> leaderboard pages — shows "N entrants × $30 = $X pot" via new Apps Script
+> `?action=count` endpoint, sessionStorage-cached 60s. Earlier same session:
+> v2 scoring locked in (62% group / 38% knockout phase split, see "Scoring
+> rules" section), full knockout bracket rules in the Rules drawer (backend
+> still TBD), match exact-bonus bumped 2→3, group standings trimmed to 3
+> positions (15/8/4 + 8 perfect, dropped 4th place). Previously: dark
+> sports-app theme, gated `SubmitModal`, country names + flag emoji + kickoff
+> times, cached implied probabilities, picks_json team-code stubs, "Clear all
+> picks" confirm modal, soccer-ball favicon, emerald decided-row border.
+> All on `main`.
 
 ## Architecture
 
@@ -58,7 +61,7 @@ world-cup-pool/
 ├── wrangler.toml                     # CF Workers Builds (assets dir = ./dist)
 ├── package.json                      # type: module; deps react, vite, dnd-kit, tailwindcss
 ├── public/
-│   ├── config.json                   # group_lock_iso, apps_script_url — SERVED AS-IS
+│   ├── config.json                   # group_lock_iso, apps_script_url, buy_in_usd — SERVED AS-IS
 │   ├── fixtures.json                 # 12 groups × 4 teams × 6 matches = 72 (seeded once)
 │   ├── results.json                  # Updated by cron; empty pre-tournament
 │   └── odds.json                     # Manually refreshed; vig-removed implied probs per match
@@ -89,6 +92,7 @@ world-cup-pool/
 │   │   └── components/{LeaderboardTable, PickModal}.jsx  # PickModal uses flags + names
 │   └── shared/
 │       ├── RulesDrawer.jsx           # Used by both pages
+│       ├── PotBar.jsx                # "N entrants × $30 = $X pot" widget; sessionStorage 60s cache; ?mockCount= dev escape
 │       ├── teamNames.js              # TEAM_NAMES + TEAM_FLAGS maps + teamName/teamFlag helpers
 │       └── formatKickoff.js          # Date+time formatter for fixture.kickoff_iso
 ├── lib/                              # PURE LOGIC (untouched) — 36 tests pass
@@ -239,6 +243,16 @@ In rough commit order. All on main:
   worked; the cron doesn't need it.
 - **Apps Script HTTP status codes**: web apps always return 200. The client
   checks `payload.error` and `payload.ok` instead.
+- **Apps Script endpoints (3 of them)**: `POST` for submit;
+  `GET ?action=submissions` returns picks **only post-lock** (empty array
+  pre-lock by design — protects picks from being scraped);
+  `GET ?action=count` returns unique-email count **any time, no identities
+  exposed** (powers PotBar pre-lock). If you change Code.gs you must redeploy
+  via Apps Script editor → Deploy → Manage deployments → pencil-edit → New
+  version → Deploy. Same URL.
+- **PotBar cache**: sessionStorage key `wc-pot-count` shape
+  `{ count, at }`, 60s TTL. Cache-first (skips fetch if fresh). Dev escape
+  hatch: `?mockCount=N` URL param bypasses the fetch entirely.
 - **Tie resolution is OPTIONAL**: `useReadyCount` and `submit.js` both ignore
   unresolved ties. If the user doesn't drag, `resolveGroupStandings` still
   returns a fully ordered array (FIFA chain → H2H → alphabetical fallback).
