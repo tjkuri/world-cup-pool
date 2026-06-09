@@ -65,6 +65,7 @@ function GroupCard({ letter, entry, fixtures, results }) {
   const group = fixtures.groups[letter];
   const groupPts = entry.scoring.group_points[letter]?.subtotal ?? 0;
   const matchPtsInGroup = group.matches.reduce((sum, mid) => sum + (entry.scoring.match_points[mid] || 0), 0);
+  const isPerfectGroup = (entry.scoring.group_points[letter]?.perfect ?? 0) > 0;
 
   const actualStandings = useMemo(() => {
     const allFinal = group.matches.every((mid) => results?.matches?.[mid]?.status === 'STATUS_FINAL');
@@ -81,9 +82,16 @@ function GroupCard({ letter, entry, fixtures, results }) {
 
   return (
     <section>
-      <h3 className="mb-2 text-sm font-semibold text-slate-300">
-        Group {letter}
-        <span className="ml-2 text-xs font-normal text-slate-500">· {matchPtsInGroup + groupPts} pts</span>
+      <h3 className="mb-2 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-300">
+        <span>
+          Group {letter}
+          <span className="ml-2 text-xs font-normal text-slate-500">· {matchPtsInGroup + groupPts} pts</span>
+        </span>
+        {isPerfectGroup && (
+          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/40">
+            ✨ Perfect Group!
+          </span>
+        )}
       </h3>
       <div className="space-y-1">
         {group.matches.map((mid) => {
@@ -93,20 +101,25 @@ function GroupCard({ letter, entry, fixtures, results }) {
           let cls = 'pending';
           if (result && result.status === 'STATUS_FINAL') {
             const pts = entry.scoring.match_points[mid];
-            if (pts === 5) cls = 'exact';
+            if (pts >= 6) cls = 'exact';
             else if (pts === 3) cls = 'winner';
             else cls = 'wrong';
           }
+          const isExact = cls === 'exact';
           const predictedStr = `${pick.home_score ?? '–'}-${pick.away_score ?? '–'}`;
           const actualStr = result && result.status === 'STATUS_FINAL' ? `${result.home_score}-${result.away_score}` : '—';
           return (
-            <div key={mid} className="flex items-center justify-between gap-2 font-mono text-sm">
-              <span className="w-24 truncate text-right text-slate-300">{teamFlag(fx.home)} {teamName(fx.home)}</span>
+            <div
+              key={mid}
+              className={`flex items-center justify-between gap-2 font-mono text-sm ${isExact ? 'rounded border-l-2 border-emerald-400/70 bg-emerald-500/5 py-0.5 pl-2' : ''}`}
+            >
+              <span className="w-12 text-right font-semibold text-slate-300">{fx.home}</span>
               <span className={`flex-shrink-0 ${OUTCOME_CLASSES[cls]}`}>
+                {isExact && <span className="mr-1" aria-label="exact score">🎯</span>}
                 <strong>{predictedStr}</strong>
                 <span className="ml-1 text-xs text-slate-500">(actual {actualStr})</span>
               </span>
-              <span className="w-24 truncate text-slate-300">{teamFlag(fx.away)} {teamName(fx.away)}</span>
+              <span className="w-12 font-semibold text-slate-300">{fx.away}</span>
             </div>
           );
         })}

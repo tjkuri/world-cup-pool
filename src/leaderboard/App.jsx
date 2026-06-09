@@ -5,6 +5,7 @@ import { PotBar } from '../shared/PotBar.jsx';
 import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
+import { buildMockResults, buildMockSubmissions } from './mockData.js';
 
 function formatRelative(date) {
   const diffMs = Date.now() - date.getTime();
@@ -28,6 +29,7 @@ export function App() {
   const [modalEntry, setModalEntry] = useState(null);
 
   useEffect(() => {
+    const mockMode = new URLSearchParams(window.location.search).get('mockLeaderboard') === '1';
     (async () => {
       try {
         const [c, f, r] = await Promise.all([
@@ -37,6 +39,13 @@ export function App() {
         ]);
         setConfig(c);
         setFixtures(f);
+        if (mockMode) {
+          const mockResults = buildMockResults(f);
+          setResults(mockResults);
+          setSubmissions(buildMockSubmissions(f, mockResults));
+          setLocked(true);
+          return;
+        }
         setResults(r);
         try {
           const resp = await fetch(`${c.apps_script_url}?action=submissions`);
