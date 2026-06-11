@@ -1,6 +1,7 @@
 // Dev-only fixture data for previewing the leaderboard locally without lock-flipping
 // the Apps Script or waiting for the real tournament. Activated by ?mockLeaderboard=1.
 import { computeStandings } from '../../lib/standings.js';
+import { isMatchFinal } from '../../lib/status.js';
 
 function midHash(mid) {
   return mid.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -14,7 +15,7 @@ function generatePicks(fixtures, results, pickFn, standingsFn) {
   }
   const group_standings = {};
   for (const [letter, group] of Object.entries(fixtures.groups)) {
-    const allFinal = group.matches.every(mid => results.matches[mid]?.status === 'STATUS_FINAL');
+    const allFinal = group.matches.every(mid => isMatchFinal(results.matches[mid]?.status));
     if (allFinal) {
       const matchScores = {};
       for (const mid of group.matches) {

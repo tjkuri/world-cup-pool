@@ -8,6 +8,7 @@
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { fetchScoreboard, parseEvent } from './lib/espn.mjs';
+import { isMatchFinal } from '../lib/status.js';
 
 const TOURNAMENT_START = '2026-06-11';
 const TOURNAMENT_END = '2026-07-19';
@@ -53,7 +54,7 @@ async function main() {
   for (const dateStr of dateRange(TOURNAMENT_START, TOURNAMENT_END)) {
     const idsOnDate = idsByDate[dateStr];
     if (!idsOnDate) continue; // no matches on this date
-    const allFinal = idsOnDate.every(mid => merged[mid]?.status === 'STATUS_FINAL');
+    const allFinal = idsOnDate.every(mid => isMatchFinal(merged[mid]?.status));
     if (allFinal) continue;
 
     let data;

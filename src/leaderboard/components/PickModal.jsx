@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { computeStandings } from '../../../lib/standings.js';
+import { isMatchFinal } from '../../../lib/status.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
 
 export function PickModal({ entry, fixtures, results, onClose }) {
@@ -68,7 +69,7 @@ function GroupCard({ letter, entry, fixtures, results }) {
   const isPerfectGroup = (entry.scoring.group_points[letter]?.perfect ?? 0) > 0;
 
   const actualStandings = useMemo(() => {
-    const allFinal = group.matches.every((mid) => results?.matches?.[mid]?.status === 'STATUS_FINAL');
+    const allFinal = group.matches.every((mid) => isMatchFinal(results?.matches?.[mid]?.status));
     if (!allFinal) return null;
     const matchScores = {};
     for (const mid of group.matches) {
@@ -100,8 +101,9 @@ function GroupCard({ letter, entry, fixtures, results }) {
           const fx = fixtures.matches[mid];
           const pick = entry.picks.matches[mid] || {};
           const result = results.matches[mid];
+          const matchFinal = result && isMatchFinal(result.status);
           let cls = 'pending';
-          if (result && result.status === 'STATUS_FINAL') {
+          if (matchFinal) {
             const pts = entry.scoring.match_points[mid];
             if (pts >= 6) cls = 'exact';
             else if (pts === 3) cls = 'winner';
@@ -109,7 +111,7 @@ function GroupCard({ letter, entry, fixtures, results }) {
           }
           const isExact = cls === 'exact';
           const predictedStr = `${pick.home_score ?? '–'}-${pick.away_score ?? '–'}`;
-          const actualStr = result && result.status === 'STATUS_FINAL' ? `${result.home_score}-${result.away_score}` : '—';
+          const actualStr = matchFinal ? `${result.home_score}-${result.away_score}` : '—';
           return (
             <div
               key={mid}
