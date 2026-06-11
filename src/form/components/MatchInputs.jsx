@@ -34,7 +34,9 @@ export function MatchInputs({ fixtures, odds }) {
         )}
       </div>
       <ol className="space-y-2">
-        {group.matches.map((mid) => {
+        {[...group.matches]
+          .sort((a, b) => fixtures.matches[a].kickoff_iso.localeCompare(fixtures.matches[b].kickoff_iso))
+          .map((mid) => {
           const fixture = fixtures.matches[mid];
           const pick = state.matches[mid] || { home_score: null, away_score: null };
           const onChange = (side) => (e) =>

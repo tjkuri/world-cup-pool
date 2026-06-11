@@ -94,7 +94,9 @@ function GroupCard({ letter, entry, fixtures, results }) {
         )}
       </h3>
       <div className="space-y-1">
-        {group.matches.map((mid) => {
+        {[...group.matches]
+          .sort((a, b) => fixtures.matches[a].kickoff_iso.localeCompare(fixtures.matches[b].kickoff_iso))
+          .map((mid) => {
           const fx = fixtures.matches[mid];
           const pick = entry.picks.matches[mid] || {};
           const result = results.matches[mid];

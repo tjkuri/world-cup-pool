@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TopBar } from '../form/components/TopBar.jsx';
+import { LockBanner } from '../form/components/LockBanner.jsx';
 import { RulesDrawer } from '../shared/RulesDrawer.jsx';
 import { PotBar } from '../shared/PotBar.jsx';
+import { formatKickoff } from '../shared/formatKickoff.js';
 import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
@@ -27,6 +29,18 @@ export function App() {
   const [error, setError] = useState(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [modalEntry, setModalEntry] = useState(null);
+  const [now, setNow] = useState(() => new Date());
+
+  const lockTime = config ? new Date(config.group_lock_iso) : null;
+
+  // Live tick when within 24h of lock so LockBanner counts down.
+  useEffect(() => {
+    if (!lockTime) return;
+    const msToLock = lockTime - now;
+    if (msToLock > 24 * 60 * 60 * 1000 || msToLock <= 0) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [lockTime, now]);
 
   useEffect(() => {
     const mockMode = new URLSearchParams(window.location.search).get('mockLeaderboard') === '1';
@@ -91,12 +105,13 @@ export function App() {
   return (
     <>
       <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)}>
+        <LockBanner lockTime={lockTime} now={now} />
         {lastUpdated && <div className="text-sm text-slate-400">Last updated: {lastUpdated}</div>}
       </TopBar>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {!locked ? (
-          <p className="text-slate-300">The leaderboard goes live after submissions close at {config.group_lock_iso}.</p>
+          <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
           <LeaderboardTable
             fixtures={fixtures}
