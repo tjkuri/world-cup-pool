@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-11 (lock day! Tournament kicked off; pool at 9+ entrants, $270+ pot. Lock at 19:00 UTC tonight).
+Last updated: 2026-06-11 (lock day! Tournament kicked off; lock fired at 19:00 UTC, pool closed at 23 entrants / $690 pot. MEX-RSA 2-0 final on the board).
 
 ## TL;DR for next-session-Claude
 
@@ -11,12 +11,21 @@ Last updated: 2026-06-11 (lock day! Tournament kicked off; pool at 9+ entrants, 
 > (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
 > tests pass.
 
-> **Most recently shipped (Jun 11, lock day)**: Sort matches by `kickoff_iso`
-> on both form and leaderboard PickModal — most groups were not chronological
-> in the seed (Group A's tournament-opener MEX-RSA was rendering 2nd not 1st).
-> Format leaderboard pre-lock message via `formatKickoff` (local TZ instead
-> of raw ISO). Add `LockBanner` countdown to leaderboard TopBar (within-24h
-> trigger, mirrors form page). Pool grew to 9+ entrants ($270+ pot).
+> **Most recently shipped (Jun 11, post-lock)**: `lib/status.js` helper —
+> ESPN soccer returns `STATUS_FULL_TIME` for finished matches, not
+> `STATUS_FINAL`. Scoring + PickModal + cron's "is this date done?" early-out
+> all silently treated full-time as pending until we shipped a shared
+> `isMatchFinal()` chokepoint (recognizes both; ready to extend for knockout
+> statuses). Verified end-to-end: 22/23 entrants now have ≥3 pts on the
+> board for MEX-RSA, 12/23 nailed exact 2-0. Lock fired at 19:00 UTC; pool
+> closed at 23 entrants / $690 pot.
+>
+> Earlier today (pre-lock): Sort matches by `kickoff_iso` on both form and
+> leaderboard PickModal — most groups were not chronological in the seed
+> (Group A's tournament-opener MEX-RSA was rendering 2nd not 1st). Format
+> leaderboard pre-lock message via `formatKickoff` (local TZ instead of raw
+> ISO). Add `LockBanner` countdown to leaderboard TopBar (within-24h
+> trigger, mirrors form page).
 >
 > Spot-checked submissions: real variance in Group D winner (TUR/USA/PAR
 > 4-3-2 split), Group A 2nd (KOR/CZE 5-4 split), and contrarian standings
@@ -231,10 +240,9 @@ In rough commit order. All on main:
 | 1 | **Live results polling — primary next-session task** | The fetch-results.yml cron runs every 2hr and commits public/results.json. During the tournament we want the leaderboard to feel "live" without users having to refresh. Two angles: (a) bump cron frequency from 2hr to 15-30min (cheap on GH Actions), (b) add client-side polling so the leaderboard re-fetches results.json + recomputes scoring every N seconds when a match is live. Likely both. Group stage windows: Jun 11 → ~Jun 27. |
 | 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. Mostly moot once group stage starts since picks are locked. |
 | 3 | v2 knockout backend | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: ~Jun 27 (group end) → ~Jul 5 (R32 starts). |
-| 4 | Pre-launch smoke tests (done where it mattered) | secret_mismatch ✅ brother-tested. Leaderboard pre-lock ✅ live + mock-data tested. Lock-fires-at-19:00 ❓ tests by waiting until tonight. Drop this item after lock fires successfully. |
-| 5 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
-| 6 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
-| 7 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
+| 4 | Brother content decisions | Entry fee = **$30** (resolved). Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
+| 5 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
+| 6 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
 
 ## Important quirks / gotchas
 
