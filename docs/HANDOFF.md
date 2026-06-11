@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-08 (v2 scoring rules + pot-counter widget on form + leaderboard, all deployed to main).
+Last updated: 2026-06-11 (lock day! Tournament kicked off; pool at 9+ entrants, $270+ pot. Lock at 19:00 UTC tonight).
 
 ## TL;DR for next-session-Claude
 
@@ -11,17 +11,25 @@ Last updated: 2026-06-08 (v2 scoring rules + pot-counter widget on form + leader
 > (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
 > tests pass.
 
-> **Most recently shipped**: PotBar widget (`src/shared/PotBar.jsx`) on form +
-> leaderboard pages — shows "N entrants × $30 = $X pot" via new Apps Script
-> `?action=count` endpoint, sessionStorage-cached 60s. Earlier same session:
-> v2 scoring locked in (62% group / 38% knockout phase split, see "Scoring
-> rules" section), full knockout bracket rules in the Rules drawer (backend
-> still TBD), match exact-bonus bumped 2→3, group standings trimmed to 3
-> positions (15/8/4 + 8 perfect, dropped 4th place). Previously: dark
-> sports-app theme, gated `SubmitModal`, country names + flag emoji + kickoff
-> times, cached implied probabilities, picks_json team-code stubs, "Clear all
-> picks" confirm modal, soccer-ball favicon, emerald decided-row border.
-> All on `main`.
+> **Most recently shipped (Jun 11, lock day)**: Sort matches by `kickoff_iso`
+> on both form and leaderboard PickModal — most groups were not chronological
+> in the seed (Group A's tournament-opener MEX-RSA was rendering 2nd not 1st).
+> Format leaderboard pre-lock message via `formatKickoff` (local TZ instead
+> of raw ISO). Add `LockBanner` countdown to leaderboard TopBar (within-24h
+> trigger, mirrors form page). Pool grew to 9+ entrants ($270+ pot).
+>
+> Spot-checked submissions: real variance in Group D winner (TUR/USA/PAR
+> 4-3-2 split), Group A 2nd (KOR/CZE 5-4 split), and contrarian standings
+> calls (Saky's Morocco-over-Brazil, Manuel's Canada-over-Switzerland).
+>
+> Earlier in this push cycle: v2 scoring locked in (62% group / 38% knockout
+> phase split), full knockout bracket rules in Rules drawer (backend still
+> TBD), match exact-bonus bumped 2→3, group standings trimmed to 3 positions
+> (15/8/4 + 8 perfect, no 4th). PotBar widget on both pages. Apps Script
+> `?action=count` endpoint. GH Pages teardown. Leaderboard column tooltips,
+> 🎯 emoji + emerald accent on exact-score picks (fixed stale `pts === 5`
+> bug), ✨ Perfect Group badge, 3-letter codes on match rows, mock-data
+> escape hatches (`?mockLeaderboard=1`, `?mockCount=N`). All on `main`.
 
 ## Architecture
 
@@ -220,12 +228,13 @@ In rough commit order. All on main:
 
 | ID | What | Notes |
 |---|---|---|
-| 1 | Pre-launch smoke tests (full suite) | Lock test, secret_mismatch path, leaderboard pre/post-lock view. |
-| 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. |
-| 3 | **v2 knockout backend — primary next-session task** | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: Jun 11 → ~Jul 5 (R32 starts). |
-| 4 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
-| 5 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
-| 6 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
+| 1 | **Live results polling — primary next-session task** | The fetch-results.yml cron runs every 2hr and commits public/results.json. During the tournament we want the leaderboard to feel "live" without users having to refresh. Two angles: (a) bump cron frequency from 2hr to 15-30min (cheap on GH Actions), (b) add client-side polling so the leaderboard re-fetches results.json + recomputes scoring every N seconds when a match is live. Likely both. Group stage windows: Jun 11 → ~Jun 27. |
+| 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. Mostly moot once group stage starts since picks are locked. |
+| 3 | v2 knockout backend | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: ~Jun 27 (group end) → ~Jul 5 (R32 starts). |
+| 4 | Pre-launch smoke tests (done where it mattered) | secret_mismatch ✅ brother-tested. Leaderboard pre-lock ✅ live + mock-data tested. Lock-fires-at-19:00 ❓ tests by waiting until tonight. Drop this item after lock fires successfully. |
+| 5 | Brother content decisions | Entry fee TBD. Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
+| 6 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
+| 7 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
 
 ## Important quirks / gotchas
 
