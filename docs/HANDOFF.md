@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-12 04:30 UTC. Tournament Day 1 done (MEX-RSA 2-0, KOR-CZE 2-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played).
+Last updated: 2026-06-12 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-1, CAN-BIH 1-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard now has the by-match drilldown + 2-stat narrative band.
 
 ## TL;DR for next-session-Claude
 
@@ -32,6 +32,19 @@ Last updated: 2026-06-12 04:30 UTC. Tournament Day 1 done (MEX-RSA 2-0, KOR-CZE 
 > ClearPicksButton) and `role="alert"` on ErrorSummary. Pool grew to 24/$720
 > after Lisa was added via a brief admin-unlock; her MEX-RSA pick was
 > hand-stripped from picks_json so she doesn't score on a played match.
+>
+> **Leaderboard QoL (Jun 12 evening)**: by-match drilldown + narrative band.
+> New `MatchStrip` (chips for Today/Yesterday's finished matches + native
+> `<select>` picker for older), new `MatchModal` (per-match summary band +
+> sorted-by-points list, with one-way cross-link into the existing
+> `PickModal`), new `StatBand` (2 stateless callouts: "Most exact" and
+> "Lead"; band hidden pre-tournament). `#match/{matchId}` URL hash mirrors
+> the existing `#picks/{email_hash}`. Scoring was lifted from
+> `LeaderboardTable` to App.jsx so all three new components share a single
+> `entries` array. Spec at
+> `docs/superpowers/specs/2026-06-12-leaderboard-by-match-and-stat-band-design.md`,
+> plan at `docs/superpowers/plans/2026-06-12-leaderboard-by-match-and-stat-band.md`.
+> Deferred to v2: "biggest contrarian who hit" + "biggest mover since last visit".
 >
 > Earlier today (pre-lock): Sort matches by `kickoff_iso` on both form and
 > leaderboard PickModal — most groups were not chronological in the seed
@@ -119,16 +132,18 @@ world-cup-pool/
 │   │       # deleted: IdentityPanel.jsx
 │   ├── leaderboard/
 │   │   ├── main.jsx, App.jsx, useDeepLink.js
-│   │   └── components/{LeaderboardTable, PickModal}.jsx  # PickModal uses flags + names
+│   │   └── components/                # LeaderboardTable, PickModal, MatchStrip, MatchModal, StatBand
 │   └── shared/
 │       ├── RulesDrawer.jsx           # Used by both pages
 │       ├── PotBar.jsx                # "N entrants × $30 = $X pot" widget; sessionStorage 60s cache; ?mockCount= dev escape
 │       ├── teamNames.js              # TEAM_NAMES + TEAM_FLAGS maps + teamName/teamFlag helpers
 │       └── formatKickoff.js          # Date+time formatter for fixture.kickoff_iso
-├── lib/                              # PURE LOGIC (untouched) — 36 tests pass
+├── lib/                              # PURE LOGIC — 55 tests pass
 │   ├── derive.js + .test.js
 │   ├── standings.js + .test.js
 │   ├── score.js + .test.js
+│   ├── status.js + .test.js          # isMatchFinal(STATUS_FINAL | STATUS_FULL_TIME)
+│   ├── leaderboardStats.js + .test.js  # partition/summary/most-exact/lead/latest-top
 │   └── validate.js + .test.js
 ├── scripts/                          # Node-only dev/ops tools
 │   ├── lib/espn.mjs
@@ -289,7 +304,7 @@ In rough commit order. All on main:
   in dev mode. Doesn't affect prod.
 - **Dev server**: `npm run dev` → http://localhost:5173/ + /leaderboard.html
 - **Build**: `npm run build` → `dist/`. Output is what CF deploys via wrangler.
-- **Tests**: `npm test`. 43 pass. Only `lib/` is tested. React components are
+- **Tests**: `npm test`. 55 pass. Only `lib/` is tested. React components are
   manually tested via the dev server.
 - **Apps Script salt**: random hex string in the Apps Script's script
   properties. User generated their own — not stored in repo.
