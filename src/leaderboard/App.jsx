@@ -8,6 +8,7 @@ import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { MatchStrip } from './components/MatchStrip.jsx';
 import { MatchModal } from './components/MatchModal.jsx';
+import { StatBand } from './components/StatBand.jsx';
 import { useDeepLink } from './useDeepLink.js';
 import { buildMockResults, buildMockSubmissions } from './mockData.js';
 import { scoreSubmission } from '../../lib/score.js';
@@ -137,6 +138,7 @@ export function App() {
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {locked && <MatchStrip fixtures={fixtures} results={results} onSelect={setModalMatchId} />}
+        {locked && <StatBand entries={entries} fixtures={fixtures} results={results} />}
         {!locked ? (
           <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
