@@ -6,6 +6,8 @@ import { PotBar } from '../shared/PotBar.jsx';
 import { formatKickoff } from '../shared/formatKickoff.js';
 import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
+import { MatchStrip } from './components/MatchStrip.jsx';
+import { MatchModal } from './components/MatchModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
 import { buildMockResults, buildMockSubmissions } from './mockData.js';
 import { scoreSubmission } from '../../lib/score.js';
@@ -30,6 +32,7 @@ export function App() {
   const [error, setError] = useState(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [modalEntry, setModalEntry] = useState(null);
+  const [modalMatchId, setModalMatchId] = useState(null);
   const [now, setNow] = useState(() => new Date());
 
   const lockTime = config ? new Date(config.group_lock_iso) : null;
@@ -78,6 +81,14 @@ export function App() {
 
   useDeepLink({ fixtures, results, submissions, onOpen: setModalEntry });
 
+  useEffect(() => {
+    if (!fixtures || !results) return;
+    const m = /^#match\/(\d+)$/.exec(location.hash);
+    if (m && fixtures.matches[m[1]]) {
+      setModalMatchId(m[1]);
+    }
+  }, [fixtures, results]);
+
   const lastUpdated = useMemo(() => {
     if (!results?.updated_at) return null;
     return formatRelative(new Date(results.updated_at));
@@ -125,6 +136,7 @@ export function App() {
       </TopBar>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
+        {locked && <MatchStrip fixtures={fixtures} results={results} onSelect={setModalMatchId} />}
         {!locked ? (
           <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
@@ -136,6 +148,16 @@ export function App() {
       </main>
       {modalEntry && (
         <PickModal entry={modalEntry} fixtures={fixtures} results={results} onClose={() => setModalEntry(null)} />
+      )}
+      {modalMatchId && (
+        <MatchModal
+          matchId={modalMatchId}
+          fixtures={fixtures}
+          results={results}
+          entries={entries}
+          onClose={() => setModalMatchId(null)}
+          onSelectEntry={(entry) => { setModalMatchId(null); setModalEntry(entry); }}
+        />
       )}
       {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
     </>
