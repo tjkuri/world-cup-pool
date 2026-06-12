@@ -25,6 +25,19 @@ function* dateRange(start, end) {
   }
 }
 
+// Shift a yyyymmdd string by N days (negative = earlier).
+function shiftYmd(ymd, days) {
+  const y = parseInt(ymd.slice(0, 4), 10);
+  const m = parseInt(ymd.slice(4, 6), 10) - 1;
+  const d = parseInt(ymd.slice(6, 8), 10);
+  const date = new Date(Date.UTC(y, m, d));
+  date.setUTCDate(date.getUTCDate() + days);
+  const yy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  return `${yy}${mm}${dd}`;
+}
+
 function isInTournamentWindow() {
   const now = new Date();
   return now >= new Date(TOURNAMENT_START) && now <= new Date(TOURNAMENT_END + 'T23:59:59Z');
@@ -41,11 +54,18 @@ async function main() {
   const matchIds = new Set(Object.keys(fixtures.matches));
 
   // Index match IDs by date for cheap "is this date fully final?" checks.
+  // Each match registers under BOTH its UTC kickoff day AND the day before,
+  // because ESPN's scoreboard buckets late-evening kickoffs under the prior
+  // broadcast day (e.g. a 02:00 UTC kickoff on Jun 12 is served by ESPN's
+  // Jun 11 endpoint). Registering under both ensures the "all final?" check
+  // can't skip a date that ESPN is still using to serve a result we need.
   const idsByDate = {};
   for (const [mid, fx] of Object.entries(fixtures.matches)) {
     const ymd = fx.kickoff_iso.slice(0, 10).replaceAll('-', '');
-    if (!idsByDate[ymd]) idsByDate[ymd] = [];
-    idsByDate[ymd].push(mid);
+    for (const key of [ymd, shiftYmd(ymd, -1)]) {
+      if (!idsByDate[key]) idsByDate[key] = [];
+      idsByDate[key].push(mid);
+    }
   }
 
   const merged = { ...existing.matches };
