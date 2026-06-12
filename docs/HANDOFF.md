@@ -1,24 +1,32 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-11 (lock day! Tournament kicked off; lock fired at 19:00 UTC, pool closed at 23 entrants / $690 pot. MEX-RSA 2-0 final on the board).
+Last updated: 2026-06-12 04:30 UTC. Tournament Day 1 done (MEX-RSA 2-0, KOR-CZE 2-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played).
 
 ## TL;DR for next-session-Claude
 
-> Friends pool for the 2026 World Cup, ~20 entrants. Live at
+> Friends pool for the 2026 World Cup, 24 entrants. Live at
 > https://world-cup-pool.tjkuri99.workers.dev. Backend = Google Apps Script web
 > app writing to a Google Sheet (URL in `public/config.json`). Frontend = React
 > 19 + Vite 6 + **Tailwind v4** deployed to Cloudflare Pages via Workers Builds
-> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 36 lib
+> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 43 lib
 > tests pass.
 
-> **Most recently shipped (Jun 11, post-lock)**: `lib/status.js` helper —
-> ESPN soccer returns `STATUS_FULL_TIME` for finished matches, not
-> `STATUS_FINAL`. Scoring + PickModal + cron's "is this date done?" early-out
-> all silently treated full-time as pending until we shipped a shared
-> `isMatchFinal()` chokepoint (recognizes both; ready to extend for knockout
-> statuses). Verified end-to-end: 22/23 entrants now have ≥3 pts on the
-> board for MEX-RSA, 12/23 nailed exact 2-0. Lock fired at 19:00 UTC; pool
-> closed at 23 entrants / $690 pot.
+> **Most recently shipped (Jun 12, Day 1 closed)**: Two bugs surfaced once
+> matches actually started feeding results:
+> 1. `lib/status.js` helper — ESPN soccer returns `STATUS_FULL_TIME` for
+>    finished matches, not `STATUS_FINAL`. Scoring + PickModal + cron's "is
+>    this date done?" early-out all silently treated full-time as pending.
+>    Shared `isMatchFinal()` recognizes both; ready to extend for knockout
+>    statuses. Caught after MEX-RSA finished 2-0.
+> 2. `fetch-results.mjs` date-bucketing fix — ESPN serves late-evening
+>    kickoffs from the *prior* broadcast day's scoreboard endpoint
+>    (e.g. a 02:00 UTC match on Jun 12 lives on ESPN's Jun 11 page). The
+>    "is this date all final?" optimization keyed on UTC kickoff day alone,
+>    so it skipped fetching the date where ESPN was actually serving the
+>    result. 28 of 72 group matches fall in this 00:00-06:00 UTC boundary.
+>    Each match now registers under both its kickoff day AND the day before.
+>    Caught after KOR-CZE 2-1 (02:00 UTC kickoff) stayed stranded as
+>    STATUS_SCHEDULED through a manual cron trigger.
 >
 > Earlier today (pre-lock): Sort matches by `kickoff_iso` on both form and
 > leaderboard PickModal — most groups were not chronological in the seed
@@ -278,7 +286,7 @@ In rough commit order. All on main:
   in dev mode. Doesn't affect prod.
 - **Dev server**: `npm run dev` → http://localhost:5173/ + /leaderboard.html
 - **Build**: `npm run build` → `dist/`. Output is what CF deploys via wrangler.
-- **Tests**: `npm test`. 36 pass. Only `lib/` is tested. React components are
+- **Tests**: `npm test`. 43 pass. Only `lib/` is tested. React components are
   manually tested via the dev server.
 - **Apps Script salt**: random hex string in the Apps Script's script
   properties. User generated their own — not stored in repo.
