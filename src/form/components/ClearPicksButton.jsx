@@ -31,11 +31,12 @@ export function ClearPicksButton({ onClearDraft }) {
 
       <dialog
         ref={dialogRef}
+        aria-labelledby="clear-picks-title"
         className="fixed inset-0 m-auto h-fit max-h-[90vh] w-[min(90vw,400px)] rounded-lg bg-slate-900 p-0 text-slate-100 backdrop:bg-slate-950/70 backdrop:backdrop-blur-sm"
         onClick={(e) => { if (e.target === dialogRef.current) close(); }}
       >
         <div className="border-b border-slate-800 px-5 py-3">
-          <h2 className="text-base font-semibold">Clear all picks?</h2>
+          <h2 id="clear-picks-title" className="text-base font-semibold">Clear all picks?</h2>
         </div>
         <div className="px-5 py-4 text-sm text-slate-300">
           <p>This wipes every match score and tiebreaker drag. Your name, email, and secret stay.</p>

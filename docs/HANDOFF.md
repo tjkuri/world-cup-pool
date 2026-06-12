@@ -28,6 +28,11 @@ Last updated: 2026-06-12 04:30 UTC. Tournament Day 1 done (MEX-RSA 2-0, KOR-CZE 
 >    Caught after KOR-CZE 2-1 (02:00 UTC kickoff) stayed stranded as
 >    STATUS_SCHEDULED through a manual cron trigger.
 >
+> Also: ARIA labels on all four dialogs (SubmitModal, RulesDrawer, PickModal,
+> ClearPicksButton) and `role="alert"` on ErrorSummary. Pool grew to 24/$720
+> after Lisa was added via a brief admin-unlock; her MEX-RSA pick was
+> hand-stripped from picks_json so she doesn't score on a played match.
+>
 > Earlier today (pre-lock): Sort matches by `kickoff_iso` on both form and
 > leaderboard PickModal — most groups were not chronological in the seed
 > (Group A's tournament-opener MEX-RSA was rendering 2nd not 1st). Format
@@ -248,9 +253,7 @@ In rough commit order. All on main:
 | 1 | **Live results polling — primary next-session task** | The fetch-results.yml cron runs every 2hr and commits public/results.json. During the tournament we want the leaderboard to feel "live" without users having to refresh. Two angles: (a) bump cron frequency from 2hr to 15-30min (cheap on GH Actions), (b) add client-side polling so the leaderboard re-fetches results.json + recomputes scoring every N seconds when a match is live. Likely both. Group stage windows: Jun 11 → ~Jun 27. |
 | 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. Mostly moot once group stage starts since picks are locked. |
 | 3 | v2 knockout backend | Rules are LOCKED + already in the UI (see "Scoring rules" section). Need: (a) bracket entry form mirroring `src/form/` patterns, (b) extend `lib/score.js` with knockout scoring per the locked table, (c) extend `picks_json` + Apps Script schema for bracket picks, (d) phase-2 lock at end of group stage. Window: ~Jun 27 (group end) → ~Jul 5 (R32 starts). |
-| 4 | Brother content decisions | Entry fee = **$30** (resolved). Payout split = **30/70** (locked). R32 handling = **included** (4 pts per winner, locked). |
-| 5 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
-| 6 | ARIA improvements | `aria-labelledby` on SubmitModal/RulesDrawer/PickModal/ClearPicksButton dialogs; `role="alert"` on ErrorSummary. Focus management is handled by native `<dialog>`. Enhancement-level. |
+| 4 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
 
 ## Important quirks / gotchas
 

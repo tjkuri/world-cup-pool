@@ -10,6 +10,9 @@ export function RulesDrawer({ onClose }) {
   return (
     <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" onClick={onClose}>
       <aside
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rules-drawer-title"
         className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-slate-900 p-6 shadow-2xl ring-1 ring-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
@@ -20,7 +23,7 @@ export function RulesDrawer({ onClose }) {
         >
           Close
         </button>
-        <h2 className="mb-3 text-lg font-semibold text-slate-100">Pool Rules</h2>
+        <h2 id="rules-drawer-title" className="mb-3 text-lg font-semibold text-slate-100">Pool Rules</h2>
 
         <div className="space-y-3 text-sm text-slate-300">
           <h3 className="mt-4 mb-2 text-base font-semibold text-slate-100">Format &amp; Prizes</h3>

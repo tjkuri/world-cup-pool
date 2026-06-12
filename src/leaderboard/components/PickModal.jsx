@@ -20,10 +20,15 @@ export function PickModal({ entry, fixtures, results, onClose }) {
       className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg rounded-lg bg-slate-900 text-slate-100 ring-1 ring-slate-800 shadow-2xl overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pick-modal-title"
+        className="w-full max-w-lg rounded-lg bg-slate-900 text-slate-100 ring-1 ring-slate-800 shadow-2xl overflow-hidden"
+      >
         <header className="flex items-center justify-between border-b border-slate-800 px-5 py-3">
           <div>
-            <h2 className="text-base font-semibold">{entry.name}'s picks</h2>
+            <h2 id="pick-modal-title" className="text-base font-semibold">{entry.name}'s picks</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               Total: <span className="text-emerald-300 font-semibold">{entry.scoring.total}</span>
               <span className="text-slate-600"> · </span>Match pts: {entry.scoring.match_total}
