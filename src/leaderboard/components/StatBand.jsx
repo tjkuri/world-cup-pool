@@ -1,9 +1,10 @@
-import { computeMostExact, computeLeadStat, computeLatestMatchTop } from '../../../lib/leaderboardStats.js';
+import { computeMostExact, computeLeadStat } from '../../../lib/leaderboardStats.js';
+import { isMatchFinal } from '../../../lib/status.js';
 
 export function StatBand({ entries, fixtures, results }) {
   if (!entries?.length) return null;
-  const latest = computeLatestMatchTop(entries, fixtures, results);
-  if (!latest) return null;
+  const hasFinished = Object.values(results.matches).some((r) => isMatchFinal(r.status));
+  if (!hasFinished) return null;
   const mostExact = computeMostExact(entries);
   const lead = computeLeadStat(entries);
 
@@ -13,8 +14,6 @@ export function StatBand({ entries, fixtures, results }) {
         <span>🎯 Most exact: <span className="font-semibold">{mostExact.label}</span></span>
         <span className="text-slate-600">·</span>
         <span>🥇 Lead: <span className="font-semibold">{lead.label}</span></span>
-        <span className="text-slate-600">·</span>
-        <span>📈 Top on {latest.matchLabel}: <span className="font-semibold">{latest.label}</span></span>
       </div>
     </div>
   );
