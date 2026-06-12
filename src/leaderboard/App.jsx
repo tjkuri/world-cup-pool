@@ -8,6 +8,7 @@ import { LeaderboardTable } from './components/LeaderboardTable.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
 import { buildMockResults, buildMockSubmissions } from './mockData.js';
+import { scoreSubmission } from '../../lib/score.js';
 
 function formatRelative(date) {
   const diffMs = Date.now() - date.getTime();
@@ -82,6 +83,20 @@ export function App() {
     return formatRelative(new Date(results.updated_at));
   }, [results]);
 
+  const entries = useMemo(() => {
+    if (!fixtures || !results || !submissions?.length) return [];
+    const rows = submissions.map((sub) => ({
+      ...sub,
+      scoring: scoreSubmission(sub.picks, fixtures, results),
+    }));
+    rows.sort((a, b) => {
+      if (b.scoring.total !== a.scoring.total) return b.scoring.total - a.scoring.total;
+      if (b.scoring.exact_score_count !== a.scoring.exact_score_count) return b.scoring.exact_score_count - a.scoring.exact_score_count;
+      return a.name.localeCompare(b.name);
+    });
+    return rows;
+  }, [fixtures, results, submissions]);
+
   if (error) {
     return (
       <>
@@ -114,9 +129,7 @@ export function App() {
           <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
           <LeaderboardTable
-            fixtures={fixtures}
-            results={results}
-            submissions={submissions}
+            entries={entries}
             onRowClick={setModalEntry}
           />
         )}

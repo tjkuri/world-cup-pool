@@ -1,6 +1,3 @@
-import { useMemo } from 'react';
-import { scoreSubmission } from '../../../lib/score.js';
-
 function InfoTip({ text }) {
   return (
     <span className="group/tip relative ml-1 inline-flex">
@@ -17,21 +14,8 @@ function InfoTip({ text }) {
   );
 }
 
-export function LeaderboardTable({ fixtures, results, submissions, onRowClick }) {
-  const scored = useMemo(() => {
-    const rows = submissions.map((sub) => {
-      const scoring = scoreSubmission(sub.picks, fixtures, results);
-      return { ...sub, scoring };
-    });
-    rows.sort((a, b) => {
-      if (b.scoring.total !== a.scoring.total) return b.scoring.total - a.scoring.total;
-      if (b.scoring.exact_score_count !== a.scoring.exact_score_count) return b.scoring.exact_score_count - a.scoring.exact_score_count;
-      return a.name.localeCompare(b.name);
-    });
-    return rows;
-  }, [fixtures, results, submissions]);
-
-  if (!scored.length) return <p className="text-slate-400">No submissions to display yet.</p>;
+export function LeaderboardTable({ entries, onRowClick }) {
+  if (!entries.length) return <p className="text-slate-400">No submissions to display yet.</p>;
 
   return (
     <table className="w-full border-collapse text-sm">
@@ -66,7 +50,7 @@ export function LeaderboardTable({ fixtures, results, submissions, onRowClick })
         </tr>
       </thead>
       <tbody>
-        {scored.map((entry, i) => (
+        {entries.map((entry, i) => (
           <tr
             key={entry.email_hash}
             className="border-b border-slate-800 hover:bg-slate-900 cursor-pointer"
