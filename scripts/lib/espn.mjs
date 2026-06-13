@@ -69,6 +69,10 @@ export function parseEvent(event, teamGroupMap) {
     status: event.status?.type?.name || 'STATUS_SCHEDULED',
     home_score: parseInt(homeC.score ?? '', 10),
     away_score: parseInt(awayC.score ?? '', 10),
+    // For knockout matches ESPN flags the winning competitor; null until decided.
+    advancer: homeC.winner === true ? (homeC.team?.abbreviation || '').toUpperCase()
+            : awayC.winner === true ? (awayC.team?.abbreviation || '').toUpperCase()
+            : null,
   };
 }
 

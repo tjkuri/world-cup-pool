@@ -1,0 +1,19 @@
+{
+  "seeded_at": "2026-06-27T20:00:00.000Z",
+  "first_kickoff_iso": "2026-07-05T19:00:00Z",
+  "rounds": {
+    "R32": [
+      { "slot": "R32-1", "match_id": "990001", "home": "BRA", "away": "KOR", "kickoff_iso": "2026-07-05T19:00:00Z", "feeds": "R16-1" },
+      { "slot": "R32-2", "match_id": "990002", "home": "MEX", "away": "GER", "kickoff_iso": "2026-07-05T22:00:00Z", "feeds": "R16-1" },
+      { "slot": "R32-3", "match_id": "990003", "home": "FRA", "away": "SUI", "kickoff_iso": "2026-07-06T19:00:00Z", "feeds": "R16-2" },
+      { "slot": "R32-4", "match_id": "990004", "home": "ARG", "away": "NGA", "kickoff_iso": "2026-07-06T22:00:00Z", "feeds": "R16-2" }
+    ],
+    "R16": [
+      { "slot": "R16-1", "match_id": "990005", "from": ["R32-1", "R32-2"], "kickoff_iso": null, "feeds": "F-1" },
+      { "slot": "R16-2", "match_id": "990006", "from": ["R32-3", "R32-4"], "kickoff_iso": null, "feeds": "F-1" }
+    ],
+    "F": [
+      { "slot": "F-1", "match_id": "990007", "from": ["R16-1", "R16-2"], "kickoff_iso": null }
+    ]
+  }
+}
