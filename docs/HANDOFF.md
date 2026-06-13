@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-12 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-1, CAN-BIH 1-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard now has the by-match drilldown + 2-stat narrative band.
+Last updated: 2026-06-12 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-1, CAN-BIH 1-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard now has the by-match drilldown.
 
 ## TL;DR for next-session-Claude
 
@@ -33,18 +33,22 @@ Last updated: 2026-06-12 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-
 > after Lisa was added via a brief admin-unlock; her MEX-RSA pick was
 > hand-stripped from picks_json so she doesn't score on a played match.
 >
-> **Leaderboard QoL (Jun 12 evening)**: by-match drilldown + narrative band.
+> **Leaderboard QoL (Jun 12 evening)**: by-match drilldown.
 > New `MatchStrip` (chips for Today/Yesterday's finished matches + native
-> `<select>` picker for older), new `MatchModal` (per-match summary band +
-> sorted-by-points list, with one-way cross-link into the existing
-> `PickModal`), new `StatBand` (2 stateless callouts: "Most exact" and
-> "Lead"; band hidden pre-tournament). `#match/{matchId}` URL hash mirrors
-> the existing `#picks/{email_hash}`. Scoring was lifted from
-> `LeaderboardTable` to App.jsx so all three new components share a single
-> `entries` array. Spec at
+> `<select>` picker for older) and new `MatchModal` (per-match summary band
+> + sorted-by-points list, with one-way cross-link into the existing
+> `PickModal`). `#match/{matchId}` URL hash mirrors the existing
+> `#picks/{email_hash}`. Scoring was lifted from `LeaderboardTable` to
+> App.jsx so the new components share a single `entries` array.
+> Spec at
 > `docs/superpowers/specs/2026-06-12-leaderboard-by-match-and-stat-band-design.md`,
 > plan at `docs/superpowers/plans/2026-06-12-leaderboard-by-match-and-stat-band.md`.
-> Deferred to v2: "biggest contrarian who hit" + "biggest mover since last visit".
+> Note: the spec also proposed a narrative "StatBand" above the table — built
+> it, didn't like it (lead info was redundant with the table; "most exact"
+> was thin); removed it. `lib/leaderboardStats.js` still exports the helpers
+> (`computeMostExact`, `computeLeadStat`, `computeLatestMatchTop`) as dead
+> code, tested, in case anyone wants to revisit. Deferred to v2: "biggest
+> contrarian who hit" + "biggest mover since last visit".
 >
 > Earlier today (pre-lock): Sort matches by `kickoff_iso` on both form and
 > leaderboard PickModal — most groups were not chronological in the seed
@@ -132,7 +136,7 @@ world-cup-pool/
 │   │       # deleted: IdentityPanel.jsx
 │   ├── leaderboard/
 │   │   ├── main.jsx, App.jsx, useDeepLink.js
-│   │   └── components/                # LeaderboardTable, PickModal, MatchStrip, MatchModal, StatBand
+│   │   └── components/                # LeaderboardTable, PickModal, MatchStrip, MatchModal
 │   └── shared/
 │       ├── RulesDrawer.jsx           # Used by both pages
 │       ├── PotBar.jsx                # "N entrants × $30 = $X pot" widget; sessionStorage 60s cache; ?mockCount= dev escape
