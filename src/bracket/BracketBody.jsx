@@ -22,6 +22,15 @@ export function BracketBody({ config, knockout }) {
   }, [dispatch]);
   useBracketAutosave(state);
 
+  // Live countdown when within 24h of lock (mirrors src/form/App.jsx).
+  useEffect(() => {
+    if (!lockTime) return;
+    const msToLock = lockTime - now;
+    if (msToLock > 24 * 60 * 60 * 1000 || msToLock <= 0) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [lockTime, now]);
+
   const topBar = (
     <TopBar pageLabel="World Cup 2026 Pool — Bracket" otherPage="./leaderboard.html" otherLabel="Leaderboard" onOpenRules={() => setRulesOpen(true)}>
       {lockTime && <LockBanner lockTime={lockTime} now={now} />}
