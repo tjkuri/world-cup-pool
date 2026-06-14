@@ -67,7 +67,10 @@ async function main() {
         }
       }
     }
-  } catch { /* knockout.json not seeded yet — group-only run */ }
+  } catch (err) {
+    // Missing file = not seeded yet (normal). Anything else = worth a log line.
+    if (err.code !== 'ENOENT') console.warn(`knockout.json present but unreadable: ${err.message}`);
+  }
 
   // Index match IDs by date for cheap "is this date fully final?" checks.
   // Each match registers under BOTH its UTC kickoff day AND the day before,
@@ -113,6 +116,7 @@ async function main() {
         status: parsed.status,
       };
       if (parsed.advancer) next.advances = parsed.advancer;
+      else if (prev?.advances) next.advances = prev.advances;
       if (JSON.stringify(prev) !== JSON.stringify(next)) {
         merged[parsed.matchId] = next;
         changed = true;
