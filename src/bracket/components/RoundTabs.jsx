@@ -16,7 +16,7 @@ export function RoundTabs({ knockout }) {
   const { state, dispatch } = useBracketState();
   const rounds = KO_ROUND_ORDER.filter((r) => (knockout.rounds[r] || []).length > 0);
   return (
-    <div className="mx-auto mb-4 grid max-w-2xl grid-cols-5 gap-2">
+    <div className="mx-auto mb-4 grid max-w-2xl gap-2" style={{ gridTemplateColumns: `repeat(${rounds.length}, minmax(0, 1fr))` }}>
       {rounds.map((round) => {
         const status = roundStatus(round, knockout, state.bracket);
         const isActive = state.activeRound === round;
