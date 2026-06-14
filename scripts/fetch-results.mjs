@@ -51,7 +51,23 @@ async function main() {
 
   const fixtures = JSON.parse(await readFile('public/fixtures.json', 'utf8'));
   const existing = JSON.parse(await readFile('public/results.json', 'utf8'));
+
+  // Group fixture IDs, plus knockout match IDs once the bracket is seeded.
   const matchIds = new Set(Object.keys(fixtures.matches));
+  const koDates = {};   // ymd -> [matchId], to extend idsByDate below
+  try {
+    const ko = JSON.parse(await readFile('public/knockout.json', 'utf8'));
+    for (const round of Object.values(ko.rounds)) {
+      for (const slot of round) {
+        if (!slot.match_id) continue;
+        matchIds.add(slot.match_id);
+        if (slot.kickoff_iso) {
+          const ymd = slot.kickoff_iso.slice(0, 10).replaceAll('-', '');
+          for (const key of [ymd, shiftYmd(ymd, -1)]) (koDates[key] ??= []).push(slot.match_id);
+        }
+      }
+    }
+  } catch { /* knockout.json not seeded yet — group-only run */ }
 
   // Index match IDs by date for cheap "is this date fully final?" checks.
   // Each match registers under BOTH its UTC kickoff day AND the day before,
@@ -66,6 +82,9 @@ async function main() {
       if (!idsByDate[key]) idsByDate[key] = [];
       idsByDate[key].push(mid);
     }
+  }
+  for (const [key, ids] of Object.entries(koDates)) {
+    (idsByDate[key] ??= []).push(...ids);
   }
 
   const merged = { ...existing.matches };
@@ -93,6 +112,7 @@ async function main() {
         away_score: Number.isFinite(parsed.away_score) ? parsed.away_score : (prev?.away_score ?? null),
         status: parsed.status,
       };
+      if (parsed.advancer) next.advances = parsed.advancer;
       if (JSON.stringify(prev) !== JSON.stringify(next)) {
         merged[parsed.matchId] = next;
         changed = true;
