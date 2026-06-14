@@ -13,6 +13,7 @@ export default defineConfig({
       input: {
         main: resolve(here, 'index.html'),
         leaderboard: resolve(here, 'leaderboard.html'),
+        bracket: resolve(here, 'bracket.html'),
       },
     },
   },
