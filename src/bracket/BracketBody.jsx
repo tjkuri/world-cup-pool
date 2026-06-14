@@ -6,6 +6,7 @@ import { PotBar } from '../shared/PotBar.jsx';
 import { formatKickoff } from '../shared/formatKickoff.js';
 import { useBracketState } from './state.jsx';
 import { useBracketAutosave, loadBracketDraft } from './useBracketAutosave.js';
+import { BracketEntry } from './components/BracketEntry.jsx';
 
 export function BracketBody({ config, knockout }) {
   const { state, dispatch } = useBracketState();
@@ -62,13 +63,26 @@ export function BracketBody({ config, knockout }) {
     );
   }
 
-  // Live entry UI is composed in a later task (BracketEntry). Placeholder mount for now.
+  if (state.submitState === 'submitted') {
+    return (
+      <>{topBar}
+        <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+          <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
+          <h2 className="text-lg font-semibold text-emerald-300">🏆 Bracket submitted!</h2>
+          <p className="mt-1 text-slate-300">Your knockout bracket is locked in. <a className="text-emerald-400 hover:underline" href="./leaderboard.html">View the leaderboard.</a></p>
+        </main>
+        {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
+      </>
+    );
+  }
+
+  // Live entry UI.
   return (
     <>{topBar}
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {lockTime && <p className="mb-3 text-xs text-slate-500">Locks {formatKickoff(lockIso)}.</p>}
-        <div id="bracket-entry-mount" />
+        <BracketEntry knockout={knockout} config={config} />
       </main>
       {rulesOpen && <RulesDrawer onClose={() => setRulesOpen(false)} />}
     </>
