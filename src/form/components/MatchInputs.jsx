@@ -2,6 +2,7 @@ import { useFormState } from '../state.jsx';
 import { deriveWinner } from '../../../lib/derive.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
 import { formatKickoff } from '../../shared/formatKickoff.js';
+import { SCORE_INPUT_CLASS } from '../../shared/scoreInput.js';
 
 function labelFor(pick) {
   if (!Number.isInteger(pick.home_score) || !Number.isInteger(pick.away_score)) return 'vs';
@@ -65,7 +66,7 @@ export function MatchInputs({ fixtures, odds }) {
                   inputMode="numeric"
                   value={pick.home_score == null ? '' : String(pick.home_score)}
                   onChange={onChange('home_score')}
-                  className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className={SCORE_INPUT_CLASS}
                 />
                 <span className="text-slate-500">{labelFor(pick)}</span>
                 <input
@@ -76,7 +77,7 @@ export function MatchInputs({ fixtures, odds }) {
                   inputMode="numeric"
                   value={pick.away_score == null ? '' : String(pick.away_score)}
                   onChange={onChange('away_score')}
-                  className="w-12 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-center text-slate-100 tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className={SCORE_INPUT_CLASS}
                 />
                 <span className="flex-1 text-sm text-slate-200">
                   <span className="mr-1">{teamFlag(fixture.away)}</span> {teamName(fixture.away)}
