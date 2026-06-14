@@ -6,15 +6,22 @@
 //   submitted_at | name | email | secret_hash | phase | picks_json | client_version
 //
 // Required script properties (Project Settings → Script properties):
-//   salt              random hex string, e.g. 32 chars from crypto.randomUUID()
-//   group_lock_iso    e.g. "2026-06-11T16:00:00Z" — paste from seed-fixtures output
+//   salt                 random hex string, e.g. 32 chars from crypto.randomUUID()
+//   group_lock_iso       e.g. "2026-06-11T16:00:00Z" — gates group-phase POST submissions
+//   knockout_lock_iso    e.g. "2026-06-26T12:00:00Z" — gates knockout-phase POST submissions
 //
 // Endpoints:
 //   POST /exec       body { name, email, secret, picks, phase?, client_version? }
+//                    phase defaults to "group". Each phase is gated by its own lock property
+//                    (group_lock_iso or knockout_lock_iso). The secret-mismatch check
+//                    compares only against the latest row of the SAME phase, so a player
+//                    may set a new secret for the knockout phase even if they've forgotten
+//                    their group-phase secret. Email links the two phases.
 //                    → 200 { ok: true, submitted_at }
 //                    → 403 { error: "locked" }
 //                    → 403 { error: "secret_mismatch" }
 //                    → 400 { error: "bad_request", detail }
+//                    → 400 { error: "lock_unset", detail }
 //   GET  /exec?action=submissions
 //                    → { locked: false, submissions: [] }      (pre-lock)
 //                    → { locked: true,  submissions: [...] }   (post-lock)
@@ -26,10 +33,6 @@ const SHEET_NAME = 'submissions';
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
-    const lockTime = getLockTime();
-    if (new Date() >= lockTime) {
-      return jsonResponse(403, { error: 'locked' });
-    }
 
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
@@ -37,6 +40,15 @@ function doPost(e) {
     const picks = body.picks;
     const phase = String(body.phase || 'group');
     const clientVersion = String(body.client_version || '1');
+
+    // Phase-specific lock: group posts gate on group_lock_iso (long past now);
+    // knockout posts gate on knockout_lock_iso.
+    const lockProp = phase === 'knockout' ? 'knockout_lock_iso' : 'group_lock_iso';
+    const lockIso = PropertiesService.getScriptProperties().getProperty(lockProp);
+    if (!lockIso) return jsonResponse(400, { error: 'lock_unset', detail: lockProp });
+    if (new Date() >= new Date(lockIso)) {
+      return jsonResponse(403, { error: 'locked' });
+    }
 
     if (!name || !email || !secret || !picks) {
       return jsonResponse(400, { error: 'bad_request', detail: 'name, email, secret, picks required' });
@@ -46,7 +58,7 @@ function doPost(e) {
     const secretHash = sha256Hex(salt + secret);
 
     const sheet = getSheet();
-    const latest = findLatestByEmail(sheet, email);
+    const latest = findLatestByEmailAndPhase(sheet, email, phase);
     if (latest && latest.secret_hash !== secretHash) {
       return jsonResponse(403, { error: 'secret_mismatch' });
     }
@@ -150,6 +162,21 @@ function findLatestByEmail(sheet, email) {
         phase: String(row[4] || ''),
         picks_json: String(row[5] || ''),
       };
+    }
+  }
+  return latest;
+}
+
+function findLatestByEmailAndPhase(sheet, email, phase) {
+  const data = sheet.getDataRange().getValues();
+  let latest = null;
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (String(row[2] || '').toLowerCase() !== email) continue;
+    if (String(row[4] || '') !== phase) continue;
+    const submittedAt = String(row[0] || '');
+    if (!latest || submittedAt > latest.submitted_at) {
+      latest = { submitted_at: submittedAt, secret_hash: String(row[3] || '') };
     }
   }
   return latest;
