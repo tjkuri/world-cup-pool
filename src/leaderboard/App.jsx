@@ -5,6 +5,7 @@ import { RulesDrawer } from '../shared/RulesDrawer.jsx';
 import { PotBar } from '../shared/PotBar.jsx';
 import { formatKickoff } from '../shared/formatKickoff.js';
 import { LeaderboardTable } from './components/LeaderboardTable.jsx';
+import { PrizeCards } from './components/PrizeCards.jsx';
 import { PickModal } from './components/PickModal.jsx';
 import { MatchStrip } from './components/MatchStrip.jsx';
 import { MatchModal } from './components/MatchModal.jsx';
@@ -170,10 +171,14 @@ export function App() {
         {!locked ? (
           <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
-          <LeaderboardTable
-            entries={entries}
-            onRowClick={setModalEntry}
-          />
+          <>
+            {inKnockoutPhase && <PrizeCards entries={entries} buyIn={config.buy_in_usd} />}
+            <LeaderboardTable
+              entries={entries}
+              onRowClick={setModalEntry}
+              inKnockoutPhase={inKnockoutPhase}
+            />
+          </>
         )}
       </main>
       {modalEntry && (

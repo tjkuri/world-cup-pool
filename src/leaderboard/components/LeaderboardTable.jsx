@@ -14,7 +14,7 @@ function InfoTip({ text }) {
   );
 }
 
-export function LeaderboardTable({ entries, onRowClick }) {
+export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
   if (!entries.length) return <p className="text-slate-400">No submissions to display yet.</p>;
 
   return (
@@ -35,10 +35,26 @@ export function LeaderboardTable({ entries, onRowClick }) {
               <InfoTip text="Standings predictions per group. 15/8/4 for correct 1st/2nd/3rd, +8 if you nail the entire 1–4 order. Only scores when all 6 matches in a group are FINAL." />
             </span>
           </th>
+          {inKnockoutPhase && (
+            <th className="px-3 py-2 text-right font-medium text-slate-500">
+              <span className="inline-flex items-center justify-end">
+                Group
+                <InfoTip text="Frozen group-stage total (match pts + group standing pts). This score is locked — no more group matches." />
+              </span>
+            </th>
+          )}
+          {inKnockoutPhase && (
+            <th className="px-3 py-2 text-right font-medium text-emerald-400">
+              <span className="inline-flex items-center justify-end">
+                Knockout
+                <InfoTip text="Points earned from your bracket picks so far in the knockout rounds." />
+              </span>
+            </th>
+          )}
           <th className="px-3 py-2 text-right font-medium">
             <span className="inline-flex items-center justify-end">
               Total
-              <InfoTip text="Match pts + Group pts. Ranks the leaderboard." />
+              <InfoTip text={inKnockoutPhase ? "Group pts + Knockout pts. Ranks the leaderboard." : "Match pts + Group pts. Ranks the leaderboard."} />
             </span>
           </th>
           <th className="px-3 py-2 text-right font-medium">
@@ -58,10 +74,16 @@ export function LeaderboardTable({ entries, onRowClick }) {
           >
             <td className="px-3 py-2 tabular-nums text-slate-400">{i + 1}</td>
             <td className="px-3 py-2 text-slate-100">{entry.name}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring.match_total}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring.group_total}</td>
-            <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-300">{entry.scoring.total}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-slate-400">{entry.scoring.exact_score_count}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.match_total ?? 0}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.group_total ?? 0}</td>
+            {inKnockoutPhase && (
+              <td className="px-3 py-2 text-right tabular-nums text-slate-500">{entry.groupTotal}</td>
+            )}
+            {inKnockoutPhase && (
+              <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-400">{entry.bracketTotal}</td>
+            )}
+            <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-300">{entry.total}</td>
+            <td className="px-3 py-2 text-right tabular-nums text-slate-400">{entry.scoring?.exact_score_count ?? 0}</td>
           </tr>
         ))}
       </tbody>
