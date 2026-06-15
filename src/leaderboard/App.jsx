@@ -182,7 +182,7 @@ export function App() {
         )}
       </main>
       {modalEntry && (
-        <PickModal entry={modalEntry} fixtures={fixtures} results={results} onClose={() => setModalEntry(null)} />
+        <PickModal entry={modalEntry} fixtures={fixtures} results={results} knockout={knockout} onClose={() => setModalEntry(null)} />
       )}
       {modalMatchId && (
         <MatchModal

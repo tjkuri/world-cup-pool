@@ -1,9 +1,12 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { computeStandings } from '../../../lib/standings.js';
 import { isMatchFinal } from '../../../lib/status.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
+import { KnockoutPicks } from './KnockoutPicks.jsx';
 
-export function PickModal({ entry, fixtures, results, onClose }) {
+export function PickModal({ entry, fixtures, results, knockout, onClose }) {
+  const [tab, setTab] = useState(entry.groupSub ? 'group' : 'knockout');
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -30,10 +33,12 @@ export function PickModal({ entry, fixtures, results, onClose }) {
           <div>
             <h2 id="pick-modal-title" className="text-base font-semibold">{entry.name}'s picks</h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Total: <span className="text-emerald-300 font-semibold">{entry.scoring.total}</span>
-              <span className="text-slate-600"> · </span>Match pts: {entry.scoring.match_total}
-              <span className="text-slate-600"> · </span>Group pts: {entry.scoring.group_total}
-              <span className="text-slate-600"> · </span>Exact scores: {entry.scoring.exact_score_count}
+              Total: <span className="text-emerald-300 font-semibold">{entry.total}</span>
+              <span className="text-slate-600"> · </span>Group: {entry.groupTotal}
+              {entry.knockoutSub && (
+                <><span className="text-slate-600"> · </span>Knockout: {entry.bracketTotal}</>
+              )}
+              <span className="text-slate-600"> · </span>Exact scores: {entry.scoring?.exact_score_count ?? 0}
             </p>
           </div>
           <button
@@ -43,10 +48,36 @@ export function PickModal({ entry, fixtures, results, onClose }) {
             aria-label="Close"
           >×</button>
         </header>
+        <div className="flex gap-2 border-b border-slate-800 px-5 pt-2">
+          {entry.groupSub && (
+            <button
+              type="button"
+              onClick={() => setTab('group')}
+              className={tab === 'group' ? 'border-b-2 border-emerald-400 pb-1 text-emerald-300' : 'pb-1 text-slate-400'}
+            >Group</button>
+          )}
+          {entry.knockoutSub && (
+            <button
+              type="button"
+              onClick={() => setTab('knockout')}
+              className={tab === 'knockout' ? 'border-b-2 border-emerald-400 pb-1 text-emerald-300' : 'pb-1 text-slate-400'}
+            >Knockout</button>
+          )}
+        </div>
         <div className="px-5 py-4 max-h-[60vh] overflow-y-auto space-y-5">
-          {letters.map((letter) => (
-            <GroupCard key={letter} letter={letter} entry={entry} fixtures={fixtures} results={results} />
-          ))}
+          {tab === 'group' && (
+            entry.groupSub && entry.picks && entry.scoring
+              ? letters.map((letter) => (
+                  <GroupCard key={letter} letter={letter} entry={entry} fixtures={fixtures} results={results} />
+                ))
+              : <p className="text-sm text-slate-500">No group-stage picks for this player.</p>
+          )}
+          {tab === 'knockout' && knockout && entry.knockoutSub && (
+            <KnockoutPicks entry={entry} knockout={knockout} results={results} />
+          )}
+          {tab === 'knockout' && (!knockout || !entry.knockoutSub) && (
+            <p className="text-sm text-slate-500">No knockout picks available.</p>
+          )}
         </div>
         <footer className="flex justify-end border-t border-slate-800 px-5 py-3">
           <button
