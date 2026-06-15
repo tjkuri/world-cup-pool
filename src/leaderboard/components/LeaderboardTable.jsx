@@ -23,18 +23,22 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
         <tr className="border-b border-slate-700 bg-slate-900 text-slate-300">
           <th className="px-3 py-2 text-left font-medium">Rank</th>
           <th className="px-3 py-2 text-left font-medium">Name</th>
-          <th className="px-3 py-2 text-right font-medium">
-            <span className="inline-flex items-center justify-end">
-              Match pts
-              <InfoTip text="Per-game predictions across the 72 group-stage matches. 3 pts for correct winner/draw, +3 bonus for exact score (6 max per match). Only counts matches that have a FINAL result." />
-            </span>
-          </th>
-          <th className="px-3 py-2 text-right font-medium">
-            <span className="inline-flex items-center justify-end">
-              Group pts
-              <InfoTip text="Standings predictions per group. 15/8/4 for correct 1st/2nd/3rd, +8 if you nail the entire 1–4 order. Only scores when all 6 matches in a group are FINAL." />
-            </span>
-          </th>
+          {!inKnockoutPhase && (
+            <th className="px-3 py-2 text-right font-medium">
+              <span className="inline-flex items-center justify-end">
+                Match pts
+                <InfoTip text="Per-game predictions across the 72 group-stage matches. 3 pts for correct winner/draw, +3 bonus for exact score (6 max per match). Only counts matches that have a FINAL result." />
+              </span>
+            </th>
+          )}
+          {!inKnockoutPhase && (
+            <th className="px-3 py-2 text-right font-medium">
+              <span className="inline-flex items-center justify-end">
+                Group pts
+                <InfoTip text="Standings predictions per group. 15/8/4 for correct 1st/2nd/3rd, +8 if you nail the entire 1–4 order. Only scores when all 6 matches in a group are FINAL." />
+              </span>
+            </th>
+          )}
           {inKnockoutPhase && (
             <th className="px-3 py-2 text-right font-medium text-slate-500">
               <span className="inline-flex items-center justify-end">
@@ -54,7 +58,7 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
           <th className="px-3 py-2 text-right font-medium">
             <span className="inline-flex items-center justify-end">
               Total
-              <InfoTip text={inKnockoutPhase ? "Group pts + Knockout pts. Ranks the leaderboard." : "Match pts + Group pts. Ranks the leaderboard."} />
+              <InfoTip text={inKnockoutPhase ? "Group total + Knockout pts. Ranks the leaderboard." : "Match pts + Group pts. Ranks the leaderboard."} />
             </span>
           </th>
           <th className="px-3 py-2 text-right font-medium">
@@ -74,8 +78,12 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
           >
             <td className="px-3 py-2 tabular-nums text-slate-400">{i + 1}</td>
             <td className="px-3 py-2 text-slate-100">{entry.name}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.match_total ?? 0}</td>
-            <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.group_total ?? 0}</td>
+            {!inKnockoutPhase && (
+              <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.match_total ?? 0}</td>
+            )}
+            {!inKnockoutPhase && (
+              <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.group_total ?? 0}</td>
+            )}
             {inKnockoutPhase && (
               <td className="px-3 py-2 text-right tabular-nums text-slate-500">{entry.groupTotal}</td>
             )}
