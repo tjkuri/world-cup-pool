@@ -10,7 +10,8 @@ import { MatchStrip } from './components/MatchStrip.jsx';
 import { MatchModal } from './components/MatchModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
 import { buildMockResults, buildMockSubmissions } from './mockData.js';
-import { scoreSubmission } from '../../lib/score.js';
+import { scoreSubmission, scoreBracket } from '../../lib/score.js';
+import { isMatchFinal } from '../../lib/status.js';
 
 function formatRelative(date) {
   const diffMs = Date.now() - date.getTime();
@@ -34,6 +35,7 @@ export function App() {
   const [modalEntry, setModalEntry] = useState(null);
   const [modalMatchId, setModalMatchId] = useState(null);
   const [now, setNow] = useState(() => new Date());
+  const [knockout, setKnockout] = useState(null);
 
   const lockTime = config ? new Date(config.group_lock_iso) : null;
 
@@ -65,6 +67,7 @@ export function App() {
           return;
         }
         setResults(r);
+        fetch('/knockout.json').then((x) => (x.ok ? x.json() : null)).then(setKnockout).catch(() => {});
         try {
           const resp = await fetch(`${c.apps_script_url}?action=submissions`);
           const data = await resp.json();
@@ -96,17 +99,44 @@ export function App() {
 
   const entries = useMemo(() => {
     if (!fixtures || !results || !submissions?.length) return [];
-    const rows = submissions.map((sub) => ({
-      ...sub,
-      scoring: scoreSubmission(sub.picks, fixtures, results),
-    }));
+    const byEmail = new Map();
+    for (const sub of submissions) {
+      const key = sub.email_hash;
+      const row = byEmail.get(key) || { name: sub.name, email_hash: key, group: null, knockout: null };
+      if (sub.phase === 'knockout') row.knockout = sub; else row.group = sub;
+      row.name = sub.name; // latest name wins
+      byEmail.set(key, row);
+    }
+    const rows = [...byEmail.values()].map((row) => {
+      const groupScoring = row.group ? scoreSubmission(row.group.picks, fixtures, results) : null;
+      const bracketScoring = (row.knockout && knockout) ? scoreBracket(row.knockout.picks.bracket, knockout, results) : null;
+      const groupTotal = groupScoring ? groupScoring.total : 0;
+      const bracketTotal = bracketScoring ? bracketScoring.bracket_total : 0;
+      return {
+        name: row.name, email_hash: row.email_hash,
+        groupSub: row.group, knockoutSub: row.knockout,
+        // Back-compat aliases so the existing group PickModal/MatchModal keep working:
+        picks: row.group ? row.group.picks : null,
+        scoring: groupScoring, bracketScoring,
+        groupTotal, bracketTotal, total: groupTotal + bracketTotal,
+      };
+    });
     rows.sort((a, b) => {
-      if (b.scoring.total !== a.scoring.total) return b.scoring.total - a.scoring.total;
-      if (b.scoring.exact_score_count !== a.scoring.exact_score_count) return b.scoring.exact_score_count - a.scoring.exact_score_count;
+      if (b.total !== a.total) return b.total - a.total;
+      const ax = a.scoring?.exact_score_count ?? 0, bx = b.scoring?.exact_score_count ?? 0;
+      if (bx !== ax) return bx - ax;
       return a.name.localeCompare(b.name);
     });
     return rows;
-  }, [fixtures, results, submissions]);
+  }, [fixtures, results, submissions, knockout]);
+
+  const inKnockoutPhase = useMemo(() => {
+    if (!knockout || !results) return false;
+    for (const round of Object.values(knockout.rounds))
+      for (const slot of round)
+        if (slot.match_id && isMatchFinal(results.matches?.[slot.match_id]?.status)) return true;
+    return false;
+  }, [knockout, results]);
 
   if (error) {
     return (
