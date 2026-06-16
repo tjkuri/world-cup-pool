@@ -144,29 +144,6 @@ function sha256Hex(input) {
   }).join('');
 }
 
-function findLatestByEmail(sheet, email) {
-  const data = sheet.getDataRange().getValues();
-  // data[0] is the header row.
-  let latest = null;
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const rowEmail = String(row[2] || '').toLowerCase();
-    if (rowEmail !== email) continue;
-    const submittedAt = String(row[0] || '');
-    if (!latest || submittedAt > latest.submitted_at) {
-      latest = {
-        submitted_at: submittedAt,
-        name: row[1],
-        email: rowEmail,
-        secret_hash: String(row[3] || ''),
-        phase: String(row[4] || ''),
-        picks_json: String(row[5] || ''),
-      };
-    }
-  }
-  return latest;
-}
-
 function findLatestByEmailAndPhase(sheet, email, phase) {
   const data = sheet.getDataRange().getValues();
   let latest = null;
