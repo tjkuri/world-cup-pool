@@ -37,7 +37,8 @@ function feedMap() {
   return { feeds, from };
 }
 
-// Pure: turn parsed R32 events (each with a bracketSlot 1..16) into knockout.json.
+// Pure: turn parsed R32 events into knockout.json. Slots are assigned in
+// kickoff-time order (earliest kick-off → R32-1, next → R32-2, …).
 export function buildKnockout(parsedR32) {
   const { feeds, from } = feedMap();
   const sorted = [...parsedR32].sort((a, b) => (a.kickoff_iso ?? '').localeCompare(b.kickoff_iso ?? ''));

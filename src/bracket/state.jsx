@@ -32,6 +32,12 @@ function reducer(state, action) {
     }
     case 'SET_CHAMPION':
       return { ...state, champion: action.team };
+    case 'CLEAR_SLOT': {
+      if (!state.bracket[action.slot]) return state;
+      const nextBracket = { ...state.bracket };
+      delete nextBracket[action.slot];
+      return { ...state, bracket: nextBracket };
+    }
     case 'CLEAR_BRACKET':
       return { ...state, bracket: {}, champion: null, errors: [] };
     case 'SET_IDENTITY':

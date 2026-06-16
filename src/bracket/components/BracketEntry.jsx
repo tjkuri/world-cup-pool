@@ -15,6 +15,18 @@ export function BracketEntry({ knockout, config }) {
     [knockout, state.bracket]
   );
 
+  // Heal stale downstream picks: if an upstream change left a slot's chosen
+  // advancer no longer present in its (recomputed) matchup, clear that slot.
+  // Cascades naturally because clearing a slot empties its downstream matchups.
+  useEffect(() => {
+    for (const [slot, pick] of Object.entries(state.bracket)) {
+      const m = matchups[slot];
+      if (pick?.advances && pick.advances !== m?.home && pick.advances !== m?.away) {
+        dispatch({ type: 'CLEAR_SLOT', slot });
+      }
+    }
+  }, [matchups, state.bracket, dispatch]);
+
   // Keep champion synced to the final slot's advancer.
   const finalSlot = (knockout.rounds.F || [])[0];
   const finalAdvancer = finalSlot ? state.bracket[finalSlot.slot]?.advances ?? null : null;

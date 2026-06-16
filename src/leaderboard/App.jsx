@@ -97,10 +97,11 @@ export function App() {
   useEffect(() => {
     if (!fixtures || !results) return;
     const m = /^#match\/(\d+)$/.exec(location.hash);
-    if (m && fixtures.matches[m[1]]) {
+    const isKo = knockout && Object.values(knockout.rounds).flat().some((s) => s.match_id === m?.[1]);
+    if (m && (fixtures.matches[m[1]] || isKo)) {
       setModalMatchId(m[1]);
     }
-  }, [fixtures, results]);
+  }, [fixtures, results, knockout]);
 
   const lastUpdated = useMemo(() => {
     if (!results?.updated_at) return null;
