@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { teamFlag, teamName } from '../../shared/teamNames.js';
 import { computeMatchSummary } from '../../../lib/leaderboardStats.js';
 import { resolveActualBracket } from '../../../lib/bracket.js';
+import { isMatchFinal } from '../../../lib/status.js';
 
 const OUTCOME_CLASSES = {
   exact: 'text-emerald-300',
@@ -141,6 +142,7 @@ function GroupMatchModal({ matchId, fixtures, results, entries, onClose, onSelec
 
   const fx = fixtures.matches[matchId];
   const result = results.matches[matchId];
+  const matchFinal = result && isMatchFinal(result.status);
   const summary = useMemo(() => computeMatchSummary(matchId, entries), [matchId, entries]);
 
   const rows = useMemo(() => {
@@ -172,8 +174,8 @@ function GroupMatchModal({ matchId, fixtures, results, entries, onClose, onSelec
       >
         <header className="flex items-center justify-between border-b border-slate-800 px-5 py-3">
           <h2 id="match-modal-title" className="text-base font-semibold">
-            {teamFlag(fx.home)} {fx.home} {result.home_score}–{result.away_score} {fx.away} {teamFlag(fx.away)}
-            <span className="ml-2 text-xs font-normal text-slate-400">· Group {fx.group} · Final</span>
+            {teamFlag(fx.home)} {fx.home} {matchFinal ? `${result.home_score}–${result.away_score}` : '—'} {fx.away} {teamFlag(fx.away)}
+            <span className="ml-2 text-xs font-normal text-slate-400">· Group {fx.group}{matchFinal ? ' · Final' : ' · Not finished'}</span>
           </h2>
           <button
             type="button"

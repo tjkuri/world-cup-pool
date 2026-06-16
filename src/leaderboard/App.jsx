@@ -168,7 +168,7 @@ export function App() {
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {locked && <MatchStrip fixtures={fixtures} results={results} knockout={knockout} inKnockoutPhase={inKnockoutPhase} onSelect={setModalMatchId} />}
-        {knockout && locked && !inKnockoutPhase && (
+        {knockout && locked && !inKnockoutPhase && entries.length > 0 && (
           <p className="mb-3 text-sm text-slate-400">🗳️ {entries.filter((e) => e.knockoutSub).length}/{entries.length} brackets submitted</p>
         )}
         {!locked ? (

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { partitionFinishedMatches } from '../../../lib/leaderboardStats.js';
 import { isMatchFinal } from '../../../lib/status.js';
 import { resolveActualBracket } from '../../../lib/bracket.js';
@@ -23,10 +24,14 @@ function knockoutChips(knockout, results) {
 }
 
 export function MatchStrip({ fixtures, results, knockout, inKnockoutPhase, onSelect }) {
+  const { matchInfo } = useMemo(
+    () => (inKnockoutPhase && knockout ? resolveActualBracket(knockout, results) : { matchInfo: {} }),
+    [inKnockoutPhase, knockout, results]
+  );
+
   if (inKnockoutPhase && knockout) {
     // Knockout phase: prominent KO chips, group matches demoted to a dropdown.
     const koChips = knockoutChips(knockout, results);
-    const { matchInfo } = resolveActualBracket(knockout, results);
 
     // Build group-stage finished matches for the dropdown.
     const { today, yesterday, older } = partitionFinishedMatches(fixtures, results, new Date());
