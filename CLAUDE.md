@@ -18,3 +18,9 @@ read `docs/HANDOFF.md` first — it's the source of truth.
   Apps Script editor and create a new deployment version. URL stays the
   same on redeploy. Flag this clearly when you make backend changes so
   the user knows they have a manual step.
+
+- **Knockout flair uses `lib/score.js` constants, not literals.** The leaderboard
+  Knockout drilldown (`KnockoutPicks.jsx`) colors slots hit/miss by comparing the
+  player's `advances` to the actual advancer — it does NOT hardcode point
+  thresholds. The shared score-input className lives in `src/shared/scoreInput.js`
+  (used by both the group form and the bracket); change it in one place.

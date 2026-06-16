@@ -10,7 +10,7 @@ import { PickModal } from './components/PickModal.jsx';
 import { MatchStrip } from './components/MatchStrip.jsx';
 import { MatchModal } from './components/MatchModal.jsx';
 import { useDeepLink } from './useDeepLink.js';
-import { buildMockResults, buildMockSubmissions } from './mockData.js';
+import { buildMockResults, buildMockSubmissions, buildMockKnockout, buildMockKnockoutResults, buildMockKnockoutSubmissions } from './mockData.js';
 import { scoreSubmission, scoreBracket } from '../../lib/score.js';
 import { isMatchFinal } from '../../lib/status.js';
 
@@ -51,6 +51,7 @@ export function App() {
 
   useEffect(() => {
     const mockMode = new URLSearchParams(window.location.search).get('mockLeaderboard') === '1';
+    const mockKnockout = new URLSearchParams(window.location.search).get('mockKnockout') === '1';
     (async () => {
       try {
         const [c, f, r] = await Promise.all([
@@ -62,8 +63,16 @@ export function App() {
         setFixtures(f);
         if (mockMode) {
           const mockResults = buildMockResults(f);
+          let subs = buildMockSubmissions(f, mockResults);
+          if (mockKnockout) {
+            const ko = buildMockKnockout();
+            const koResults = buildMockKnockoutResults(ko);
+            mockResults.matches = { ...mockResults.matches, ...koResults };
+            setKnockout(ko);
+            subs = [...subs, ...buildMockKnockoutSubmissions(ko, subs)];
+          }
           setResults(mockResults);
-          setSubmissions(buildMockSubmissions(f, mockResults));
+          setSubmissions(subs);
           setLocked(true);
           return;
         }
