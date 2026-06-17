@@ -104,26 +104,73 @@ export function buildMockResults(fixtures) {
 // Activated by ?mockLeaderboard=1&mockKnockout=1 in the dev server.
 // ---------------------------------------------------------------------------
 
-// The 4-team dev knockout tree (mirrors public/knockout.sample.json so the
-// phase-2 leaderboard can be exercised without real ESPN data).
+// Full 32-team dev knockout tree (16 R32 → 8 R16 → 4 QF → 2 SF → 1 Final),
+// mirroring the shape seed-knockout.mjs produces and what public/knockout.sample.json
+// is generated from. Real FIFA codes (from fixtures) so flags render. This is the
+// faithful-scale preview; the real knockout.json is seeded at go-live.
+const MOCK_KO_TEAMS = [
+  'BRA', 'KOR', 'ARG', 'AUS', 'FRA', 'SCO', 'ESP', 'CAN',
+  'ENG', 'GHA', 'POR', 'URU', 'GER', 'MEX', 'NED', 'JPN',
+  'BEL', 'EGY', 'CRO', 'PAN', 'MAR', 'USA', 'SUI', 'ECU',
+  'COL', 'IRN', 'SEN', 'NOR', 'TUR', 'CIV', 'AUT', 'NZL',
+];
+
+const KO_ROUND_SIZES = { R32: 16, R16: 8, QF: 4, SF: 2, F: 1 };
+const KO_ROUND_DATES = { R32: '2026-07-05', R16: '2026-07-09', QF: '2026-07-13', SF: '2026-07-16', F: '2026-07-19' };
+
+// Standard single-elimination wiring: parent slot i is fed by children 2i-1 and 2i.
+function koFeedMap() {
+  const feeds = {};
+  const from = {};
+  for (let r = 1; r < KO_ROUND_ORDER.length; r++) {
+    const round = KO_ROUND_ORDER[r];
+    const childRound = KO_ROUND_ORDER[r - 1];
+    for (let i = 1; i <= KO_ROUND_SIZES[round]; i++) {
+      const parent = `${round}-${i}`;
+      const a = `${childRound}-${2 * i - 1}`;
+      const b = `${childRound}-${2 * i}`;
+      from[parent] = [a, b];
+      feeds[a] = parent;
+      feeds[b] = parent;
+    }
+  }
+  return { feeds, from };
+}
+
+// Deterministic, ordered kickoff time per slot (matches 6h apart within a round).
+function koKickoff(round, i) {
+  const d = new Date(`${KO_ROUND_DATES[round]}T16:00:00Z`);
+  d.setUTCHours(d.getUTCHours() + (i - 1) * 6);
+  return d.toISOString();
+}
+
 export function buildMockKnockout() {
-  return {
-    seeded_at: '2026-06-27T20:00:00.000Z',
-    first_kickoff_iso: '2026-07-05T19:00:00Z',
-    rounds: {
-      R32: [
-        { slot: 'R32-1', match_id: '990001', home: 'BRA', away: 'KOR', kickoff_iso: '2026-07-05T19:00:00Z', feeds: 'R16-1' },
-        { slot: 'R32-2', match_id: '990002', home: 'MEX', away: 'GER', kickoff_iso: '2026-07-05T22:00:00Z', feeds: 'R16-1' },
-        { slot: 'R32-3', match_id: '990003', home: 'FRA', away: 'SUI', kickoff_iso: '2026-07-06T19:00:00Z', feeds: 'R16-2' },
-        { slot: 'R32-4', match_id: '990004', home: 'ARG', away: 'NGA', kickoff_iso: '2026-07-06T22:00:00Z', feeds: 'R16-2' },
-      ],
-      R16: [
-        { slot: 'R16-1', match_id: '990005', from: ['R32-1', 'R32-2'], kickoff_iso: '2026-07-09T19:00:00Z', feeds: 'F-1' },
-        { slot: 'R16-2', match_id: '990006', from: ['R32-3', 'R32-4'], kickoff_iso: '2026-07-09T22:00:00Z', feeds: 'F-1' },
-      ],
-      F: [{ slot: 'F-1', match_id: '990007', from: ['R16-1', 'R16-2'], kickoff_iso: '2026-07-19T19:00:00Z' }],
-    },
-  };
+  const { feeds, from } = koFeedMap();
+  let mid = 990001;
+  const rounds = { R32: [], R16: [], QF: [], SF: [], F: [] };
+  for (let i = 1; i <= KO_ROUND_SIZES.R32; i++) {
+    rounds.R32.push({
+      slot: `R32-${i}`,
+      match_id: String(mid++),
+      home: MOCK_KO_TEAMS[2 * (i - 1)],
+      away: MOCK_KO_TEAMS[2 * (i - 1) + 1],
+      kickoff_iso: koKickoff('R32', i),
+      feeds: feeds[`R32-${i}`],
+    });
+  }
+  for (const round of ['R16', 'QF', 'SF', 'F']) {
+    for (let i = 1; i <= KO_ROUND_SIZES[round]; i++) {
+      const slot = `${round}-${i}`;
+      rounds[round].push({
+        slot,
+        match_id: String(mid++),
+        from: from[slot],
+        kickoff_iso: koKickoff(round, i),
+        ...(feeds[slot] ? { feeds: feeds[slot] } : {}),
+      });
+    }
+  }
+  return { seeded_at: '2026-06-27T20:00:00.000Z', first_kickoff_iso: rounds.R32[0].kickoff_iso, rounds };
 }
 
 // Mark every knockout match final with score 2-1, home team advancing.
