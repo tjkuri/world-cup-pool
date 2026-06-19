@@ -27,7 +27,7 @@ export function PickModal({ entry, fixtures, results, knockout, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="pick-modal-title"
-        className="w-full max-w-lg rounded-lg bg-slate-900 text-slate-100 ring-1 ring-slate-800 shadow-2xl overflow-hidden"
+        className={`w-full ${tab === 'knockout' ? 'max-w-4xl' : 'max-w-lg'} rounded-lg bg-slate-900 text-slate-100 ring-1 ring-slate-800 shadow-2xl overflow-hidden`}
       >
         <header className="flex items-center justify-between border-b border-slate-800 px-5 py-3">
           <div>
