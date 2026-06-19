@@ -13,6 +13,10 @@
      `node -e "console.log(crypto.randomUUID().replaceAll('-',''))"`).
    - `group_lock_iso`: the earliest kickoff time printed by `npm run seed`,
      e.g. `2026-06-11T16:00:00Z`.
+   - `knockout_lock_iso` (v2, add at knockout go-live ~Jun 27): the first R32
+     kickoff printed by `node scripts/seed-knockout.mjs`. A `phase:'knockout'`
+     POST gates on this property instead of `group_lock_iso`; if it's unset the
+     server returns `400 lock_unset`, so set it before merging the bracket page.
 5. Save the script. Click "Deploy" → "New deployment".
    - Type: Web app
    - Execute as: Me

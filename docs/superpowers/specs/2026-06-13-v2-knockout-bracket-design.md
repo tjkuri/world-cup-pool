@@ -272,3 +272,16 @@ Out of scope (noted, not touched): `lib/leaderboardStats.js` dead code,
 - Exact ESPN status string(s) for ET/penalty finishes (extend `lib/status.js`
   if needed).
 - The precise narrow-screen fallback for the read-only bracket-tree review.
+
+---
+
+## As-built notes (2026-06-19)
+
+Implemented on `feat/v2-knockout-bracket` (34 commits, 69 lib tests). Not merged — gated on the go-live runbook in `docs/HANDOFF.md` (~Jun 27). UI deltas decided during build/preview iteration (mockups previewed via the brainstorming visual companion before building):
+
+- **Knockout drilldown is a bracket-format "your bracket vs reality" view**, not the simple slot-tree this spec sketched (`KnockoutPicks.jsx`). Per match: muted **grey** team = carried into a round it never actually reached; **▸** caret = the advancer the player picked; **green-outlined** cell = correct advancer (**gold + 🏆** for the champion); the **real result + points** show on every match. Slim summary line: champion pick · # correct winners · # exact, plus **QF X/8 · SF X/4 · Champion ✓/✗** badges. The tabbed `PickModal` widens to `max-w-4xl` on this tab.
+- **Knockout match strip** = recent-result **pills** + two dropdowns (**Group stage** / **Knockout stage**), not "all finished KO matches as chips."
+- **Knockout `MatchModal`** color-codes each entry's row (exact/correct-advancer/wrong) with 🎯 and correct points — parity with the group match modal.
+- Added `lib/score.js` **`scoreKnockoutMatch(round, pick, actual)`** for per-match points + flags (sources the KO point constants; keeps renderers literal-free).
+- **Mock**: full 32-team `public/knockout.sample.json` + varied mock brackets (perfect / mixed / busted) via `?mockKnockout=1` (and `&mockLeaderboard=1` for the board).
+- The spec's "stacked narrow-screen fallback" for the review tree was **not built** — bracket views use horizontal scroll at all widths (acceptable substitute).

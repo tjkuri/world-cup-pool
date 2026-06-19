@@ -2047,3 +2047,9 @@ Expected: the full task series of commits. Branch is ready for review/merge per 
   against live data during the go-live runbook; the pure logic is tested now.
 - **Out of scope** (noted in spec, untouched): `lib/leaderboardStats.js` dead
   code, `jsonResponse`'s informational `status` arg.
+
+---
+
+## Status: COMPLETE (2026-06-19)
+
+All 18 tasks implemented + reviewed on `feat/v2-knockout-bracket` (34 commits, 69 lib tests pass, build emits all 3 pages). Plus post-plan UI polish from a preview session: bracket-format knockout drilldown, recent-pills match strip, color-coded knockout match modal, slim summary with QF/SF/champion badges, `scoreKnockoutMatch` helper, full 32-team mock. See the design spec's "As-built notes" and `docs/HANDOFF.md`. **Not merged — gated on the go-live runbook (~Jun 27).**

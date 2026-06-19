@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-15 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-1, CAN-BIH 1-1). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard now has the by-match drilldown. **v2 knockout bracket fully implemented on `feat/v2-knockout-bracket`; merge gated on go-live runbook below (~Jun 27).**
+Last updated: 2026-06-19 (group stage ongoing). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard has the by-match drilldown. **v2 knockout bracket fully implemented + UI-polished on `feat/v2-knockout-bracket`; merge gated on go-live runbook below (~Jun 27).**
 
 ## TL;DR for next-session-Claude
 
@@ -8,7 +8,7 @@ Last updated: 2026-06-15 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-
 > https://world-cup-pool.tjkuri99.workers.dev. Backend = Google Apps Script web
 > app writing to a Google Sheet (URL in `public/config.json`). Frontend = React
 > 19 + Vite 6 + **Tailwind v4** deployed to Cloudflare Pages via Workers Builds
-> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 68 lib
+> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 69 lib
 > tests pass (on `feat/v2-knockout-bracket`; 55 on `main`).
 
 > **v2 knockout bracket (on branch `feat/v2-knockout-bracket`, not yet merged):**
@@ -87,7 +87,7 @@ Last updated: 2026-06-15 (Day 1 + Day 2 in the books — MEX-RSA 2-0, KOR-CZE 2-
 [React form / leaderboard on Cloudflare Pages]
   │  POST submission (or GET submissions)
   ▼
-[Apps Script web app]  ←─ script properties: salt, group_lock_iso
+[Apps Script web app]  ←─ script properties: salt, group_lock_iso, knockout_lock_iso
   │  appendRow / readRows
   ▼
 [Google Sheet "World Cup Pool", tab "submissions"]
@@ -127,17 +127,19 @@ world-cup-pool/
 │   ├── styles/main.css               # Just `@import "tailwindcss";` + html/body base
 │   ├── bracket/                      # v2 knockout bracket app (feat/v2-knockout-bracket)
 │   │   ├── main.jsx, App.jsx         # Fetches config.json + knockout.json; gated on knockout_lock_iso
-│   │   ├── BracketBody.jsx           # Top-level layout: round tabs + matchup cards
-│   │   ├── state.jsx                 # useReducer + Context (SET_PICK, PROPAGATE, HYDRATE, RESET)
+│   │   ├── BracketBody.jsx           # Gating shell (opens-after-group-stage / locked / live); mounts BracketEntry
+│   │   ├── state.jsx                 # useReducer + Context (SET_SLOT_SCORE, SET_SLOT_ADVANCER,
+│   │                             #   SET_CHAMPION, CLEAR_BRACKET, CLEAR_SLOT, SET_IDENTITY,
+│   │                             #   SET_ACTIVE_ROUND, SET_ERRORS, SET_SUBMIT_STATE, HYDRATE)
 │   │   ├── useBracketAutosave.js     # Debounced localStorage for bracket draft
 │   │   ├── submit.js                 # POST to Apps Script with phase="knockout"
 │   │   ├── bracketPicks.js           # Derives flat picks map from bracket state for submit/review
 │   │   └── components/
-│   │       ├── BracketEntry.jsx      # Matchup card (two team buttons + score inputs)
-│   │       ├── BracketReview.jsx     # Pre-submit review tree
-│   │       ├── BracketRound.jsx      # Round column wrapper
+│   │       ├── BracketEntry.jsx      # Composes entry UI (RoundTabs+BracketRound+review+submit); connected propagation + champion sync
+│   │       ├── BracketReview.jsx     # Collapsible read-only review tree (uses shared bracketTree)
+│   │       ├── BracketRound.jsx      # Active round matchup cards: score inputs, derived advancer, pens toggle
 │   │       ├── BracketSubmitModal.jsx # Native <dialog> confirm + identity for bracket
-│   │       └── RoundTabs.jsx         # Mobile tab nav between R32/R16/QF/SF/Final
+│   │       └── RoundTabs.jsx         # Round tabs R32/R16/QF/SF/Final (mirrors GroupTabs)
 │   ├── form/
 │   │   ├── main.jsx, App.jsx         # App fetches config.json, fixtures.json, odds.json (graceful)
 │   │   ├── state.jsx                 # useReducer + Context (actions: SET_MATCH_SCORE,
@@ -164,22 +166,22 @@ world-cup-pool/
 │   │   └── components/
 │   │       ├── LeaderboardTable.jsx  # Overall-first table with group/knockout/total columns
 │   │       ├── PickModal.jsx         # Tabbed: Group Picks + Knockout Picks tabs
-│   │       ├── KnockoutPicks.jsx     # Bracket drilldown inside PickModal
-│   │       ├── MatchStrip.jsx        # Knockout-first match chip bar + select picker
+│   │       ├── KnockoutPicks.jsx     # Bracket-format drilldown: your bracket vs reality (grey carried-fwd teams, advancer caret, gold champion, real result+pts per match) + slim summary/badges
+│   │       ├── MatchStrip.jsx        # Group phase: Today/Yesterday chips + dropdown. KO phase: recent-result pills + Group/Knockout dropdowns
 │   │       ├── MatchModal.jsx        # Per-match summary band + sorted-by-points list
 │   │       └── PrizeCards.jsx        # 30%/70% prize split display cards
 │   └── shared/
 │       ├── RulesDrawer.jsx           # Used by both pages
 │       ├── PotBar.jsx                # "N entrants × $30 = $X pot" widget; sessionStorage 60s cache; ?mockCount= dev escape
-│       ├── scoreInput.js             # Shared score input field component + class helpers (v2)
-│       ├── bracketTree.jsx           # Shared bracket tree renderer for review + leaderboard drilldown (v2)
+│       ├── scoreInput.js             # Shared SCORE_INPUT_CLASS Tailwind string (group form + bracket) (v2)
+│       ├── bracketTree.jsx           # Read-only tree for entry-side review + submit recap (v2). Leaderboard KnockoutPicks renders its own richer bracket.
 │       ├── teamNames.js              # TEAM_NAMES + TEAM_FLAGS maps + teamName/teamFlag helpers
 │       └── formatKickoff.js          # Date+time formatter for fixture.kickoff_iso
-├── lib/                              # PURE LOGIC — 68 tests pass (feat/v2-knockout-bracket)
+├── lib/                              # PURE LOGIC — 69 tests pass (feat/v2-knockout-bracket)
 │   ├── bracket.js + .test.js         # Connected-bracket resolution + advancer propagation (v2)
 │   ├── derive.js + .test.js
 │   ├── standings.js + .test.js
-│   ├── score.js + .test.js           # scoreGroup + scoreBracket (v2 adds scoreBracket)
+│   ├── score.js + .test.js           # scoreSubmission (group) + scoreBracket + scoreKnockoutMatch (v2)
 │   ├── status.js + .test.js          # isMatchFinal(STATUS_FINAL | STATUS_FULL_TIME | AET | PEN)
 │   ├── leaderboardStats.js + .test.js  # partition/summary/most-exact/lead/latest-top
 │   └── validate.js + .test.js
@@ -308,7 +310,7 @@ In rough commit order. All on main:
 | 1 | **Live results polling — primary next-session task** | The fetch-results.yml cron runs every 2hr and commits public/results.json. During the tournament we want the leaderboard to feel "live" without users having to refresh. Two angles: (a) bump cron frequency from 2hr to 15-30min (cheap on GH Actions), (b) add client-side polling so the leaderboard re-fetches results.json + recomputes scoring every N seconds when a match is live. Likely both. Group stage windows: Jun 11 → ~Jun 27. |
 | 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. Mostly moot once group stage starts since picks are locked. |
 | 3 | v2 knockout backend | **DONE (on branch `feat/v2-knockout-bracket`)** — bracket entry form (`bracket.html` / `src/bracket/`), `lib/bracket.js` + `scoreBracket` in `lib/score.js`, per-phase Apps Script lock, leaderboard merge-by-email, tabbed PickModal, KnockoutPicks, Overall-first table, PrizeCards, knockout-first MatchStrip/MatchModal. Not yet merged — gated on the go-live runbook (~Jun 27). See runbook section below. |
-| 4 | Input-className DRY cleanup | Score inputs repeat the same Tailwind class strings in MatchInputs and SubmitModal — extract to const if you're already editing those files. |
+| 4 | Input-className DRY cleanup | **DONE (on branch)** — extracted to `src/shared/scoreInput.js` (`SCORE_INPUT_CLASS`); reused by MatchInputs + bracket. SubmitModal uses different `w-full` identity inputs, left as-is. |
 
 ## v2 knockout go-live runbook (run ~Jun 27, after group stage ends)
 
@@ -360,7 +362,7 @@ In rough commit order. All on main:
   in dev mode. Doesn't affect prod.
 - **Dev server**: `npm run dev` → http://localhost:5173/ + /leaderboard.html
 - **Build**: `npm run build` → `dist/`. Output is what CF deploys via wrangler.
-- **Tests**: `npm test`. 68 pass (feat/v2-knockout-bracket; was 55 on main). Only `lib/` is tested. React components are
+- **Tests**: `npm test`. 69 pass (feat/v2-knockout-bracket; was 55 on main). Only `lib/` is tested. React components are
   manually tested via the dev server.
 - **Apps Script salt**: random hex string in the Apps Script's script
   properties. User generated their own — not stored in repo.
@@ -369,8 +371,26 @@ In rough commit order. All on main:
   cache-odds` or just paste the key in inline. See memory entry
   `reference_odds_api_key`.
 - **Native `<dialog>` centering**: Tailwind v4 preflight zeroes out the
-  default `margin: auto` on `dialog`. All modals (`SubmitModal`,
-  `ClearPicksButton`) explicitly center via `fixed inset-0 m-auto h-fit`.
+  default `margin: auto` on `dialog`. All modals (`SubmitModal`, `ClearPicksButton`, `BracketSubmitModal`) explicitly center via `fixed inset-0 m-auto h-fit`.
+
+- **v2 per-phase locks + secrets**: knockout submissions (`phase:'knockout'`)
+  gate on `knockout_lock_iso` (NOT group_lock_iso); the secret is checked
+  against the latest **knockout** row only, so a player may set a NEW secret for
+  phase 2. Email links the two phases on the leaderboard.
+- **v2 leaderboard entry shape**: `entries[]` group by `email_hash` and carry
+  both phases (`groupSub`/`knockoutSub`, `groupTotal`/`bracketTotal`/`total`).
+  `entry.picks`/`entry.scoring` are back-compat aliases for the GROUP row and are
+  null for a knockout-only entrant — guard with `?.` (components do).
+- **v2 knockout flair from constants**: `KnockoutPicks` + `MatchModal` color
+  slots via `scoreKnockoutMatch()` (lib/score.js) — never hardcode point
+  literals (see CLAUDE.md). `lib/status.js` AET/PEN strings are best-guess until
+  verified against a live knockout result (go-live runbook step 6).
+- **v2 dev mock flags**: `?mockKnockout=1` on `bracket.html` loads
+  `knockout.sample.json` (full 32-team tree); on `leaderboard.html` combine
+  `?mockLeaderboard=1&mockKnockout=1` for the full phase-2 board (varied mock
+  brackets: perfect / mixed / busted).
+- **v2 modal width**: tabbed `PickModal` widens to `max-w-4xl` on the Knockout
+  tab so the bracket has room (group tab stays `max-w-lg`).
 
 ## How to resume next session
 

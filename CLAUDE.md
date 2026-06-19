@@ -20,7 +20,16 @@ read `docs/HANDOFF.md` first — it's the source of truth.
   the user knows they have a manual step.
 
 - **Knockout flair uses `lib/score.js` constants, not literals.** The leaderboard
-  Knockout drilldown (`KnockoutPicks.jsx`) colors slots hit/miss by comparing the
-  player's `advances` to the actual advancer — it does NOT hardcode point
-  thresholds. The shared score-input className lives in `src/shared/scoreInput.js`
-  (used by both the group form and the bracket); change it in one place.
+  Knockout drilldown (`KnockoutPicks.jsx`) and the knockout `MatchModal` color
+  cells via `scoreKnockoutMatch()` (exported from `lib/score.js`) and by comparing
+  the player's `advances` to the actual advancer — they do NOT hardcode point
+  thresholds (unlike the group `pts === 3` / `pts >= 6` literals above). If you
+  change a knockout point constant, the renderers pick it up automatically via
+  `scoreKnockoutMatch`. The shared score-input className lives in
+  `src/shared/scoreInput.js` (group form + bracket); change it in one place.
+
+- **v2 knockout lives on `feat/v2-knockout-bracket`, not merged.** Don't merge
+  to `main` until the go-live runbook in `docs/HANDOFF.md` runs (~Jun 27): it
+  needs `public/knockout.json` seeded and a `knockout_lock_iso` Apps Script
+  script property set, or knockout POSTs return `400 lock_unset`. Merging early
+  would deploy `bracket.html` live before the backend can accept submissions.
