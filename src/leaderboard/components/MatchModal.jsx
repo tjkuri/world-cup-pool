@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { teamFlag, teamName } from '../../shared/teamNames.js';
 import { computeMatchSummary } from '../../../lib/leaderboardStats.js';
 import { resolveActualBracket } from '../../../lib/bracket.js';
+import { scoreKnockoutMatch } from '../../../lib/score.js';
 import { isMatchFinal } from '../../../lib/status.js';
 
 const OUTCOME_CLASSES = {
@@ -43,14 +44,17 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
       .filter((e) => e.knockoutSub != null)
       .map((e) => {
         const pick = e.knockoutSub.picks.bracket[slot.slot] ?? {};
-        const pts = e.bracketScoring?.round_points?.[slot.slot] ?? 0;
-        return { name: e.name, email_hash: e.email_hash, pick, pts, entry: e };
+        const m = scoreKnockoutMatch(round, pick, info);
+        return { name: e.name, email_hash: e.email_hash, pick, m, entry: e };
       })
       .sort((a, b) => {
-        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.m.points !== a.m.points) return b.m.points - a.m.points;
         return a.name.localeCompare(b.name);
       });
-  }, [slot, entries]);
+  }, [slot, entries, round, info]);
+
+  const exactCount = rows.filter((r) => r.m.exact).length;
+  const advCount = rows.filter((r) => r.m.correctAdvancer).length;
 
   const home = info?.home ?? '?';
   const away = info?.away ?? '?';
@@ -86,19 +90,25 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
             aria-label="Close"
           >×</button>
         </header>
+        {rows.length > 0 && info?.final && (
+          <div className="border-b border-slate-800 px-5 py-3 text-xs text-slate-300 space-y-1">
+            <div>🎯 {exactCount}/{rows.length} nailed the exact score</div>
+            <div>✅ {advCount}/{rows.length} called the advancer</div>
+          </div>
+        )}
         <div className="px-5 py-4 max-h-[50vh] overflow-y-auto">
           {rows.length === 0 ? (
             <p className="text-sm text-slate-400">No brackets submitted yet.</p>
           ) : (
             <ul className="space-y-1">
               {rows.map((r) => {
-                const predictedHome = r.pick.home_score ?? '–';
-                const predictedAway = r.pick.away_score ?? '–';
+                const predictedStr = `${r.pick.home_score ?? '–'}-${r.pick.away_score ?? '–'}`;
                 const predictedAdvances = r.pick.advances ?? null;
-                const advancerCorrect = actualAdvances && predictedAdvances && predictedAdvances === actualAdvances;
-                const advancerClass = actualAdvances
-                  ? (advancerCorrect ? 'text-emerald-300' : 'text-rose-400')
-                  : 'text-slate-400';
+                const cls = !info?.final
+                  ? 'text-slate-400'
+                  : r.m.exact ? 'text-emerald-300'
+                  : r.m.correctAdvancer ? 'text-sky-300'
+                  : 'text-rose-400';
                 return (
                   <li key={r.email_hash} className="flex items-center gap-3 text-sm">
                     <button
@@ -108,15 +118,12 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
                     >
                       {r.name}
                     </button>
-                    <span className="font-mono text-slate-300">
-                      {predictedHome}-{predictedAway}
+                    <span className={`font-mono ${cls}`}>
+                      {r.m.exact && <span className="mr-1" aria-label="exact score">🎯</span>}
+                      {predictedStr}
+                      {predictedAdvances && <span className="ml-1">{teamFlag(predictedAdvances)}</span>}
                     </span>
-                    {predictedAdvances && (
-                      <span className={`font-mono ${advancerClass}`}>
-                        {teamFlag(predictedAdvances)}
-                      </span>
-                    )}
-                    <span className="tabular-nums text-slate-400 w-8 text-right">{r.pts}</span>
+                    <span className="tabular-nums text-slate-400 w-8 text-right">{r.m.points}</span>
                   </li>
                 );
               })}
