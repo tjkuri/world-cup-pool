@@ -196,25 +196,36 @@ export function buildMockKnockoutResults(knockout) {
   return matches;
 }
 
-// Build a valid connected bracket advancing a chosen side each slot.
-// side='home' → picks match mock results (earns points);
-// side='away' → busts (for visible variety on the leaderboard).
-function buildMockBracket(knockout, side) {
+// Build a valid connected bracket. Mock actual results always advance the HOME
+// team 2-1, so:
+//   mode 'home'  → every pick correct + exact (perfect 531)
+//   mode 'away'  → every pick wrong (busted 0); wrong teams propagate as greys
+//   mode 'mixed' → ~1 in 4 advancers wrong (greys + 0s), correct ones split
+//                  between exact (2-1) and right-winner-wrong-score (3-0)
+// `seed` varies the mixed pattern between players.
+function buildMockBracket(knockout, mode, seed = 0) {
   const advancers = {}; // slot id -> team code this bracket picked to advance
   const bracket = {};
   for (const round of KO_ROUND_ORDER) {
     for (const slot of (knockout.rounds[round] || [])) {
       const home = round === 'R32' ? slot.home : (advancers[slot.from[0]] ?? null);
       const away = round === 'R32' ? slot.away : (advancers[slot.from[1]] ?? null);
+      const n = parseInt(slot.match_id, 10) + seed * 7;
+      let side;
+      if (mode === 'home') side = 'home';
+      else if (mode === 'away') side = 'away';
+      else side = (n % 4 === 0) ? 'away' : 'home';
       const advances = side === 'home' ? home : (away ?? home);
-      bracket[slot.slot] = {
-        match_id: slot.match_id ?? null,
-        home,
-        away,
-        home_score: side === 'home' ? 2 : 1,
-        away_score: side === 'home' ? 1 : 2,
-        advances,
-      };
+      let home_score, away_score;
+      if (side === 'home') {
+        const exact = mode === 'home' || n % 2 === 0;
+        home_score = exact ? 2 : 3;
+        away_score = exact ? 1 : 0;
+      } else {
+        home_score = 0;
+        away_score = 2;
+      }
+      bracket[slot.slot] = { match_id: slot.match_id ?? null, home, away, home_score, away_score, advances };
       advancers[slot.slot] = advances;
     }
   }
@@ -223,14 +234,16 @@ function buildMockBracket(knockout, side) {
   return { bracket, champion };
 }
 
-// One knockout submission per existing group submission (same email_hash + name),
-// alternating home/away advancers so the board shows a spread of bracket scores.
+// One knockout submission per existing group submission (same email_hash + name).
+// A spread — one perfect, one busted, the rest mixed (varied by seed) — so the
+// bracket view shows greys, partial outlines, and champions both hit and missed.
+const MOCK_BRACKET_PLANS = ['home', 'mixed', 'mixed', 'away', 'mixed'];
 export function buildMockKnockoutSubmissions(knockout, groupSubs) {
   return groupSubs.map((g, i) => ({
     name: g.name,
     email_hash: g.email_hash,
     phase: 'knockout',
-    picks: buildMockBracket(knockout, i % 2 === 0 ? 'home' : 'away'),
+    picks: buildMockBracket(knockout, MOCK_BRACKET_PLANS[i % MOCK_BRACKET_PLANS.length], i + 1),
     submitted_at: '2026-06-28T12:00:00Z',
   }));
 }

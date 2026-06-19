@@ -38,7 +38,9 @@ export function PickModal({ entry, fixtures, results, knockout, onClose }) {
               {entry.knockoutSub && (
                 <><span className="text-slate-600"> · </span>Knockout: {entry.bracketTotal}</>
               )}
-              <span className="text-slate-600"> · </span>Exact scores: {entry.scoring?.exact_score_count ?? 0}
+              {entry.groupSub && (
+                <><span className="text-slate-600"> · </span>Group exact: {entry.scoring?.exact_score_count ?? 0}</>
+              )}
             </p>
           </div>
           <button

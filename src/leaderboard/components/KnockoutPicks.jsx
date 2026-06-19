@@ -19,14 +19,19 @@ export function KnockoutPicks({ entry, knockout, results }) {
   return (
     <div className="space-y-3">
       {s && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
-          <span>Bracket <span className="font-semibold text-emerald-300">{s.bracket_total}</span> pts</span>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-slate-400">
+          <span><span className="font-semibold text-emerald-300">{s.bracket_total}</span> pts</span>
+          <span className="text-slate-600">=</span>
+          <span>{s.round_totals.R32 + s.round_totals.R16 + s.round_totals.QF + s.round_totals.SF} advancers</span>
           <span className="text-slate-600">·</span>
-          <span>Champion: {championPick ? <>{teamFlag(championPick)} {championPick}</> : '—'}{s.champion_points ? ' ✓' : ''}</span>
+          <span>{s.finalist_points} finalists</span>
           <span className="text-slate-600">·</span>
-          <span>Finalists {s.finalist_points}</span>
+          <span>{s.champion_points} champion</span>
           <span className="text-slate-600">·</span>
-          <span>Exact +{s.exact_bonus}</span>
+          <span>{s.exact_bonus} exact-score</span>
+          {championPick && (
+            <span className="ml-1 text-slate-500">(picked {teamFlag(championPick)} {championPick}{s.champion_points ? ' ✓' : ''})</span>
+          )}
         </div>
       )}
 
