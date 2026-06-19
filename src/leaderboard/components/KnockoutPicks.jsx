@@ -16,24 +16,55 @@ export function KnockoutPicks({ entry, knockout, results }) {
   const s = entry.bracketScoring;
   const rounds = KO_ROUND_ORDER.filter((r) => (knockout.rounds[r] || []).length > 0);
 
+  // Slim summary stats: correct advancers, exact scorelines, and per-round
+  // "how many of the teams that actually reached this round did you have here".
+  let correctWinners = 0;
+  for (const round of rounds) {
+    for (const slot of knockout.rounds[round]) {
+      const p = picks[slot.slot];
+      const a = matchInfo[slot.slot];
+      if (a?.final && p?.advances && p.advances === a.advances) correctWinners++;
+    }
+  }
+  const reachStat = (round) => {
+    const actual = new Set();
+    const predicted = new Set();
+    for (const slot of (knockout.rounds[round] || [])) {
+      const a = matchInfo[slot.slot] || {};
+      if (a.home) actual.add(a.home);
+      if (a.away) actual.add(a.away);
+      const p = picks[slot.slot] || {};
+      if (p.home) predicted.add(p.home);
+      if (p.away) predicted.add(p.away);
+    }
+    let hit = 0;
+    for (const t of predicted) if (actual.has(t)) hit++;
+    return { hit, total: actual.size };
+  };
+  const qf = reachStat('QF');
+  const sf = reachStat('SF');
+  const championRight = !!(s && s.champion_points > 0);
+
   return (
     <div className="space-y-3">
-      {s && (
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-slate-400">
-          <span><span className="font-semibold text-emerald-300">{s.bracket_total}</span> pts</span>
-          <span className="text-slate-600">=</span>
-          <span>{s.round_totals.R32 + s.round_totals.R16 + s.round_totals.QF + s.round_totals.SF} advancers</span>
-          <span className="text-slate-600">·</span>
-          <span>{s.finalist_points} finalists</span>
-          <span className="text-slate-600">·</span>
-          <span>{s.champion_points} champion</span>
-          <span className="text-slate-600">·</span>
-          <span>{s.exact_bonus} exact-score</span>
-          {championPick && (
-            <span className="ml-1 text-slate-500">(picked {teamFlag(championPick)} {championPick}{s.champion_points ? ' ✓' : ''})</span>
-          )}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
+        <span className="text-slate-400">
+          🏆 <span className={`font-semibold ${championRight ? 'text-emerald-300' : 'text-slate-200'}`}>
+            {championPick ? <>{teamFlag(championPick)} {championPick}</> : '—'}
+          </span>
+        </span>
+        <span className="text-slate-600">·</span>
+        <span className="text-slate-400"><span className="font-semibold text-slate-200">{correctWinners}</span> winners</span>
+        <span className="text-slate-600">·</span>
+        <span className="text-slate-400"><span className="font-semibold text-slate-200">{s?.exact_count ?? 0}</span> exact</span>
+        <span className="ml-auto flex flex-wrap items-center gap-1.5">
+          {qf.total > 0 && <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">QF {qf.hit}/{qf.total}</span>}
+          {sf.total > 0 && <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">SF {sf.hit}/{sf.total}</span>}
+          <span className={`rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${championRight ? 'bg-amber-500/20 text-amber-300 ring-amber-400/40' : 'bg-slate-800 text-slate-500 ring-slate-700'}`}>
+            🏆 {championRight ? 'Champion ✓' : 'Champion ✗'}
+          </span>
+        </span>
+      </div>
 
       <div className="overflow-x-auto pb-2">
         <div className="flex min-w-max">
