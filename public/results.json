@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-12T21:25:41.683Z",
+  "updated_at": "2026-06-25T00:03:38.325Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -17,249 +17,249 @@
       "status": "STATUS_FULL_TIME"
     },
     "760417": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 4,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760418": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760419": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760420": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760421": {
-      "home_score": 0,
+      "home_score": 2,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760422": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 7,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760423": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760424": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 5,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760425": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760426": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760427": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760428": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760429": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760430": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 4,
+      "status": "STATUS_FULL_TIME"
     },
     "760431": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 3,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760432": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 3,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760433": {
-      "home_score": 0,
+      "home_score": 3,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760434": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760435": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760436": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 3,
+      "status": "STATUS_FULL_TIME"
     },
     "760437": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 4,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760438": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760439": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 4,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760440": {
-      "home_score": 0,
+      "home_score": 6,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760441": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760442": {
-      "home_score": 0,
+      "home_score": 2,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760443": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760444": {
-      "home_score": 0,
+      "home_score": 3,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760445": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760446": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760447": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 5,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760448": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760449": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 4,
+      "status": "STATUS_FULL_TIME"
     },
     "760450": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760451": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760452": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 3,
+      "status": "STATUS_FULL_TIME"
     },
     "760453": {
-      "home_score": 0,
+      "home_score": 4,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760454": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 3,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760455": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 1,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760456": {
-      "home_score": 0,
+      "home_score": 2,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760457": {
-      "home_score": 0,
+      "home_score": 3,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760458": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760459": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760460": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760461": {
-      "home_score": 0,
+      "home_score": 5,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760462": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 3,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760463": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760464": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 4,
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760465": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 3,
+      "status": "STATUS_FULL_TIME"
     },
     "760466": {
       "home_score": 0,
