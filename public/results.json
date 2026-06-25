@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-25T00:03:38.325Z",
+  "updated_at": "2026-06-25T22:42:29.920Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -262,19 +262,19 @@
       "status": "STATUS_FULL_TIME"
     },
     "760466": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME"
     },
     "760467": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 3,
+      "status": "STATUS_FULL_TIME"
     },
     "760468": {
-      "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "home_score": 2,
+      "away_score": 1,
+      "status": "STATUS_FULL_TIME"
     },
     "760469": {
       "home_score": 0,
@@ -298,8 +298,8 @@
     },
     "760473": {
       "home_score": 0,
-      "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "away_score": 2,
+      "status": "STATUS_FULL_TIME"
     },
     "760474": {
       "home_score": 0,
