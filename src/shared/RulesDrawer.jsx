@@ -69,12 +69,11 @@ export function RulesDrawer({ onClose }) {
             <li><strong className="text-slate-100">R16 winner:</strong> 8 pts each (8 matches).</li>
             <li><strong className="text-slate-100">Quarterfinal winner:</strong> 16 pts each (4 matches).</li>
             <li><strong className="text-slate-100">Semifinal winner:</strong> 32 pts each (2 matches).</li>
-            <li><strong className="text-slate-100">Correct finalist:</strong> 50 pts each (100 max).</li>
-            <li><strong className="text-slate-100">Correct champion:</strong> 80 pts.</li>
+            <li><strong className="text-slate-100">Correct champion:</strong> 64 pts.</li>
             <li><strong className="text-slate-100">Exact score on any knockout match:</strong> +3 bonus.</li>
             <li><strong className="text-slate-100">Exact score on the Final:</strong> +5 bonus (instead of +3).</li>
           </ul>
-          <p className="mb-2 text-xs text-slate-400">Knockout max: ~531 pts. Total tournament max: ~1,383 pts.</p>
+          <p className="mb-2 text-xs text-slate-400">Knockout max: ~415 pts. Total tournament max: ~1,267 pts.</p>
 
           <h3 className="mt-4 mb-2 text-base font-semibold text-slate-100">Submissions</h3>
           <p className="mb-2 text-sm text-slate-300">
