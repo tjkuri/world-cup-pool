@@ -242,14 +242,14 @@ Per-group max: 71. × 12 groups = **852 pts group-stage max**.
 | R16 winner (8 matches) | 8 each |
 | QF winner (4 matches) | 16 each |
 | SF winner (2 matches) | 32 each |
-| Correct finalist | 50 each (100 max) |
-| Correct champion | 80 |
+| Correct champion | 64 |
 | Exact score on knockout match | +3 bonus |
 | Exact score on the Final | +5 bonus (replaces +3) |
 
-Knockout max: **~531 pts**. Total tournament max: **~1,383 pts**.
+Knockout max: **~415 pts** (256 round-winner + 64 champion + 95 exact).
+Total tournament max: **~1,267 pts** (852 group + 415 knockout).
 
-Phase split: **62% group / 38% knockout** — group leader has a real edge for
+Phase split: **~67% group / ~33% knockout** — group leader has a real edge for
 the overall title but the bracket is heavy enough that comebacks are possible.
 
 Why these numbers (don't re-litigate without reason):
@@ -261,6 +261,11 @@ Why these numbers (don't re-litigate without reason):
   original spec didn't include it.
 - Bracket scoring uses the doubling pattern (industry standard) at 2x the
   brother's original bracket weights so knockout has real swing on the title.
+- **Finalist points removed + champion 80→64 (rebalance, 2026-06-24):** in a
+  connected bracket, a correct SF-winner pick already *is* a correct finalist,
+  so the 50-each finalist award double-rewarded the same pick. Dropping it and
+  setting champion to 64 keeps a clean doubling ladder (4→8→16→32→64) and pulls
+  the phase split from 62/38 to ~67/33.
 
 ## Lock time
 
