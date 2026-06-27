@@ -14,7 +14,11 @@ import { fetchScoreboard, parseEvent } from './lib/espn.mjs';
 
 const ROUND_SIZES = { R32: 16, R16: 8, QF: 4, SF: 2, F: 1 };
 // Round-32 dates per the schedule; adjust if the calendar shifts.
-const R32_DATES = ['20260705', '20260706', '20260707', '20260708'];
+// Verified against ESPN's live scoreboard 2026-06-27: these six dates return
+// all 16 R32 matches (1+3+3+3+3+3; the after-midnight-UTC kickoffs surface on
+// the prior broadcast day's scoreboard, so no Jul 4 fetch is needed). The
+// earlier Jul 5-8 values were the Round-of-16 window (8 matches) — wrong round.
+const R32_DATES = ['20260628', '20260629', '20260630', '20260701', '20260702', '20260703'];
 
 // Standard single-elimination feed map: slot i of a round is fed by slots
 // 2i-1 and 2i of the previous round. F-1 is fed by SF-1 and SF-2.
