@@ -1,0 +1,293 @@
+{
+  "seeded_at": "2026-06-28T04:25:12.888Z",
+  "first_kickoff_iso": "2026-06-28T19:00:00.000Z",
+  "rounds": {
+    "R32": [
+      {
+        "slot": "R32-1",
+        "match_id": "760489",
+        "home": "GER",
+        "away": "PAR",
+        "kickoff_iso": "2026-06-29T20:30:00.000Z",
+        "feeds": "R16-1"
+      },
+      {
+        "slot": "R32-2",
+        "match_id": "760492",
+        "home": "FRA",
+        "away": "SWE",
+        "kickoff_iso": "2026-06-30T21:00:00.000Z",
+        "feeds": "R16-1"
+      },
+      {
+        "slot": "R32-3",
+        "match_id": "760486",
+        "home": "RSA",
+        "away": "CAN",
+        "kickoff_iso": "2026-06-28T19:00:00.000Z",
+        "feeds": "R16-2"
+      },
+      {
+        "slot": "R32-4",
+        "match_id": "760488",
+        "home": "NED",
+        "away": "MAR",
+        "kickoff_iso": "2026-06-30T01:00:00.000Z",
+        "feeds": "R16-2"
+      },
+      {
+        "slot": "R32-5",
+        "match_id": "760496",
+        "home": "POR",
+        "away": "CRO",
+        "kickoff_iso": "2026-07-02T23:00:00.000Z",
+        "feeds": "R16-3"
+      },
+      {
+        "slot": "R32-6",
+        "match_id": "760497",
+        "home": "ESP",
+        "away": "AUT",
+        "kickoff_iso": "2026-07-02T19:00:00.000Z",
+        "feeds": "R16-3"
+      },
+      {
+        "slot": "R32-7",
+        "match_id": "760494",
+        "home": "USA",
+        "away": "BIH",
+        "kickoff_iso": "2026-07-02T00:00:00.000Z",
+        "feeds": "R16-4"
+      },
+      {
+        "slot": "R32-8",
+        "match_id": "760493",
+        "home": "BEL",
+        "away": "SEN",
+        "kickoff_iso": "2026-07-01T20:00:00.000Z",
+        "feeds": "R16-4"
+      },
+      {
+        "slot": "R32-9",
+        "match_id": "760487",
+        "home": "BRA",
+        "away": "JPN",
+        "kickoff_iso": "2026-06-29T17:00:00.000Z",
+        "feeds": "R16-5"
+      },
+      {
+        "slot": "R32-10",
+        "match_id": "760490",
+        "home": "CIV",
+        "away": "NOR",
+        "kickoff_iso": "2026-06-30T17:00:00.000Z",
+        "feeds": "R16-5"
+      },
+      {
+        "slot": "R32-11",
+        "match_id": "760491",
+        "home": "MEX",
+        "away": "ECU",
+        "kickoff_iso": "2026-07-01T01:00:00.000Z",
+        "feeds": "R16-6"
+      },
+      {
+        "slot": "R32-12",
+        "match_id": "760495",
+        "home": "ENG",
+        "away": "COD",
+        "kickoff_iso": "2026-07-01T16:00:00.000Z",
+        "feeds": "R16-6"
+      },
+      {
+        "slot": "R32-13",
+        "match_id": "760500",
+        "home": "ARG",
+        "away": "CPV",
+        "kickoff_iso": "2026-07-03T22:00:00.000Z",
+        "feeds": "R16-7"
+      },
+      {
+        "slot": "R32-14",
+        "match_id": "760499",
+        "home": "AUS",
+        "away": "EGY",
+        "kickoff_iso": "2026-07-03T18:00:00.000Z",
+        "feeds": "R16-7"
+      },
+      {
+        "slot": "R32-15",
+        "match_id": "760498",
+        "home": "SUI",
+        "away": "ALG",
+        "kickoff_iso": "2026-07-03T03:00:00.000Z",
+        "feeds": "R16-8"
+      },
+      {
+        "slot": "R32-16",
+        "match_id": "760501",
+        "home": "COL",
+        "away": "GHA",
+        "kickoff_iso": "2026-07-04T01:30:00.000Z",
+        "feeds": "R16-8"
+      }
+    ],
+    "R16": [
+      {
+        "slot": "R16-1",
+        "match_id": "760503",
+        "from": [
+          "R32-1",
+          "R32-2"
+        ],
+        "kickoff_iso": "2026-07-04T21:00:00.000Z",
+        "feeds": "QF-1"
+      },
+      {
+        "slot": "R16-2",
+        "match_id": "760502",
+        "from": [
+          "R32-3",
+          "R32-4"
+        ],
+        "kickoff_iso": "2026-07-04T17:00:00.000Z",
+        "feeds": "QF-1"
+      },
+      {
+        "slot": "R16-3",
+        "match_id": "760506",
+        "from": [
+          "R32-5",
+          "R32-6"
+        ],
+        "kickoff_iso": "2026-07-06T19:00:00.000Z",
+        "feeds": "QF-2"
+      },
+      {
+        "slot": "R16-4",
+        "match_id": "760507",
+        "from": [
+          "R32-7",
+          "R32-8"
+        ],
+        "kickoff_iso": "2026-07-07T00:00:00.000Z",
+        "feeds": "QF-2"
+      },
+      {
+        "slot": "R16-5",
+        "match_id": "760504",
+        "from": [
+          "R32-9",
+          "R32-10"
+        ],
+        "kickoff_iso": "2026-07-05T20:00:00.000Z",
+        "feeds": "QF-3"
+      },
+      {
+        "slot": "R16-6",
+        "match_id": "760505",
+        "from": [
+          "R32-11",
+          "R32-12"
+        ],
+        "kickoff_iso": "2026-07-06T00:00:00.000Z",
+        "feeds": "QF-3"
+      },
+      {
+        "slot": "R16-7",
+        "match_id": "760509",
+        "from": [
+          "R32-13",
+          "R32-14"
+        ],
+        "kickoff_iso": "2026-07-07T16:00:00.000Z",
+        "feeds": "QF-4"
+      },
+      {
+        "slot": "R16-8",
+        "match_id": "760508",
+        "from": [
+          "R32-15",
+          "R32-16"
+        ],
+        "kickoff_iso": "2026-07-07T20:00:00.000Z",
+        "feeds": "QF-4"
+      }
+    ],
+    "QF": [
+      {
+        "slot": "QF-1",
+        "match_id": "760510",
+        "from": [
+          "R16-1",
+          "R16-2"
+        ],
+        "kickoff_iso": "2026-07-09T20:00:00.000Z",
+        "feeds": "SF-1"
+      },
+      {
+        "slot": "QF-2",
+        "match_id": "760511",
+        "from": [
+          "R16-3",
+          "R16-4"
+        ],
+        "kickoff_iso": "2026-07-10T19:00:00.000Z",
+        "feeds": "SF-1"
+      },
+      {
+        "slot": "QF-3",
+        "match_id": "760512",
+        "from": [
+          "R16-5",
+          "R16-6"
+        ],
+        "kickoff_iso": "2026-07-11T21:00:00.000Z",
+        "feeds": "SF-2"
+      },
+      {
+        "slot": "QF-4",
+        "match_id": "760513",
+        "from": [
+          "R16-7",
+          "R16-8"
+        ],
+        "kickoff_iso": "2026-07-12T01:00:00.000Z",
+        "feeds": "SF-2"
+      }
+    ],
+    "SF": [
+      {
+        "slot": "SF-1",
+        "match_id": "760514",
+        "from": [
+          "QF-1",
+          "QF-2"
+        ],
+        "kickoff_iso": "2026-07-14T19:00:00.000Z",
+        "feeds": "F-1"
+      },
+      {
+        "slot": "SF-2",
+        "match_id": "760515",
+        "from": [
+          "QF-3",
+          "QF-4"
+        ],
+        "kickoff_iso": "2026-07-15T19:00:00.000Z",
+        "feeds": "F-1"
+      }
+    ],
+    "F": [
+      {
+        "slot": "F-1",
+        "match_id": "760517",
+        "from": [
+          "SF-1",
+          "SF-2"
+        ],
+        "kickoff_iso": "2026-07-19T19:00:00.000Z"
+      }
+    ]
+  }
+}

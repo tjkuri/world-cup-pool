@@ -5,15 +5,18 @@
 // and prints the first R32 kickoff for config.json + the Apps Script
 // "knockout_lock_iso" property.
 //
-// HOW THE TREE IS WIRED (don't reintroduce the old bug):
+// HOW THE TREE IS WIRED (don't reintroduce the old bugs):
 //   The 2026 bracket is NOT sequential — R16-1 is NOT fed by R32-1 & R32-2.
 //   ESPN publishes the real wiring as placeholder team names on each later-round
-//   match ("Round of 32 3 Winner", "Quarterfinal 1 Winner", ...). We parse those
-//   to build the exact tree, number each round's matches by ascending ESPN match
-//   id, then relabel slots in clean top-to-bottom bracket order. Every knockout
-//   match already exists in ESPN (with id + kickoff) before its teams resolve, so
-//   we seed match_id + kickoff_iso for ALL rounds — the cron only fetches slots
-//   that already have a match_id.
+//   match ("Round of 32 3 Winner", "Quarterfinal 1 Winner", ...). The number in
+//   those refs is the FIFA matchNumber position within the round, NOT the match
+//   id order (the two differ — using id order puts teams in the wrong half).
+//   matchNumber only lives in ESPN's core API, so we fetch it per match. We parse
+//   the feeder refs to build the exact tree, number each round by matchNumber,
+//   then relabel slots in clean top-to-bottom bracket order. Every knockout match
+//   already exists in ESPN (with id + kickoff) before its teams resolve, so we
+//   seed match_id + kickoff_iso for ALL rounds — the cron only fetches slots that
+//   already have a match_id.
 //
 // Still verify the printed tree against the official bracket before committing.
 
@@ -48,20 +51,25 @@ export function parseFeederRef(displayName) {
 }
 
 // Pure: turn classified events into knockout.json. Input shape:
-//   { R32: [{matchId, home, away, kickoff_iso}],
-//     R16|QF|SF|F: [{matchId, kickoff_iso, feeders:[ref, ref]}] }
+//   { R32: [{matchId, matchNumber, home, away, kickoff_iso}],
+//     R16|QF|SF|F: [{matchId, matchNumber, kickoff_iso, feeders:[ref, ref]}] }
 // (F holds the Final only — the 3rd-place match is dropped during classification.)
 export function buildKnockout(byRound) {
-  // 1. Number each round's matches by ascending match id → ESPN bracket number.
-  //    `num['R32#3']` is the 3rd R32 match by id, which is what "Round of 32 3"
-  //    refers to.
+  // 1. Number each round's matches by ascending FIFA matchNumber → ESPN bracket
+  //    number. `num['R32#3']` is the 3rd R32 match by matchNumber, which is what
+  //    "Round of 32 3" refers to. NOTE: matchNumber order != match id order, and
+  //    using id order silently puts teams in the wrong half of the bracket.
   const num = {};
   for (const round of ['R32', 'R16', 'QF', 'SF', 'F']) {
-    const items = [...(byRound[round] || [])].sort((a, b) => Number(a.matchId) - Number(b.matchId));
+    const items = [...(byRound[round] || [])];
     const expected = ROUND_SIZES[round];
     if (items.length !== expected) {
       throw new Error(`Expected ${expected} ${round} matches, got ${items.length}`);
     }
+    for (const it of items) {
+      if (!Number.isFinite(it.matchNumber)) throw new Error(`${round} match ${it.matchId} is missing matchNumber`);
+    }
+    items.sort((a, b) => a.matchNumber - b.matchNumber);
     items.forEach((it, i) => { num[`${round}#${i + 1}`] = it; });
   }
 
@@ -134,6 +142,16 @@ function competitors(event) {
   };
 }
 
+// FIFA matchNumber lives only in ESPN's core API (not the scoreboard). It's how
+// the feeder placeholder names number themselves ("Round of 32 N").
+async function fetchMatchNumber(matchId) {
+  const url = `https://sports.core.api.espn.com/v2/sports/soccer/leagues/fifa.world/events/${matchId}`;
+  const j = await (await fetch(url)).json();
+  const mn = j.competitions?.[0]?.matchNumber;
+  if (!Number.isFinite(mn)) throw new Error(`Event ${matchId} has no matchNumber`);
+  return mn;
+}
+
 async function main() {
   const seen = new Set();
   const byRound = { R32: [], R16: [], QF: [], SF: [], F: [] };
@@ -166,6 +184,15 @@ async function main() {
       }
     }
     await new Promise((r) => setTimeout(r, 1000));
+  }
+
+  // Attach FIFA matchNumber (core API only) to every kept match — it drives the
+  // per-round numbering the feeder refs use.
+  for (const round of ['R32', 'R16', 'QF', 'SF', 'F']) {
+    for (const it of byRound[round]) {
+      it.matchNumber = await fetchMatchNumber(it.matchId);
+      await new Promise((r) => setTimeout(r, 100));
+    }
   }
 
   // Guard: don't seed a bracket whose R32 teams haven't resolved yet. ESPN uses
