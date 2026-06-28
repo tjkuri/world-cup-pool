@@ -37,6 +37,8 @@ export function App() {
   const [modalMatchId, setModalMatchId] = useState(null);
   const [now, setNow] = useState(() => new Date());
   const [knockout, setKnockout] = useState(null);
+  const [knockoutLocked, setKnockoutLocked] = useState(false);
+  const [knockoutCount, setKnockoutCount] = useState(0);
 
   const lockTime = config ? new Date(config.group_lock_iso) : null;
 
@@ -69,7 +71,10 @@ export function App() {
             const koResults = buildMockKnockoutResults(ko);
             mockResults.matches = { ...mockResults.matches, ...koResults };
             setKnockout(ko);
-            subs = [...subs, ...buildMockKnockoutSubmissions(ko, subs)];
+            const koSubs = buildMockKnockoutSubmissions(ko, subs);
+            subs = [...subs, ...koSubs];
+            setKnockoutLocked(true);
+            setKnockoutCount(koSubs.length);
           }
           setResults(mockResults);
           setSubmissions(subs);
@@ -83,6 +88,8 @@ export function App() {
           const data = await resp.json();
           setLocked(Boolean(data.locked));
           setSubmissions(data.locked ? data.submissions : []);
+          setKnockoutLocked(Boolean(data.knockoutLocked));
+          setKnockoutCount(data.knockoutCount ?? 0);
         } catch (e) {
           setError(String(e));
         }
@@ -149,10 +156,15 @@ export function App() {
     return false;
   }, [knockout, results]);
 
+  // Phase-2 layout (frozen Group column + Knockout column) goes live as soon as
+  // the bracket is seeded, not when the first knockout result lands — so people
+  // see the knockout column (0s until matches play) the moment we deploy.
+  const knockoutLive = !!knockout;
+
   if (error) {
     return (
       <>
-        <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)} />
+        <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./bracket.html" otherLabel="Bracket" onOpenRules={() => setRulesOpen(true)} />
         <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <p className="text-slate-300">Couldn't load. <button type="button" className="text-emerald-400 hover:underline" onClick={() => location.reload()}>Retry</button></p>
           <pre className="mt-2 text-xs text-slate-500">{error}</pre>
@@ -164,32 +176,41 @@ export function App() {
   if (!config || !fixtures || !results || locked === null) {
     return (
       <>
-        <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)} />
+        <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./bracket.html" otherLabel="Bracket" onOpenRules={() => setRulesOpen(true)} />
         <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6"><p className="text-slate-400">Loading…</p></main>
       </>
     );
   }
+  // During the knockout-submission window the useful destination is the bracket
+  // form (the group form is locked); after the bracket locks the link still
+  // opens the bracket (now read-only), so just label it "Bracket".
+  const bracketCtaLabel =
+    config.knockout_lock_iso && now >= new Date(config.knockout_lock_iso)
+      ? 'Bracket'
+      : 'Submit bracket';
   return (
     <>
-      <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./index.html" otherLabel="Submit picks" onOpenRules={() => setRulesOpen(true)}>
+      <TopBar pageLabel="World Cup 2026 Pool — Leaderboard" otherPage="./bracket.html" otherLabel={bracketCtaLabel} onOpenRules={() => setRulesOpen(true)}>
         <LockBanner lockTime={lockTime} now={now} />
         {lastUpdated && <div className="text-sm text-slate-400">Last updated: {lastUpdated}</div>}
       </TopBar>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
         {locked && <MatchStrip fixtures={fixtures} results={results} knockout={knockout} inKnockoutPhase={inKnockoutPhase} onSelect={setModalMatchId} />}
-        {knockout && locked && !inKnockoutPhase && entries.length > 0 && (
-          <p className="mb-3 text-sm text-slate-400">🗳️ {entries.filter((e) => e.knockoutSub).length}/{entries.length} brackets submitted</p>
+        {knockoutLive && locked && !knockoutLocked && entries.length > 0 && (
+          <p className="mb-3 text-sm text-slate-400">
+            🗳️ {knockoutCount}/{entries.length} brackets submitted · everyone's picks are hidden until they lock on {formatKickoff(config.knockout_lock_iso)}
+          </p>
         )}
         {!locked ? (
           <p className="text-slate-300">The leaderboard goes live after submissions close on {formatKickoff(config.group_lock_iso)}.</p>
         ) : (
           <>
-            {inKnockoutPhase && <PrizeCards entries={entries} buyIn={config.buy_in_usd} />}
+            {knockoutLive && <PrizeCards entries={entries} buyIn={config.buy_in_usd} />}
             <LeaderboardTable
               entries={entries}
               onRowClick={setModalEntry}
-              inKnockoutPhase={inKnockoutPhase}
+              knockoutLive={knockoutLive}
             />
           </>
         )}

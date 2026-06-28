@@ -14,7 +14,7 @@ function InfoTip({ text }) {
   );
 }
 
-export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
+export function LeaderboardTable({ entries, onRowClick, knockoutLive }) {
   if (!entries.length) return <p className="text-slate-400">No submissions to display yet.</p>;
 
   return (
@@ -23,7 +23,7 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
         <tr className="border-b border-slate-700 bg-slate-900 text-slate-300">
           <th className="px-3 py-2 text-left font-medium">Rank</th>
           <th className="px-3 py-2 text-left font-medium">Name</th>
-          {!inKnockoutPhase && (
+          {!knockoutLive && (
             <th className="px-3 py-2 text-right font-medium">
               <span className="inline-flex items-center justify-end">
                 Match pts
@@ -31,7 +31,7 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
               </span>
             </th>
           )}
-          {!inKnockoutPhase && (
+          {!knockoutLive && (
             <th className="px-3 py-2 text-right font-medium">
               <span className="inline-flex items-center justify-end">
                 Group pts
@@ -39,7 +39,7 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
               </span>
             </th>
           )}
-          {inKnockoutPhase && (
+          {knockoutLive && (
             <th className="px-3 py-2 text-right font-medium text-slate-500">
               <span className="inline-flex items-center justify-end">
                 Group
@@ -47,18 +47,18 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
               </span>
             </th>
           )}
-          {inKnockoutPhase && (
+          {knockoutLive && (
             <th className="px-3 py-2 text-right font-medium text-emerald-400">
               <span className="inline-flex items-center justify-end">
                 Knockout
-                <InfoTip text="Points earned from your bracket picks so far in the knockout rounds." />
+                <InfoTip text="Bracket points, updating as knockout matches finish — 0 for everyone until the Round of 32 begins." />
               </span>
             </th>
           )}
           <th className="px-3 py-2 text-right font-medium">
             <span className="inline-flex items-center justify-end">
               Total
-              <InfoTip text={inKnockoutPhase ? "Group total + Knockout pts. Ranks the leaderboard." : "Match pts + Group pts. Ranks the leaderboard."} />
+              <InfoTip text={knockoutLive ? "Group total + Knockout pts. Ranks the leaderboard." : "Match pts + Group pts. Ranks the leaderboard."} />
             </span>
           </th>
           <th className="px-3 py-2 text-right font-medium">
@@ -78,16 +78,16 @@ export function LeaderboardTable({ entries, onRowClick, inKnockoutPhase }) {
           >
             <td className="px-3 py-2 tabular-nums text-slate-400">{i + 1}</td>
             <td className="px-3 py-2 text-slate-100">{entry.name}</td>
-            {!inKnockoutPhase && (
+            {!knockoutLive && (
               <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.match_total ?? 0}</td>
             )}
-            {!inKnockoutPhase && (
+            {!knockoutLive && (
               <td className="px-3 py-2 text-right tabular-nums text-slate-300">{entry.scoring?.group_total ?? 0}</td>
             )}
-            {inKnockoutPhase && (
+            {knockoutLive && (
               <td className="px-3 py-2 text-right tabular-nums text-slate-500">{entry.groupTotal}</td>
             )}
-            {inKnockoutPhase && (
+            {knockoutLive && (
               <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-400">{entry.bracketTotal}</td>
             )}
             <td className="px-3 py-2 text-right tabular-nums font-semibold text-emerald-300">{entry.total}</td>

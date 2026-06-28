@@ -11,7 +11,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(here, 'index.html'),
+        main: resolve(here, 'index.html'),        // redirects to ./leaderboard.html
+        form: resolve(here, 'form.html'),          // retired group-stage form (locked)
         leaderboard: resolve(here, 'leaderboard.html'),
         bracket: resolve(here, 'bracket.html'),
       },
