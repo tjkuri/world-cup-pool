@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-28T07:44:04.539Z",
+  "updated_at": "2026-06-28T19:04:18.223Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -368,7 +368,7 @@
     "760486": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FIRST_HALF"
     },
     "760487": {
       "home_score": 0,
