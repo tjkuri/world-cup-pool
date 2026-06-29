@@ -71,8 +71,9 @@ export function KnockoutPicks({ entry, knockout, results }) {
           {rounds.map((round, ri) => {
             const notLast = ri < rounds.length - 1;
             return (
-              <div key={round} className="flex flex-col justify-around px-3" style={{ minWidth: '162px' }}>
+              <div key={round} className="flex flex-col px-3" style={{ minWidth: '162px' }}>
                 <div className="mb-2 text-center text-[10px] uppercase tracking-wide text-slate-500">{ROUND_LABELS[round]}</div>
+                <div className="flex flex-1 flex-col justify-around">
                 {knockout.rounds[round].map((slot) => {
                   const pick = picks[slot.slot] || {};
                   const actual = matchInfo[slot.slot] || {};
@@ -123,6 +124,7 @@ export function KnockoutPicks({ entry, knockout, results }) {
                     </div>
                   );
                 })}
+                </div>
               </div>
             );
           })}

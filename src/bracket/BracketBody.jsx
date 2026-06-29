@@ -81,6 +81,11 @@ export function BracketBody({ config, knockout }) {
     <>{topBar}
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PotBar appsScriptUrl={config.apps_script_url} buyIn={config.buy_in_usd} />
+        {config.bracket_notice && (
+          <div className="mb-4 rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            {config.bracket_notice}
+          </div>
+        )}
         {lockTime && <p className="mb-3 text-xs text-slate-500">Locks {formatKickoff(lockIso)}.</p>}
         <BracketEntry knockout={knockout} config={config} />
       </main>
