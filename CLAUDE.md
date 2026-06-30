@@ -28,8 +28,27 @@ read `docs/HANDOFF.md` first — it's the source of truth.
   `scoreKnockoutMatch`. The shared score-input className lives in
   `src/shared/scoreInput.js` (group form + bracket); change it in one place.
 
-- **v2 knockout lives on `feat/v2-knockout-bracket`, not merged.** Don't merge
-  to `main` until the go-live runbook in `docs/HANDOFF.md` runs (~Jun 27): it
-  needs `public/knockout.json` seeded and a `knockout_lock_iso` Apps Script
-  script property set, or knockout POSTs return `400 lock_unset`. Merging early
-  would deploy `bracket.html` live before the backend can accept submissions.
+- **v2 knockout is LIVE on `main`.** Go-live ran 2026-06-27→29; all 24 brackets
+  in, revealed, submissions locked. See `docs/HANDOFF.md` → "Knockout live-ops".
+
+- **`knockout_lock_iso` is intentionally desynced between config and Apps Script.**
+  One ISO controls TWO things in the backend: submission-lock (doPost) AND reveal
+  (doGet hides knockout picks until it passes). The Apps Script property is in the
+  PAST (locked + revealed); `public/config.json`'s copy is in the FUTURE (keeps the
+  bracket form UI open). This is deliberate — it keeps brackets revealed/locked
+  while letting a single straggler still submit via the `knockout_open_email`
+  allowlist property (+ `knockout_submissions_closed` flag). **Don't "fix" them to
+  match.**
+
+- **Bracket slots number by FIFA `matchNumber`, not ESPN match-id.** ESPN feeder
+  refs ("Round of 32 N Winner") number by `matchNumber` (R32 = 73–88), which is NOT
+  id order. `scripts/seed-knockout.mjs` fetches `matchNumber` per match from ESPN's
+  core API to wire the tree; numbering by id puts teams in the wrong half. Covered
+  by `scripts/seed-knockout.test.mjs` (RSA/BRA opposite-halves regression).
+
+- **Late-edit audit.** The deadline was extended past the first R32 kickoff with a
+  "picks for already-started matches are voided" rule, enforced manually via
+  `node scripts/audit-late-edits.mjs <sheet.tsv>` (export the sheet to TSV — the
+  API only returns the latest row per player, the TSV has full history).
+
+- **`grep` treats `Code.gs` as binary** (em-dash in a comment). Use `grep -a` or sed.

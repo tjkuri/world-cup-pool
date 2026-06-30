@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-19 (group stage ongoing). Pool is **24 entrants / $720 pot** (Lisa added via brief admin-unlock; her MEX-RSA pick stripped from the sheet so she doesn't score on a match that already played). Leaderboard has the by-match drilldown. **v2 knockout bracket fully implemented + UI-polished on `feat/v2-knockout-bracket`; merge gated on go-live runbook below (~Jun 27).**
+Last updated: 2026-06-29 (**knockout stage LIVE**). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main` and deployed**; all 24 knockout brackets are in, **revealed** on the leaderboard, and **submissions are locked** (see "Knockout lock / reveal / email-gate" below). R32 is underway and the cron is scoring it live. Remaining work is operational (judging late/edited picks, final tally), not feature work — see "Knockout live-ops" + "Pending items".
 
 ## TL;DR for next-session-Claude
 
@@ -269,14 +269,30 @@ Why these numbers (don't re-litigate without reason):
 
 ## Lock time
 
-`2026-06-11T19:00:00Z` — pinned to ESPN's earliest group-stage kickoff (South
-Africa @ Mexico). Stored in two places that MUST stay in sync:
+**Group lock** `2026-06-11T19:00:00Z` (ESPN's first group kickoff). Two places,
+normally in sync: `public/config.json` → `group_lock_iso` (UI countdown) and the
+Apps Script script property `group_lock_iso` (server enforcement).
 
-1. `public/config.json` → `group_lock_iso` (frontend countdown, used for UX)
-2. Apps Script script property `group_lock_iso` (server-side enforcement)
+**Knockout lock / reveal / email-gate** — the knockout lock is more involved
+because the *same* `knockout_lock_iso` controls BOTH submission-lock (`doPost`)
+and bracket-reveal (`doGet` hides knockout picks until it passes). Current live
+state (deliberate, NOT a bug — don't "sync" them):
 
-To extend the lock, edit the Apps Script script property in the UI; client UI
-will follow after redeploy of config.json.
+- Apps Script property `knockout_lock_iso = 2026-06-28T19:00:00Z` (**past**) →
+  submissions locked + all brackets **revealed**.
+- `public/config.json` `knockout_lock_iso = 2026-06-30T04:00:00Z` (**future**) →
+  keeps the bracket *form* (`bracket.html` UI) open. The desync is intentional:
+  property = backend lock+reveal, config = UI form-open window.
+- **Email-gate** (added to `Code.gs` `doPost`): the one email in the
+  `knockout_open_email` script property bypasses every knockout lock — used to
+  hold the window open for a single late straggler while everyone else is
+  rejected. There's also a `knockout_submissions_closed` (`'true'`) flag that
+  closes the field without touching `knockout_lock_iso` (i.e. without revealing).
+  To **fully close**: remove/blank `knockout_open_email`. To re-lock the UI too,
+  set `config.knockout_lock_iso` back to the past and drop `bracket_notice`.
+- `public/config.json` `bracket_notice` (string) renders an amber banner on
+  `bracket.html` (currently: submissions closed, stragglers may still enter,
+  picks for already-kicked-off matches are voided).
 
 ## Recent additions (post-restyle)
 
@@ -312,26 +328,48 @@ In rough commit order. All on main:
 
 | ID | What | Notes |
 |---|---|---|
-| 1 | **Live results polling — primary next-session task** | The fetch-results.yml cron runs every 2hr and commits public/results.json. During the tournament we want the leaderboard to feel "live" without users having to refresh. Two angles: (a) bump cron frequency from 2hr to 15-30min (cheap on GH Actions), (b) add client-side polling so the leaderboard re-fetches results.json + recomputes scoring every N seconds when a match is live. Likely both. Group stage windows: Jun 11 → ~Jun 27. |
-| 2 | Refresh odds closer to tournament start | `ODDS_API_KEY=... npm run cache-odds`. Key lives in yggdrasil's `.env` (see memory). Costs 1 credit per refresh. Mostly moot once group stage starts since picks are locked. |
-| 3 | v2 knockout backend | **DONE (on branch `feat/v2-knockout-bracket`)** — bracket entry form (`bracket.html` / `src/bracket/`), `lib/bracket.js` + `scoreBracket` in `lib/score.js`, per-phase Apps Script lock, leaderboard merge-by-email, tabbed PickModal, KnockoutPicks, Overall-first table, PrizeCards, knockout-first MatchStrip/MatchModal. Not yet merged — gated on the go-live runbook (~Jun 27). See runbook section below. |
-| 4 | Input-className DRY cleanup | **DONE (on branch)** — extracted to `src/shared/scoreInput.js` (`SCORE_INPUT_CLASS`); reused by MatchInputs + bracket. SubmitModal uses different `w-full` identity inputs, left as-is. |
+| 1 | **Final scoring / payout** | Pool ends ~Jul 19. 30% to the group-stage points leader, 70% to overall leader. Knockout scores compute live on the leaderboard from `results.json`; the R32-3 nulls (below) are baked into the sheet, so the live board IS the source of truth. Just confirm winners at the end. |
+| 2 | Fully close the knockout gate | Once you're sure no more stragglers: remove/blank the `knockout_open_email` Apps Script property, set `config.knockout_lock_iso` back to the past, drop `bracket_notice`. (As of last session Manuel was the last submitter; gate may already be closed.) |
+| 3 | (done) Live results | Cron `fetch-results.yml` every 2hr commits `public/results.json` with knockout `advances`. Verified ingesting R32. Client recomputes scoring on load. (Never added sub-2hr polling; not needed.) |
+| 4 | (done) v2 knockout + go-live + matchNumber bracket-wiring fix | Shipped & live. |
 
-## v2 knockout go-live runbook (run ~Jun 27, after group stage ends)
+## Knockout live-ops (DONE — 2026-06-27 → 06-29)
 
-1. `node scripts/seed-knockout.mjs` — verify the printed R32 tree against the
-   official bracket; commit `public/knockout.json`. (Adjust `R32_DATES` in the
-   script if the calendar differs.)
-2. Paste the printed first-kickoff ISO into `public/config.json` as
-   `knockout_lock_iso`, and into the Apps Script script property
-   `knockout_lock_iso`.
-3. Paste `apps_script/Code.gs` into the Apps Script editor → Deploy → Manage
-   deployments → New version. (URL unchanged.)
-4. Merge `feat/v2-knockout-bracket` → `main`. CF Pages deploys `bracket.html`.
-5. Confirm the cron picks up knockout match IDs (check `public/results.json`
-   gains the knockout entries with `advances` after the first R32 matches).
-6. Verify `lib/status.js` recognizes the real ESPN AET/penalty status strings
-   from the first knockout result; add any missing ones.
+Go-live ran clean: `node scripts/seed-knockout.mjs` → `public/knockout.json`
+(committed), `Code.gs` redeployed, `feat/v2-knockout-bracket` merged to `main`,
+cron confirmed ingesting R32 with `advances`. `lib/status.js` AET/PEN strings
+verified against ESPN (2014 final = `STATUS_FINAL_AET`, 2022 = `STATUS_FINAL_PEN`).
+
+**Bracket-wiring fix (important):** `seed-knockout.mjs` originally numbered R32
+slots by match-id; ESPN actually numbers the feeder refs ("Round of 32 N") by
+FIFA `matchNumber` (R32 = 73–88), which differs from id order. Using id order put
+teams in the wrong half. The seed now fetches `matchNumber` from ESPN's **core
+API** per match and numbers each round by it. Don't regress this. (Tests in
+`scripts/seed-knockout.test.mjs`, incl. an RSA/BRA opposite-halves regression.)
+
+**Deadline extension + "no editing started matches" rule:** the brother extended
+the knockout deadline past the first R32 kickoff (19:00Z), with the rule that any
+pick for an already-kicked-off match is voided (scores 0). Enforcement is manual,
+aided by **`scripts/audit-late-edits.mjs <sheet.tsv>`** — export the sheet
+(File → Download → TSV) and run it; it flags, per player, any final pick that
+differs from their last pre-kickoff pick OR was first submitted after kickoff.
+Resaves and self-reverts are correctly NOT flagged.
+
+**Edits applied to the live sheet (already reflected on the board):**
+- **Jc maldonado, Tuffik** — deleted their post-19:00 resubmission rows → each
+  reverts to their honest last pre-kickoff bracket (latest-per-(email,phase) wins).
+- **Tyler Grajeda, Manuel Delgado** — late joiners who picked CAN (the finished
+  SA game's winner). No pre-game bracket to revert to, so their R32-3 cell was
+  hand-edited to `RSA 1-0 advances RSA` (a miss) → scores 0. Rest of their
+  bracket untouched.
+- Jorge V and sebastian ortega *look* like they copied CAN 0-1 but had it locked
+  in pre-kickoff → legit, left alone.
+- Emilio Rosas had submitted his bracket under a 2nd email (icloud) inflating the
+  pot to 25; corrected to his group gmail → back to 24.
+
+**Privacy/gate mechanics** (also see "Lock time"): `?action=submissions` hides
+`phase:'knockout'` rows until `knockout_lock_iso`; returns `knockoutLocked` +
+`knockoutCount` (no identities) so the UI can show participation while hidden.
 
 ## Important quirks / gotchas
 
