@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-30T21:23:07.377Z",
+  "updated_at": "2026-06-30T23:03:41.414Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -401,9 +401,10 @@
       "status": "STATUS_SCHEDULED"
     },
     "760492": {
-      "home_score": 0,
+      "home_score": 3,
       "away_score": 0,
-      "status": "STATUS_FIRST_HALF"
+      "status": "STATUS_FULL_TIME",
+      "advances": "FRA"
     },
     "760493": {
       "home_score": 0,
