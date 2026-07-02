@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-02T00:23:23.827Z",
+  "updated_at": "2026-07-02T02:28:33.964Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -414,9 +414,10 @@
       "advances": "BEL"
     },
     "760494": {
-      "home_score": 0,
+      "home_score": 2,
       "away_score": 0,
-      "status": "STATUS_IN_PROGRESS"
+      "status": "STATUS_FULL_TIME",
+      "advances": "USA"
     },
     "760495": {
       "home_score": 2,
