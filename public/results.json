@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-03T20:53:57.150Z",
+  "updated_at": "2026-07-03T22:55:27.692Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -446,12 +446,13 @@
     "760499": {
       "home_score": 1,
       "away_score": 1,
-      "status": "STATUS_END_OF_EXTRATIME"
+      "status": "STATUS_FINAL_PEN",
+      "advances": "EGY"
     },
     "760500": {
-      "home_score": 0,
+      "home_score": 1,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_HALFTIME"
     },
     "760501": {
       "home_score": 0,
