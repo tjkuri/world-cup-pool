@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-03T02:01:09.772Z",
+  "updated_at": "2026-07-03T06:54:35.695Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -438,9 +438,10 @@
       "advances": "ESP"
     },
     "760498": {
-      "home_score": 0,
+      "home_score": 2,
       "away_score": 0,
-      "status": "STATUS_SCHEDULED"
+      "status": "STATUS_FULL_TIME",
+      "advances": "SUI"
     },
     "760499": {
       "home_score": 0,
