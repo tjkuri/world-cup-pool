@@ -4,6 +4,23 @@ import { teamFlag } from '../../shared/teamNames.js';
 
 const ROUND_LABELS = { R32: 'Round of 32', R16: 'Round of 16', QF: 'Quarterfinals', SF: 'Semifinals', F: 'Final' };
 
+// Pill with a lightweight CSS hover tooltip. Native `title` is unreliable here
+// (long delay, resets on re-render); this shows instantly. Positioned below +
+// right-aligned so it isn't clipped by the modal's overflow-y-auto scroll box.
+function StatPill({ tip, className, children }) {
+  return (
+    <span className="group relative inline-flex">
+      <span className={`cursor-help ${className}`}>{children}</span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute right-0 top-full z-50 mt-1 w-max max-w-[220px] rounded bg-slate-950 px-2 py-1 text-[10px] leading-snug text-slate-100 opacity-0 shadow-lg ring-1 ring-slate-700 transition-opacity duration-100 group-hover:opacity-100"
+      >
+        {tip}
+      </span>
+    </span>
+  );
+}
+
 // A person's knockout bracket, rendered as a bracket. It's THEIR predicted tree,
 // annotated against reality: a team carried into a round it never actually
 // reached is muted grey; ▸ marks the team they picked to advance; the cell is
@@ -44,12 +61,19 @@ export function KnockoutPicks({ entry, knockout, results }) {
   const qf = reachStat('QF');
   const sf = reachStat('SF');
   const championRight = !!(s && s.champion_points > 0);
+  // Champion pill has three honest states: confirmed win, genuinely eliminated
+  // (their pick lost a final knockout match), or still alive (undecided) — not a
+  // premature ✗ for everyone before the final is played.
+  const championOut = !!championPick && Object.values(matchInfo).some(
+    (m) => m.final && (m.home === championPick || m.away === championPick) && m.advances !== championPick,
+  );
+  const championState = championRight ? 'won' : championOut ? 'out' : 'alive';
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
         <span className="text-slate-400">
-          🏆 <span className={`font-semibold ${championRight ? 'text-emerald-300' : 'text-slate-200'}`}>
+          🏆 <span className={`font-semibold ${championState === 'won' ? 'text-emerald-300' : championState === 'out' ? 'text-rose-300 line-through' : 'text-slate-200'}`}>
             {championPick ? <>{teamFlag(championPick)} {championPick}</> : '—'}
           </span>
         </span>
@@ -58,11 +82,28 @@ export function KnockoutPicks({ entry, knockout, results }) {
         <span className="text-slate-600">·</span>
         <span className="text-slate-400"><span className="font-semibold text-slate-200">{s?.exact_count ?? 0}</span> exact</span>
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
-          {qf.total > 0 && <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">QF {qf.hit}/{qf.total}</span>}
-          {sf.total > 0 && <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">SF {sf.hit}/{sf.total}</span>}
-          <span className={`rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${championRight ? 'bg-amber-500/20 text-amber-300 ring-amber-400/40' : 'bg-slate-800 text-slate-500 ring-slate-700'}`}>
-            🏆 {championRight ? 'Champion ✓' : 'Champion ✗'}
-          </span>
+          {qf.total > 0 && (
+            <StatPill tip={`${qf.hit} of the ${qf.total} teams that have reached the quarterfinals so far are in your bracket's QF`}
+              className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">
+              QF {qf.hit}/{qf.total}
+            </StatPill>
+          )}
+          {sf.total > 0 && (
+            <StatPill tip={`${sf.hit} of the ${sf.total} teams that have reached the semifinals so far are in your bracket's SF`}
+              className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-inset ring-slate-700">
+              SF {sf.hit}/{sf.total}
+            </StatPill>
+          )}
+          <StatPill
+            tip={championState === 'won' ? 'Your champion won it all' : championState === 'out' ? 'Your champion has been eliminated' : 'Your champion is still alive'}
+            className={`rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${
+              championState === 'won' ? 'bg-amber-500/20 text-amber-300 ring-amber-400/40'
+              : championState === 'out' ? 'bg-rose-500/15 text-rose-300 ring-rose-500/30'
+              : 'bg-slate-800 text-slate-400 ring-slate-700'
+            }`}
+          >
+            🏆 {championState === 'won' ? 'Champion ✓' : championState === 'out' ? 'Champion out' : 'Champion alive'}
+          </StatPill>
         </span>
       </div>
 
