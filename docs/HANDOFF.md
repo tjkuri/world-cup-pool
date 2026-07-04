@@ -239,18 +239,17 @@ Per-group max: 71. × 12 groups = **852 pts group-stage max**.
 | | Pts |
 |---|---|
 | R32 winner (16 matches) | 4 each |
-| R16 winner (8 matches) | 8 each |
-| QF winner (4 matches) | 16 each |
-| SF winner (2 matches) | 32 each |
-| Correct champion | 64 |
+| R16 winner (8 matches) | 16 each |
+| QF winner (4 matches) | 32 each |
+| SF winner (2 matches) | 64 each |
+| Correct champion | 128 |
 | Exact score on knockout match | +3 bonus |
 | Exact score on the Final | +5 bonus (replaces +3) |
 
-Knockout max: **~415 pts** (256 round-winner + 64 champion + 95 exact).
-Total tournament max: **~1,267 pts** (852 group + 415 knockout).
+Knockout max: **~671 pts** (576 round-winner + 95 exact).
+Total tournament max: **~1,523 pts** (852 group + 671 knockout).
 
-Phase split: **~67% group / ~33% knockout** — group leader has a real edge for
-the overall title but the bracket is heavy enough that comebacks are possible.
+Phase split: **~56% group / ~44% knockout** after the R16+ doubling (was ~67/33).
 
 Why these numbers (don't re-litigate without reason):
 - Original spec had standings at 5/3/2/1 + 3 perfect — too small relative to
@@ -266,6 +265,17 @@ Why these numbers (don't re-litigate without reason):
   so the 50-each finalist award double-rewarded the same pick. Dropping it and
   setting champion to 64 keeps a clean doubling ladder (4→8→16→32→64) and pulls
   the phase split from 62/38 to ~67/33.
+- **R16+ doubled (pool vote, 2026-07):** froze R32 at 4 (already played) and
+  doubled R16→Final (16/32/64/128) to give the knockout more catch-up weight vs
+  the frozen group stage. Zero-retroactive: no R16+ game had been scored yet
+  (fetch was paused mid-vote), so no standings moved on deploy. Ladder still
+  doubles, later rounds still worth more; split 67/33 → ~56/44.
+- **Exact-bonus rule tightened (2026-07):** the exact-score bonus now requires
+  the real matchup (both teams) + the scoreline, not just a matching number.
+  On a draw decided by penalties the bonus still lands even if you called the
+  wrong side (the shootout is a coin flip); winner points still need the
+  advancer. Implemented in `scoreBracket`/`scoreKnockoutMatch`. Also zero-
+  retroactive (all finished games were R32, where everyone shares the matchup).
 
 ## Lock time
 

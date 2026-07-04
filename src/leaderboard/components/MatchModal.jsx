@@ -17,6 +17,24 @@ function classForPoints(pts) {
   return OUTCOME_CLASSES.wrong;
 }
 
+// Per-person knockout row state, by how their pick landed on this match.
+//  perfect   — advanced + exact score (the works)  · winner    — advanced, wrong score
+//  exactPens — nailed the score but lost on pens    · ingame    — picked the OTHER team (lost)
+//  out       — their team isn't in this match
+// PERFECT is the only uppercase badge so it pops; the rest are lowercase.
+const KO_STATE_BADGE = {
+  perfect:   { label: 'PERFECT 🎯',  cls: 'bg-emerald-400/15 text-emerald-300 tracking-wide' },
+  exactPens: { label: '🎯 lost pens', cls: 'bg-teal-400/15 text-teal-300' },
+  winner:    { label: 'winner',       cls: 'bg-sky-400/15 text-sky-300' },
+  ingame:    { label: 'in game',      cls: 'bg-amber-400/15 text-amber-300' },
+  out:       { label: 'out',          cls: 'bg-slate-700/50 text-slate-400' },
+};
+// Score/flags stay neutral — the badge carries the colour signal.
+const KO_STATE_TEXT = {
+  perfect: 'text-slate-200', exactPens: 'text-slate-200', winner: 'text-slate-200',
+  ingame: 'text-slate-400', out: 'text-slate-500', pending: 'text-slate-400',
+};
+
 // Derive a human-readable round label from the slot string (e.g. "R16-1" → "R16").
 function roundLabel(slotStr) {
   const dash = slotStr.indexOf('-');
@@ -40,12 +58,26 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
   const round = roundLabel(slot.slot);
 
   const rows = useMemo(() => {
+    const actualPair = [info?.home, info?.away].filter(Boolean);
     return entries
       .filter((e) => e.knockoutSub != null)
       .map((e) => {
         const pick = e.knockoutSub.picks.bracket[slot.slot] ?? {};
         const m = scoreKnockoutMatch(round, pick, info);
-        return { name: e.name, email_hash: e.email_hash, pick, m, entry: e };
+        // Row state: advancing (winner pts) and exact score are independent —
+        // the only way to be exact-but-not-advanced is losing a pens shootout.
+        const advInMatch = pick.advances && actualPair.includes(pick.advances);
+        let state;
+        if (!info?.final) state = 'pending';
+        else if (m.exact && m.correctAdvancer) state = 'perfect';
+        else if (m.exact) state = 'exactPens';
+        else if (m.correctAdvancer) state = 'winner';
+        else if (advInMatch) state = 'ingame';
+        else state = 'out';
+        // Matchup coverage keys off which TEAMS they had in the slot (0/1/2).
+        const predPair = [pick.home, pick.away].filter(Boolean);
+        const matchupHits = predPair.reduce((n, t) => n + (actualPair.includes(t) ? 1 : 0), 0);
+        return { name: e.name, email_hash: e.email_hash, pick, m, state, matchupHits, entry: e };
       })
       .sort((a, b) => {
         if (b.m.points !== a.m.points) return b.m.points - a.m.points;
@@ -55,6 +87,9 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
 
   const exactCount = rows.filter((r) => r.m.exact).length;
   const advCount = rows.filter((r) => r.m.correctAdvancer).length;
+  const bothCount = rows.filter((r) => r.matchupHits === 2).length;
+  const oneCount = rows.filter((r) => r.matchupHits === 1).length;
+  const neitherCount = rows.filter((r) => r.matchupHits === 0).length;
 
   const home = info?.home ?? '?';
   const away = info?.away ?? '?';
@@ -92,8 +127,17 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
         </header>
         {rows.length > 0 && info?.final && (
           <div className="border-b border-slate-800 px-5 py-3 text-xs text-slate-300 space-y-1">
-            <div>🎯 {exactCount}/{rows.length} nailed the exact score</div>
-            <div>✅ {advCount}/{rows.length} called the advancer</div>
+            <div>
+              🎯 <span className="font-semibold text-slate-100">{exactCount}</span>/{rows.length} exact score
+              {' · '}✅ <span className="font-semibold text-slate-100">{advCount}</span>/{rows.length} winner
+            </div>
+            {round !== 'R32' && (
+              <div>
+                Matchup: <span className="font-semibold text-slate-100">{bothCount}</span> both teams
+                {' · '}<span className="font-semibold text-slate-100">{oneCount}</span> one
+                {' · '}<span className="font-semibold text-slate-100">{neitherCount}</span> neither
+              </div>
+            )}
           </div>
         )}
         <div className="px-5 py-4 max-h-[50vh] overflow-y-auto">
@@ -102,26 +146,35 @@ function KnockoutMatchModal({ matchId, slot, knockout, results, entries, onClose
           ) : (
             <ul className="space-y-1">
               {rows.map((r) => {
-                const predictedStr = `${r.pick.home_score ?? '–'}-${r.pick.away_score ?? '–'}`;
-                const predictedAdvances = r.pick.advances ?? null;
-                const cls = !info?.final
-                  ? 'text-slate-400'
-                  : r.m.exact ? 'text-emerald-300'
-                  : r.m.correctAdvancer ? 'text-sky-300'
-                  : 'text-rose-400';
+                // In R32 everyone shares the real matchup, so "in game" is
+                // trivially true for any losing pick — drop the badge there.
+                const hideBadge = round === 'R32' && r.state === 'ingame';
+                const badge = hideBadge ? null : KO_STATE_BADGE[r.state];
+                const txt = KO_STATE_TEXT[r.state] ?? 'text-slate-400';
+                const hasPick = r.pick.home || r.pick.away;
+                const flagCls = (t) => `${r.pick.advances && r.pick.advances === t ? '' : 'opacity-40'}`;
                 return (
                   <li key={r.email_hash} className="flex items-center gap-3 text-sm">
                     <button
                       type="button"
                       onClick={() => onSelectEntry(r.entry)}
-                      className="flex-1 truncate text-left text-slate-100 hover:text-emerald-300 hover:underline"
+                      className={`flex-1 truncate text-left hover:text-emerald-300 hover:underline ${r.m.points === 0 ? 'text-slate-400' : 'text-slate-100'}`}
                     >
                       {r.name}
                     </button>
-                    <span className={`font-mono ${cls}`}>
-                      {r.m.exact && <span className="mr-1" aria-label="exact score">🎯</span>}
-                      {predictedStr}
-                      {predictedAdvances && <span className="ml-1">{teamFlag(predictedAdvances)}</span>}
+                    {badge && (
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    )}
+                    <span className={`font-mono ${txt}`}>
+                      {hasPick ? (
+                        <>
+                          <span className={flagCls(r.pick.home)}>{teamFlag(r.pick.home)}</span>{' '}
+                          {r.pick.home_score ?? '–'}–{r.pick.away_score ?? '–'}{' '}
+                          <span className={flagCls(r.pick.away)}>{teamFlag(r.pick.away)}</span>
+                        </>
+                      ) : '—'}
                     </span>
                     <span className="tabular-nums text-slate-400 w-8 text-right">{r.m.points}</span>
                   </li>

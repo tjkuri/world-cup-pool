@@ -66,14 +66,17 @@ export function RulesDrawer({ onClose }) {
           </p>
           <ul className="mb-2 list-disc pl-5 text-sm text-slate-300">
             <li><strong className="text-slate-100">R32 winner:</strong> 4 pts each (16 matches).</li>
-            <li><strong className="text-slate-100">R16 winner:</strong> 8 pts each (8 matches).</li>
-            <li><strong className="text-slate-100">Quarterfinal winner:</strong> 16 pts each (4 matches).</li>
-            <li><strong className="text-slate-100">Semifinal winner:</strong> 32 pts each (2 matches).</li>
-            <li><strong className="text-slate-100">Correct champion:</strong> 64 pts.</li>
-            <li><strong className="text-slate-100">Exact score on any knockout match:</strong> +3 bonus.</li>
+            <li><strong className="text-slate-100">R16 winner:</strong> 16 pts each (8 matches).</li>
+            <li><strong className="text-slate-100">Quarterfinal winner:</strong> 32 pts each (4 matches).</li>
+            <li><strong className="text-slate-100">Semifinal winner:</strong> 64 pts each (2 matches).</li>
+            <li><strong className="text-slate-100">Correct champion:</strong> 128 pts.</li>
+            <li><strong className="text-slate-100">Exact score on a knockout match:</strong> +3 bonus — you must have predicted the real matchup (both teams) <em>and</em> the exact score. Nailing a scoreline for a game you didn't set up correctly doesn't count.</li>
             <li><strong className="text-slate-100">Exact score on the Final:</strong> +5 bonus (instead of +3).</li>
           </ul>
-          <p className="mb-2 text-xs text-slate-400">Knockout max: ~415 pts. Total tournament max: ~1,267 pts.</p>
+          <p className="mb-2 text-sm text-slate-300">
+            <strong className="text-slate-100">Draws &amp; penalty shootouts:</strong> if a knockout match is level after extra time and goes to penalties, you still earn the exact-score bonus for nailing the draw with the right two teams — even if you picked the other side to go through. Winner/advancement points still go only to whoever called the team that actually advanced (the shootout is a coin flip, so we don't punish the scoreline for it).
+          </p>
+          <p className="mb-2 text-xs text-slate-400">Knockout max: ~671 pts. Total tournament max: ~1,523 pts.</p>
 
           <h3 className="mt-4 mb-2 text-base font-semibold text-slate-100">Submissions</h3>
           <p className="mb-2 text-sm text-slate-300">
