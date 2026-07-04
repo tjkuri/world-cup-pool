@@ -1,6 +1,6 @@
 # World Cup 2026 Pool
 
-Static-site prediction pool for the 2026 FIFA World Cup. Group stage v1 (live); knockout bracket v2 (built on `feat/v2-knockout-bracket`, merges at knockout go-live ~Jun 27 — see `docs/HANDOFF.md` runbook).
+Static-site prediction pool for the 2026 FIFA World Cup. Group stage + knockout bracket both live on `main` (R32 complete, R16 underway — see `docs/HANDOFF.md` for current state).
 
 Live at https://world-cup-pool.tjkuri99.workers.dev.
 
@@ -13,7 +13,7 @@ See `docs/HANDOFF.md` for current state and `docs/superpowers/specs/` for design
 ```sh
 npm run dev        # vite dev server on :5173 — / (form), /leaderboard.html, /bracket.html
 npm run build      # production build to dist/
-npm test           # unit tests for lib/ (69 on feat/v2-knockout-bracket; 55 on main)
+npm test           # unit tests for lib/ (72 tests)
 ```
 
 ## Ops scripts

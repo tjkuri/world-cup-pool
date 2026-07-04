@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-06-29 (**knockout stage LIVE**). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main` and deployed**; all 24 knockout brackets are in, **revealed** on the leaderboard, and **submissions are locked** (see "Knockout lock / reveal / email-gate" below). R32 is underway and the cron is scoring it live. Remaining work is operational (judging late/edited picks, final tally), not feature work — see "Knockout live-ops" + "Pending items".
+Last updated: 2026-07-04 (**knockout stage LIVE**). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main`, deployed, locked, and revealed**. **R32 is complete (16/16); R16 is underway** and the cron is scoring live. **Scoring was rebalanced 2026-07-04 (pool vote):** R16→Final winner points **doubled to 16/32/64/128** (R32 frozen at 4), and the knockout **exact-score bonus now requires the real matchup with penalty shootouts forgiven** — both zero-retroactive and live (see "Knockout" → changelog). Remaining work is operational (final tally), not feature work — see "Pending items".
 
 ## TL;DR for next-session-Claude
 
@@ -8,15 +8,15 @@ Last updated: 2026-06-29 (**knockout stage LIVE**). Pool is **24 entrants / $720
 > https://world-cup-pool.tjkuri99.workers.dev. Backend = Google Apps Script web
 > app writing to a Google Sheet (URL in `public/config.json`). Frontend = React
 > 19 + Vite 6 + **Tailwind v4** deployed to Cloudflare Pages via Workers Builds
-> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 69 lib
-> tests pass (on `feat/v2-knockout-bracket`; 55 on `main`).
+> (`wrangler.toml`). Lib is vanilla JS pure functions with `node --test`. 72 lib
+> tests pass on `main`.
 
-> **v2 knockout bracket (on branch `feat/v2-knockout-bracket`, not yet merged):**
+> **v2 knockout bracket (merged to `main`, live):**
 > Full bracket entry form (`bracket.html` / `src/bracket/`), `lib/bracket.js`
 > connected-bracket resolution, `scoreBracket` in `lib/score.js`, per-phase
 > Apps Script lock (`knockout_lock_iso`), leaderboard merge-by-email,
 > tabbed PickModal + KnockoutPicks, Overall-first table, PrizeCards, knockout-first
-> MatchStrip/MatchModal. Awaiting go-live ~Jun 27 (end of group stage).
+> MatchStrip/MatchModal. Live since 2026-06-27; R32 done, R16 underway.
 > See runbook below.
 
 > **Most recently shipped (Jun 12, Day 1 closed)**: Two bugs surfaced once
@@ -177,7 +177,7 @@ world-cup-pool/
 │       ├── bracketTree.jsx           # Read-only tree for entry-side review + submit recap (v2). Leaderboard KnockoutPicks renders its own richer bracket.
 │       ├── teamNames.js              # TEAM_NAMES + TEAM_FLAGS maps + teamName/teamFlag helpers
 │       └── formatKickoff.js          # Date+time formatter for fixture.kickoff_iso
-├── lib/                              # PURE LOGIC — 69 tests pass (feat/v2-knockout-bracket)
+├── lib/                              # PURE LOGIC — 72 tests pass on `main`
 │   ├── bracket.js + .test.js         # Connected-bracket resolution + advancer propagation (v2)
 │   ├── derive.js + .test.js
 │   ├── standings.js + .test.js
@@ -214,7 +214,7 @@ world-cup-pool/
 | Google Sheet | User's Google account, titled "World Cup Pool", tab "submissions" |
 | The Odds API console | https://the-odds-api.com (free tier; 500 req/mo) |
 
-## Scoring rules (LOCKED — brother-approved 2026-06-08)
+## Scoring rules (brother-approved 2026-06-08; knockout R16+ doubled by pool vote 2026-07-04)
 
 Pool format: two phases, points carry over. Prize split: **30% to group-stage
 points leader**, **70% to overall (group + knockout) points leader**. No
@@ -234,7 +234,7 @@ survivor, no R32 advancement bonus, everyone plays both phases.
 
 Per-group max: 71. × 12 groups = **852 pts group-stage max**.
 
-### Knockout (implemented on `feat/v2-knockout-bracket`; merge ~Jun 27)
+### Knockout (live on `main`)
 
 | | Pts |
 |---|---|
@@ -415,7 +415,7 @@ Resaves and self-reverts are correctly NOT flagged.
   in dev mode. Doesn't affect prod.
 - **Dev server**: `npm run dev` → http://localhost:5173/ + /leaderboard.html
 - **Build**: `npm run build` → `dist/`. Output is what CF deploys via wrangler.
-- **Tests**: `npm test`. 69 pass (feat/v2-knockout-bracket; was 55 on main). Only `lib/` is tested. React components are
+- **Tests**: `npm test`. 72 pass on `main`. Only `lib/` is tested. React components are
   manually tested via the dev server.
 - **Apps Script salt**: random hex string in the Apps Script's script
   properties. User generated their own — not stored in repo.

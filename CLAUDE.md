@@ -28,6 +28,18 @@ read `docs/HANDOFF.md` first — it's the source of truth.
   `scoreKnockoutMatch`. The shared score-input className lives in
   `src/shared/scoreInput.js` (group form + bracket); change it in one place.
 
+- **Knockout exact-bonus is NOT a plain scoreline compare.** `scoreBracket` and
+  `scoreKnockoutMatch` award the exact bonus only when the pick has the *real
+  matchup* (both teams) AND the scoreline, gated on `(isDraw || calledAdvancer)`
+  — a draw settled on penalties keeps the bonus even if you called the losing
+  side, but winner/champion points still require the advancer. Do NOT "simplify"
+  it back to `home_score===… && away_score===…` (that was the old blind rule; it
+  rewarded scorelines on teams that weren't even in the match). The `MatchModal`
+  PERFECT / winner / 🎯 lost-pens / in-game / out badges derive from this — a
+  lone 🎯 (exact without advancing) is uniquely the lost-pens case. R16+ point
+  values were doubled by a **2026-07 pool vote** (R32 frozen at 4); both this and
+  the exact-rule change were zero-retroactive. See HANDOFF "Knockout" changelog.
+
 - **v2 knockout is LIVE on `main`.** Go-live ran 2026-06-27→29; all 24 brackets
   in, revealed, submissions locked. See `docs/HANDOFF.md` → "Knockout live-ops".
 
