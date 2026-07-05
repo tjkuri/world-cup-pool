@@ -4,7 +4,7 @@ import { scoreSubmission } from '../../lib/score.js';
 import { TopBar } from '../form/components/TopBar.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
 
-const TheGap = lazy(() => import('./components/TheGap.jsx').then((m) => ({ default: m.TheGap })));
+const GapPanel = lazy(() => import('./gap/GapPanel.jsx').then((m) => ({ default: m.GapPanel })));
 const LiveCeiling = lazy(() => import('./components/LiveCeiling.jsx').then((m) => ({ default: m.LiveCeiling })));
 const Superlatives = lazy(() => import('./components/Superlatives.jsx').then((m) => ({ default: m.Superlatives })));
 
@@ -42,7 +42,7 @@ export function App() {
         <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
         <ErrorBoundary>
           <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
-            <TheGap history={data.history} />
+            <GapPanel history={data.history} />
             <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} odds={data.odds} />
             <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
           </Suspense>
