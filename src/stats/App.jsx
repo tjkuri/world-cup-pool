@@ -6,8 +6,6 @@ import { scoreSubmission } from '../../lib/score.js';
 
 export function App() {
   const data = useStatsData();
-  if (data.loading) return <div className="mx-auto max-w-5xl px-4 py-8 text-slate-400">Loading stats…</div>;
-  if (data.error) return <div className="mx-auto max-w-5xl px-4 py-8 text-red-400">Couldn't load stats: {data.error}</div>;
 
   const groupTotalsByEmail = useMemo(() => {
     const m = new Map();
@@ -18,6 +16,9 @@ export function App() {
     }
     return m;
   }, [data.submissions, data.fixtures, data.results]);
+
+  if (data.loading) return <div className="mx-auto max-w-5xl px-4 py-8 text-slate-400">Loading stats…</div>;
+  if (data.error) return <div className="mx-auto max-w-5xl px-4 py-8 text-red-400">Couldn't load stats: {data.error}</div>;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 text-slate-100 space-y-8">
