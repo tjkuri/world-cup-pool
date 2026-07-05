@@ -32,6 +32,7 @@ export function condenseDaily(snapshots) {
  */
 export function toSeries(history) {
   if (!Array.isArray(history?.snapshots)) return [];
+  // NOTE: assumes snapshots are in ascending chronological (t) order.
   // Condense to one snapshot per calendar day before building series.
   const condensed = condenseDaily(history.snapshots);
   const byEmail = new Map();

@@ -17,6 +17,9 @@ const LEADER_COLOR = '#fbbf24'; // amber-400
 const SPOTLIGHT_COLOR = '#94a3b8'; // slate-400 — active non-leader
 const DEFAULT_COLOR = '#334155'; // slate-700 — idle
 
+/** Stable empty Map to use as default for pinnedColors prop. */
+const EMPTY_MAP = new Map();
+
 /**
  * swatchColor — returns the dot/swatch color for a legend row.
  * Priority: pinned (palette color) > leader (gold) > active (slate) > idle.
@@ -27,7 +30,7 @@ function swatchColor(emailHash, leader, isActive, isPinned, pinnedColors) {
   return isActive ? SPOTLIGHT_COLOR : DEFAULT_COLOR;
 }
 
-export function GapLegend({ series, leader, hovered, pinned, pinnedColors = new Map(), onHover, onTogglePin }) {
+export function GapLegend({ series, leader, hovered, pinned, pinnedColors = EMPTY_MAP, onHover, onTogglePin }) {
   const hasSpotlight = hovered !== null || (pinned instanceof Set && pinned.size > 0);
 
   // Sort by current total desc; break ties by name.

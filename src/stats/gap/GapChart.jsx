@@ -377,14 +377,29 @@ export function GapChart({
 
           // Collect selected players (hovered ∪ pinned) that appear in this snapshot.
           const selectedHashes = new Set();
-          if (hovered && tooltipData.valueAtSnap.has(hovered)) selectedHashes.add(hovered);
+          if (hovered !== null && tooltipData.valueAtSnap.has(hovered)) selectedHashes.add(hovered);
           if (pinned instanceof Set) {
             for (const h of pinned) {
               if (tooltipData.valueAtSnap.has(h)) selectedHashes.add(h);
             }
           }
 
-          if (!selectedHashes.size) return null;
+          // Fall back to the default standings view when no selected player has
+          // a data point at this snapshot (avoids a blank/vanishing tooltip).
+          if (!selectedHashes.size) {
+            return (
+              <div style={tooltipStyle}>
+                {header}
+                {tooltipData.sortedBuckets.map(([pts, names]) => (
+                  <div key={pts}>
+                    <strong style={{ color: '#fbbf24' }}>{pts}</strong>
+                    {' — '}
+                    {names.join(' · ')}
+                  </div>
+                ))}
+              </div>
+            );
+          }
 
           // Build display rows with rank + color, sorted rank asc.
           const selectedRows = [...selectedHashes]
