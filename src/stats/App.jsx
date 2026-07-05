@@ -1,4 +1,5 @@
 import { useStatsData } from './useStatsData.js';
+import { TheGap } from './components/TheGap.jsx';
 
 export function App() {
   const data = useStatsData();
@@ -8,6 +9,7 @@ export function App() {
     <div className="mx-auto max-w-5xl px-4 py-8 text-slate-100 space-y-8">
       <h1 className="text-2xl font-bold">Pool Stats</h1>
       <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
+      <TheGap history={data.history} />
     </div>
   );
 }
