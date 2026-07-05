@@ -40,10 +40,12 @@ export function LiveCeiling({ submissions, groupTotalsByEmail, knockout, results
           keys={['current', 'upside']}
           indexBy="name"
           layout="horizontal"
-          margin={{ top: 34, right: 20, bottom: 30, left: 90 }}
+          margin={{ top: 16, right: 20, bottom: 30, left: 90 }}
           padding={0.25}
           colors={({ id }) => (id === 'current' ? '#4ade80' : '#1f3d2b')}
-          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4' }, legend: `leader now · ${leaderCurrent}`, legendPosition: 'top', legendOrientation: 'horizontal', legendOffsetY: -14, textStyle: { fill: '#fbbf24', fontSize: 11, fontWeight: 600 } }]}
+          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4' } }]}
+          label={(d) => (d.id === 'current' ? `${d.value}` : '')}
+          labelTextColor="#052e16"
           enableGridY={false}
           valueFormat={(v) => `${v}`}
           theme={{
