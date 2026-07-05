@@ -3,7 +3,7 @@
  * Measures container width, holds placeholder state for hovered/pinned (set in later tasks),
  * and renders GapChart.
  */
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { toSeries, leaderEmail } from './series.js';
 import { GapChart } from './GapChart.jsx';
 

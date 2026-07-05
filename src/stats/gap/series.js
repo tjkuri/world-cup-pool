@@ -14,7 +14,7 @@ export function toSeries(history) {
   const byEmail = new Map();
   for (const snap of history.snapshots) {
     const xDate = new Date(snap.t);
-    for (const s of snap.standings) {
+    for (const s of snap.standings ?? []) {
       if (!byEmail.has(s.email_hash)) {
         byEmail.set(s.email_hash, { email_hash: s.email_hash, name: s.name, data: [] });
       }
