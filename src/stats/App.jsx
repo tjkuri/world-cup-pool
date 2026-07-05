@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useStatsData } from './useStatsData.js';
-import { TheGap } from './components/TheGap.jsx';
-import { Superlatives } from './components/Superlatives.jsx';
-import { LiveCeiling } from './components/LiveCeiling.jsx';
 import { scoreSubmission } from '../../lib/score.js';
+
+const TheGap = lazy(() => import('./components/TheGap.jsx').then((m) => ({ default: m.TheGap })));
+const LiveCeiling = lazy(() => import('./components/LiveCeiling.jsx').then((m) => ({ default: m.LiveCeiling })));
+const Superlatives = lazy(() => import('./components/Superlatives.jsx').then((m) => ({ default: m.Superlatives })));
 
 export function App() {
   const data = useStatsData();
@@ -25,9 +26,11 @@ export function App() {
     <div className="mx-auto max-w-5xl px-4 py-8 text-slate-100 space-y-8">
       <h1 className="text-2xl font-bold">Pool Stats</h1>
       <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
-      <TheGap history={data.history} />
-      <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
-      <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
+      <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
+        <TheGap history={data.history} />
+        <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
+        <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
+      </Suspense>
     </div>
   );
 }
