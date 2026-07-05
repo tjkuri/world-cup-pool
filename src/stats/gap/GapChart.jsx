@@ -31,7 +31,17 @@ const SPOTLIGHT_COLOR = '#94a3b8';    // spotlighted non-leader (brighter)
 const DIMMED_LINE_COLOR = '#1e293b';  // dimmed when another line is spotlit
 const LEADER_COLOR = '#fbbf24';       // always gold
 
+/** Stable empty Map to use as default for pinnedColors prop. */
+const EMPTY_MAP = new Map();
+
 const formatDate = timeFormat('%b %-d');
+
+/** Return an ordinal suffix string for rank n (1st, 2nd, 3rd, 4th…). */
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 export function GapChart({
   series,
@@ -42,6 +52,7 @@ export function GapChart({
   yDomain: yDomainProp,
   hovered = null,
   pinned = null,
+  pinnedColors = EMPTY_MAP,
   children,
 }) {
   const { tooltipOpen, tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
@@ -91,13 +102,22 @@ export function GapChart({
   );
 
   // Return stroke color for a given series.
+  // Priority when spotlight active: pinned → palette color; leader (not pinned) → gold;
+  // hovered non-leader → slate spotlight; everything else → dimmed.
   const lineStroke = useCallback(
     (s) => {
+      if (hasSpotlight) {
+        const isPinned = pinned instanceof Set && pinned.has(s.email_hash);
+        if (isPinned) return pinnedColors.get(s.email_hash) ?? SPOTLIGHT_COLOR;
+        if (s.email_hash === leader) return LEADER_COLOR; // leader stays gold even in spotlight
+        if (s.email_hash === hovered) return SPOTLIGHT_COLOR;
+        return DIMMED_LINE_COLOR;
+      }
+      // No spotlight — standard two-tone render.
       if (s.email_hash === leader) return LEADER_COLOR;
-      if (!hasSpotlight) return DEFAULT_LINE_COLOR;
-      return isSpotlit(s) ? SPOTLIGHT_COLOR : DIMMED_LINE_COLOR;
+      return DEFAULT_LINE_COLOR;
     },
-    [leader, isSpotlit, hasSpotlight],
+    [leader, hovered, pinned, pinnedColors, hasSpotlight],
   );
 
   // Return stroke opacity for a given series.
@@ -147,15 +167,18 @@ export function GapChart({
       const snapDate = snapshotXs[nearestIdx];
 
       // Gather all players' values at this snapshot.
+      // valueAtSnap: Map(email_hash → total) — used for selection-aware tooltip rank.
       const rows = [];
+      const valueAtSnap = new Map();
       for (const s of series) {
         const pt = s.data.find((d) => d.x.getTime() === snapDate.getTime());
         if (pt !== undefined) {
-          rows.push({ name: s.name, total: pt.y });
+          rows.push({ email_hash: s.email_hash, name: s.name, total: pt.y });
+          valueAtSnap.set(s.email_hash, pt.y);
         }
       }
 
-      // Bucket by equal total.
+      // Bucket by equal total (for no-selection tooltip).
       const buckets = new Map();
       for (const { name, total } of rows) {
         if (!buckets.has(total)) buckets.set(total, []);
@@ -171,7 +194,7 @@ export function GapChart({
       showTooltip({
         tooltipLeft: ttLeft,
         tooltipTop: ttTop,
-        tooltipData: { snapDate, sortedBuckets, crosshairX: xScale(snapDate) ?? 0 },
+        tooltipData: { snapDate, sortedBuckets, crosshairX: xScale(snapDate) ?? 0, valueAtSnap },
       });
     },
     [snapshotXs, xScale, series, showTooltip],
@@ -311,36 +334,104 @@ export function GapChart({
         </Group>
       </svg>
 
-      {/* Tooltip — absolutely positioned dark div over the SVG */}
-      {tooltipOpen && tooltipData && (
-        <div
-          style={{
-            position: 'absolute',
-            left: Math.min(tooltipData.crosshairX + MARGIN.left + 10, width - 220),
-            top: MARGIN.top + 8,
-            background: '#0b1220',
-            border: '1px solid #334155',
-            borderRadius: 6,
-            padding: '8px 10px',
-            fontSize: 12,
-            color: '#e2e8f0',
-            minWidth: 200,
-            pointerEvents: 'none',
-            zIndex: 10,
-          }}
-        >
+      {/* Tooltip — absolutely positioned dark div over the SVG.
+          Selection-aware: when a player is hovered or pinned, shows only those
+          players with their ordinal rank at that snapshot. Otherwise shows the
+          full tied-bucket standings (existing behaviour). */}
+      {tooltipOpen && tooltipData && (() => {
+        const tooltipStyle = {
+          position: 'absolute',
+          left: Math.min(tooltipData.crosshairX + MARGIN.left + 10, width - 220),
+          top: MARGIN.top + 8,
+          background: '#0b1220',
+          border: '1px solid #334155',
+          borderRadius: 6,
+          padding: '8px 10px',
+          fontSize: 12,
+          color: '#e2e8f0',
+          minWidth: 200,
+          pointerEvents: 'none',
+          zIndex: 10,
+        };
+
+        const header = (
           <div style={{ color: '#94a3b8', marginBottom: 4 }}>
             {formatDate(tooltipData.snapDate)}
           </div>
-          {tooltipData.sortedBuckets.map(([pts, names]) => (
-            <div key={pts}>
-              <strong style={{ color: '#fbbf24' }}>{pts}</strong>
-              {' — '}
-              {names.join(' · ')}
+        );
+
+        // --- Selection-aware mode ---
+        if (hasSpotlight && tooltipData.valueAtSnap) {
+          // Build rank map: standard competition rank (ties share lowest rank in group).
+          const allSorted = [...tooltipData.valueAtSnap.entries()].sort(
+            (a, b) => b[1] - a[1],
+          );
+          const rankMap = new Map();
+          for (let i = 0; i < allSorted.length; i++) {
+            if (i === 0 || allSorted[i][1] < allSorted[i - 1][1]) {
+              rankMap.set(allSorted[i][0], i + 1);
+            } else {
+              rankMap.set(allSorted[i][0], rankMap.get(allSorted[i - 1][0]));
+            }
+          }
+
+          // Collect selected players (hovered ∪ pinned) that appear in this snapshot.
+          const selectedHashes = new Set();
+          if (hovered && tooltipData.valueAtSnap.has(hovered)) selectedHashes.add(hovered);
+          if (pinned instanceof Set) {
+            for (const h of pinned) {
+              if (tooltipData.valueAtSnap.has(h)) selectedHashes.add(h);
+            }
+          }
+
+          if (!selectedHashes.size) return null;
+
+          // Build display rows with rank + color, sorted rank asc.
+          const selectedRows = [...selectedHashes]
+            .map((hash) => {
+              const seriesEntry = series.find((s) => s.email_hash === hash);
+              const total = tooltipData.valueAtSnap.get(hash);
+              const rank = rankMap.get(hash) ?? 1;
+              // Match the color that the line uses in the chart.
+              let color;
+              const isPinned = pinned instanceof Set && pinned.has(hash);
+              if (isPinned) color = pinnedColors.get(hash) ?? SPOTLIGHT_COLOR;
+              else if (hash === leader) color = LEADER_COLOR;
+              else color = SPOTLIGHT_COLOR;
+              return { hash, name: seriesEntry?.name ?? hash, total, rank, color };
+            })
+            .sort((a, b) => a.rank - b.rank);
+
+          return (
+            <div style={tooltipStyle}>
+              {header}
+              {selectedRows.map((row) => (
+                <div key={row.hash}>
+                  <span style={{ color: '#64748b' }}>{ordinal(row.rank)}</span>
+                  {' · '}
+                  <span style={{ color: row.color }}>{row.name}</span>
+                  {' · '}
+                  <strong style={{ color: '#fbbf24' }}>{row.total}</strong>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        }
+
+        // --- Default mode: full tied-bucket standings ---
+        return (
+          <div style={tooltipStyle}>
+            {header}
+            {tooltipData.sortedBuckets.map(([pts, names]) => (
+              <div key={pts}>
+                <strong style={{ color: '#fbbf24' }}>{pts}</strong>
+                {' — '}
+                {names.join(' · ')}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

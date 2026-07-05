@@ -12,6 +12,12 @@ import { GapLegend } from './GapLegend.jsx';
 const CHART_HEIGHT = 380;
 
 /**
+ * Palette for pinned player lines — dark-friendly, avoids gold (#fbbf24 is the leader).
+ * Colors are assigned in insertion order of the pinned Set; cycling if > 6 pins.
+ */
+const PINNED_PALETTE = ['#22d3ee', '#f472b6', '#a78bfa', '#a3e635', '#fb923c', '#38bdf8'];
+
+/**
  * Simple hook: observes a container element and returns its current pixel width.
  */
 function useContainerWidth(ref) {
@@ -59,6 +65,18 @@ export function GapPanel({ history }) {
   const series = useMemo(() => (history ? toSeries(history) : []), [history]);
   const leader = useMemo(() => (history ? leaderEmail(history) : null), [history]);
 
+  // Derive a stable color for each pinned player (insertion-order → palette index).
+  // Removing a pin and re-adding may get a new color; that is acceptable.
+  const pinnedColors = useMemo(() => {
+    const map = new Map();
+    let i = 0;
+    for (const hash of pinned) {
+      map.set(hash, PINNED_PALETTE[i % PINNED_PALETTE.length]);
+      i++;
+    }
+    return map;
+  }, [pinned]);
+
   const hasData = series.length > 0;
 
   return (
@@ -84,6 +102,7 @@ export function GapPanel({ history }) {
               height={CHART_HEIGHT}
               hovered={hovered}
               pinned={pinned}
+              pinnedColors={pinnedColors}
             />
           ) : hasData ? null : (
             <p className="text-slate-500">No history yet.</p>
@@ -98,6 +117,7 @@ export function GapPanel({ history }) {
               leader={leader}
               hovered={hovered}
               pinned={pinned}
+              pinnedColors={pinnedColors}
               onHover={onHover}
               onTogglePin={onTogglePin}
             />

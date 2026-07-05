@@ -17,12 +17,17 @@ const LEADER_COLOR = '#fbbf24'; // amber-400
 const SPOTLIGHT_COLOR = '#94a3b8'; // slate-400 — active non-leader
 const DEFAULT_COLOR = '#334155'; // slate-700 — idle
 
-function swatchColor(emailHash, leader, isActive) {
+/**
+ * swatchColor — returns the dot/swatch color for a legend row.
+ * Priority: pinned (palette color) > leader (gold) > active (slate) > idle.
+ */
+function swatchColor(emailHash, leader, isActive, isPinned, pinnedColors) {
+  if (isPinned) return pinnedColors.get(emailHash) ?? SPOTLIGHT_COLOR;
   if (emailHash === leader) return LEADER_COLOR;
   return isActive ? SPOTLIGHT_COLOR : DEFAULT_COLOR;
 }
 
-export function GapLegend({ series, leader, hovered, pinned, onHover, onTogglePin }) {
+export function GapLegend({ series, leader, hovered, pinned, pinnedColors = new Map(), onHover, onTogglePin }) {
   const hasSpotlight = hovered !== null || (pinned instanceof Set && pinned.size > 0);
 
   // Sort by current total desc; break ties by name.
@@ -48,7 +53,7 @@ export function GapLegend({ series, leader, hovered, pinned, onHover, onTogglePi
         const isHovered = hovered === s.email_hash;
         const isActive = isHovered || isPinned;
         const currentTotal = s.data.at(-1)?.y ?? 0;
-        const swatch = swatchColor(s.email_hash, leader, isActive);
+        const swatch = swatchColor(s.email_hash, leader, isActive, isPinned, pinnedColors);
 
         return (
           <button
