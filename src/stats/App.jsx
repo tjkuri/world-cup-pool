@@ -1,6 +1,8 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { useStatsData } from './useStatsData.js';
 import { scoreSubmission } from '../../lib/score.js';
+import { TopBar } from '../form/components/TopBar.jsx';
+import { ErrorBoundary } from './ErrorBoundary.jsx';
 
 const TheGap = lazy(() => import('./components/TheGap.jsx').then((m) => ({ default: m.TheGap })));
 const LiveCeiling = lazy(() => import('./components/LiveCeiling.jsx').then((m) => ({ default: m.LiveCeiling })));
@@ -19,18 +21,33 @@ export function App() {
     return m;
   }, [data.submissions, data.fixtures, data.results]);
 
-  if (data.loading) return <div className="mx-auto max-w-5xl px-4 py-8 text-slate-400">Loading stats…</div>;
-  if (data.error) return <div className="mx-auto max-w-5xl px-4 py-8 text-red-400">Couldn't load stats: {data.error}</div>;
+  if (data.loading) return (
+    <>
+      <TopBar pageLabel="World Cup 2026 Pool — Stats" otherPage="/leaderboard.html" otherLabel="Leaderboard" hideStatsLink />
+      <div className="mx-auto max-w-5xl px-4 py-8 text-slate-400">Loading stats…</div>
+    </>
+  );
+  if (data.error) return (
+    <>
+      <TopBar pageLabel="World Cup 2026 Pool — Stats" otherPage="/leaderboard.html" otherLabel="Leaderboard" hideStatsLink />
+      <div className="mx-auto max-w-5xl px-4 py-8 text-red-400">Couldn't load stats: {data.error}</div>
+    </>
+  );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 text-slate-100 space-y-8">
-      <h1 className="text-2xl font-bold">Pool Stats</h1>
-      <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
-      <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
-        <TheGap history={data.history} />
-        <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
-        <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
-      </Suspense>
-    </div>
+    <>
+      <TopBar pageLabel="World Cup 2026 Pool — Stats" otherPage="/leaderboard.html" otherLabel="Leaderboard" hideStatsLink />
+      <div className="mx-auto max-w-5xl px-4 py-8 text-slate-100 space-y-8">
+        <h1 className="text-2xl font-bold">Pool Stats</h1>
+        <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
+            <TheGap history={data.history} />
+            <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
+            <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </>
   );
 }

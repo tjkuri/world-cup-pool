@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test lib/*.test.js",
+    "test": "node --test lib/*.test.js scripts/*.test.mjs",
     "seed": "node scripts/seed-fixtures.mjs",
     "fetch": "node scripts/fetch-results.mjs",
     "cache-odds": "node scripts/cache-odds.mjs"
