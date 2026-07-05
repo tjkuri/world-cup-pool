@@ -1,18 +1,10 @@
 import { useMemo } from 'react';
-import { rankMovements } from '../../../lib/history.js';
 import { scoreSubmission } from '../../../lib/score.js';
 import { aliveTeams } from '../../../lib/ceiling.js';
+import { pickConsensus, contrarianCorrect, chalkScore } from '../../../lib/consensus.js';
 
-function computeAwards({ history, submissions, fixtures, results, knockout }) {
+function computeAwards({ history, submissions, fixtures, results, knockout, odds }) {
   const awards = [];
-
-  if (history?.snapshots?.length) {
-    const moves = rankMovements(history);
-    const riser = [...moves].sort((a, b) => b.delta - a.delta)[0];
-    const faller = [...moves].sort((a, b) => a.delta - b.delta)[0];
-    if (riser && riser.delta > 0) awards.push({ title: 'Biggest Riser', who: riser.name, detail: `▲ ${riser.delta} spots` });
-    if (faller && faller.delta < 0) awards.push({ title: 'Biggest Faller', who: faller.name, detail: `▼ ${-faller.delta} spots` });
-  }
 
   if (submissions?.length && fixtures && results) {
     let best = null;
@@ -43,13 +35,34 @@ function computeAwards({ history, submissions, fixtures, results, knockout }) {
     }
   }
 
+  if (submissions?.length && fixtures && results) {
+    const consensus = pickConsensus(submissions, fixtures);
+    let best = null;
+    for (const sub of submissions) {
+      if (sub.phase === 'knockout') continue;
+      const n = contrarianCorrect(sub, fixtures, results, consensus);
+      if (!best || n > best.n) best = { name: sub.name, n };
+    }
+    if (best && best.n > 0) awards.push({ title: 'Hipster', who: best.name, detail: `${best.n} rare correct calls` });
+  }
+
+  if (odds && submissions?.length && fixtures) {
+    let best = null;
+    for (const sub of submissions) {
+      if (sub.phase === 'knockout') continue;
+      const n = chalkScore(sub, fixtures, odds);
+      if (!best || n > best.n) best = { name: sub.name, n };
+    }
+    if (best && best.n > 0) awards.push({ title: 'Chalk-Eater', who: best.name, detail: `${best.n} favorites backed` });
+  }
+
   return awards;
 }
 
-export function Superlatives({ history, submissions, fixtures, results, knockout }) {
+export function Superlatives({ history, submissions, fixtures, results, knockout, odds }) {
   const awards = useMemo(
-    () => computeAwards({ history, submissions, fixtures, results, knockout }),
-    [history, submissions, fixtures, results, knockout],
+    () => computeAwards({ history, submissions, fixtures, results, knockout, odds }),
+    [history, submissions, fixtures, results, knockout, odds],
   );
   if (!awards.length) return null;
   return (

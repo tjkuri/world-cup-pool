@@ -43,7 +43,7 @@ export function App() {
         <ErrorBoundary>
           <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
             <TheGap history={data.history} />
-            <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
+            <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} odds={data.odds} />
             <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
           </Suspense>
         </ErrorBoundary>

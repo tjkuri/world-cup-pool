@@ -18,12 +18,13 @@ export function useStatsData() {
         ]);
         const knockout = await fetch('/knockout.json').then((x) => (x.ok ? x.json() : null)).catch(() => null);
         const history = await fetch('/history.json').then((x) => (x.ok ? x.json() : null)).catch(() => null);
+        const odds = await fetch('/odds.json').then((x) => (x.ok ? x.json() : null)).catch(() => null);
         let submissions = [];
         try {
           const data = await fetch(`${config.apps_script_url}?action=submissions`).then((x) => x.json());
           submissions = data.locked ? data.submissions : [];
         } catch { /* leave empty; charts degrade */ }
-        setState({ loading: false, error: null, config, fixtures, results, knockout, history, submissions });
+        setState({ loading: false, error: null, config, fixtures, results, knockout, history, odds, submissions });
       } catch (e) {
         setState({ loading: false, error: String(e) });
       }

@@ -2,6 +2,7 @@
 // Two entrants, three snapshots. Shapes mirror the real files.
 export const mockStats = {
   config: { apps_script_url: '', buy_in_usd: 30 },
+  odds: null,
   fixtures: { groups: {}, matches: {} },
   knockout: { rounds: { R32: [], R16: [], QF: [], SF: [], F: [] } },
   results: { updated_at: new Date().toISOString(), matches: {} },
