@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 // Transform history → Nivo series. Each entrant = one line of {x: Date, y: total}.
 // Using native Date objects so xScale can use format:'native' — avoids d3 %Z parsing quirks.
 function toSeries(history) {
+  if (!Array.isArray(history?.snapshots)) return [];
   const byEmail = new Map();
   for (const snap of history.snapshots) {
     const xDate = new Date(snap.t);
