@@ -42,10 +42,10 @@ export function LiveCeiling({ submissions, groupTotalsByEmail, knockout, results
           layout="horizontal"
           margin={{ top: 16, right: 20, bottom: 30, left: 90 }}
           padding={0.25}
-          colors={({ id }) => (id === 'current' ? '#4ade80' : '#a78bfa')}
-          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fb7185', strokeWidth: 2 } }]}
+          colors={({ id }) => (id === 'current' ? '#047857' : '#7c3aed')}
+          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#f59e0b', strokeWidth: 2 } }]}
           label={(d) => `${d.value}`}
-          labelTextColor="#0f172a"
+          labelTextColor="#f8fafc"
           enableGridY={false}
           valueFormat={(v) => `${v}`}
           theme={{
