@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStatsData } from './useStatsData.js';
 import { TheGap } from './components/TheGap.jsx';
+import { Superlatives } from './components/Superlatives.jsx';
 import { LiveCeiling } from './components/LiveCeiling.jsx';
 import { scoreSubmission } from '../../lib/score.js';
 
@@ -25,6 +26,7 @@ export function App() {
       <h1 className="text-2xl font-bold">Pool Stats</h1>
       <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
       <TheGap history={data.history} />
+      <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} />
       <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
     </div>
   );
