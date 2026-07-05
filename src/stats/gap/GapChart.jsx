@@ -26,9 +26,10 @@ import { timeFormat } from 'd3-time-format';
 const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
 const TICK_COLOR = '#94a3b8';
 const GRID_COLOR = '#1e293b';
-const DEFAULT_LINE_COLOR = '#334155';
-const DIMMED_LINE_COLOR = '#1e293b';
-const LEADER_COLOR = '#fbbf24';
+const DEFAULT_LINE_COLOR = '#334155';  // idle non-leader
+const SPOTLIGHT_COLOR = '#94a3b8';    // spotlighted non-leader (brighter)
+const DIMMED_LINE_COLOR = '#1e293b';  // dimmed when another line is spotlit
+const LEADER_COLOR = '#fbbf24';       // always gold
 
 const formatDate = timeFormat('%b %-d');
 
@@ -82,31 +83,40 @@ export function GapChart({
   // Determine if any spotlight is active.
   const hasSpotlight = hovered !== null || (pinned instanceof Set && pinned.size > 0);
 
+  // Helper: is this series currently spotlighted (hovered or pinned)?
+  const isSpotlit = useCallback(
+    (s) =>
+      s.email_hash === hovered || (pinned instanceof Set && pinned.has(s.email_hash)),
+    [hovered, pinned],
+  );
+
   // Return stroke color for a given series.
   const lineStroke = useCallback(
     (s) => {
       if (s.email_hash === leader) return LEADER_COLOR;
       if (!hasSpotlight) return DEFAULT_LINE_COLOR;
-      const isSpotlit =
-        s.email_hash === hovered || (pinned instanceof Set && pinned.has(s.email_hash));
-      return isSpotlit ? DEFAULT_LINE_COLOR : DIMMED_LINE_COLOR;
+      return isSpotlit(s) ? SPOTLIGHT_COLOR : DIMMED_LINE_COLOR;
     },
-    [leader, hovered, pinned, hasSpotlight],
+    [leader, isSpotlit, hasSpotlight],
   );
 
   // Return stroke opacity for a given series.
   const lineOpacity = useCallback(
     (s) => {
       if (!hasSpotlight) return 1;
-      const isSpotlit =
-        s.email_hash === hovered || (pinned instanceof Set && pinned.has(s.email_hash));
-      return isSpotlit ? 1 : 0.4;
+      return isSpotlit(s) ? 1 : 0.25;
     },
-    [hovered, pinned, hasSpotlight],
+    [isSpotlit, hasSpotlight],
   );
 
-  // Return stroke width for a given series.
-  const lineWidth = (s) => (s.email_hash === leader ? 2 : 1.5);
+  // Return stroke width: spotlighted lines are slightly thicker.
+  const lineWidth = useCallback(
+    (s) => {
+      if (s.email_hash === leader) return isSpotlit(s) ? 2.5 : 2;
+      return isSpotlit(s) ? 2 : 1.5;
+    },
+    [leader, isSpotlit],
+  );
 
   // Accessors for LinePath.
   const getX = (d) => xScale(d.x) ?? 0;
@@ -207,6 +217,29 @@ export function GapChart({
               fill="none"
             />
           ))}
+
+          {/* Snapshot dots — only on active (hovered / pinned) lines.
+              Rendering all 24 lines × ~115 points would be ~2 800 DOM nodes;
+              limiting to active lines keeps this snappy. */}
+          {hasSpotlight &&
+            sortedSeries.map((s) => {
+              if (!isSpotlit(s)) return null;
+              const color = lineStroke(s);
+              return s.data.map((d, i) => (
+                <circle
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`${s.email_hash}-dot-${i}`}
+                  cx={getX(d)}
+                  cy={getY(d)}
+                  r={3}
+                  fill={color}
+                  fillOpacity={0.9}
+                  stroke="#0f172a"
+                  strokeWidth={0.5}
+                  pointerEvents="none"
+                />
+              ));
+            })}
 
           {/* Crosshair vertical line */}
           {tooltipOpen && tooltipData && (
