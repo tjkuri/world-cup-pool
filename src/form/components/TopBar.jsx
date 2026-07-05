@@ -10,6 +10,12 @@ export function TopBar({ pageLabel, otherPage, otherLabel, onOpenRules, children
           >
             {otherLabel}
           </a>
+          <a
+            className="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
+            href="/stats.html"
+          >
+            Stats
+          </a>
           <button
             type="button"
             className="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
