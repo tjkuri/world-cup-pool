@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toSeries, leaderEmail } from './series.js';
 import { GapChart } from './GapChart.jsx';
 import { GapLegend } from './GapLegend.jsx';
+import { phaseBoundaries } from '../../../lib/phases.js';
 
 const CHART_HEIGHT = 380;
 
@@ -37,7 +38,7 @@ function useContainerWidth(ref) {
   return width;
 }
 
-export function GapPanel({ history }) {
+export function GapPanel({ history, knockout }) {
   // chartRef measures only the chart wrapper (not the legend) so the chart
   // fills its flex-1 cell correctly.
   const chartRef = useRef(null);
@@ -64,6 +65,7 @@ export function GapPanel({ history }) {
 
   const series = useMemo(() => (history ? toSeries(history) : []), [history]);
   const leader = useMemo(() => (history ? leaderEmail(history) : null), [history]);
+  const boundaries = useMemo(() => phaseBoundaries(knockout ?? null), [knockout]);
 
   // Derive a stable color for each pinned player (insertion-order → palette index).
   // Removing a pin and re-adding may get a new color; that is acceptable.
@@ -103,6 +105,7 @@ export function GapPanel({ history }) {
               hovered={hovered}
               pinned={pinned}
               pinnedColors={pinnedColors}
+              boundaries={boundaries}
             />
           ) : hasData ? null : (
             <p className="text-slate-500">No history yet.</p>

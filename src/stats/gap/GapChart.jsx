@@ -22,6 +22,7 @@ import { scaleTime, scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { useTooltip } from '@visx/tooltip';
 import { timeFormat } from 'd3-time-format';
+import { PhaseBands } from './PhaseBands.jsx';
 
 const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
 const TICK_COLOR = '#94a3b8';
@@ -53,6 +54,7 @@ export function GapChart({
   hovered = null,
   pinned = null,
   pinnedColors = EMPTY_MAP,
+  boundaries = [],
   children,
 }) {
   const { tooltipOpen, tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
@@ -213,6 +215,14 @@ export function GapChart({
     <div style={{ position: 'relative', width, height }}>
       <svg ref={svgRef} width={width} height={height}>
         <Group left={MARGIN.left} top={MARGIN.top}>
+          {/* Phase bands — backmost layer, behind grid lines and data lines */}
+          <PhaseBands
+            boundaries={boundaries}
+            xScale={xScale}
+            innerWidth={innerWidth}
+            innerHeight={innerHeight}
+          />
+
           {/* Subtle horizontal grid lines */}
           {yTicks.map((tick) => (
             <line

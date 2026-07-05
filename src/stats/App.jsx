@@ -42,7 +42,7 @@ export function App() {
         <p className="text-slate-400">{data.history?.snapshots?.length ?? 0} snapshots · {data.submissions?.length ?? 0} submissions loaded.</p>
         <ErrorBoundary>
           <Suspense fallback={<div className="text-slate-500">Loading chart…</div>}>
-            <GapPanel history={data.history} />
+            <GapPanel history={data.history} knockout={data.knockout} />
             <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} odds={data.odds} />
             <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
           </Suspense>
