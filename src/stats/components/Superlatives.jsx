@@ -10,7 +10,7 @@ function computeAwards({ history, submissions, fixtures, results, knockout }) {
     const moves = rankMovements(history);
     const riser = [...moves].sort((a, b) => b.delta - a.delta)[0];
     const faller = [...moves].sort((a, b) => a.delta - b.delta)[0];
-    if (riser) awards.push({ title: 'Biggest Riser', who: riser.name, detail: `▲ ${riser.delta} spots` });
+    if (riser && riser.delta > 0) awards.push({ title: 'Biggest Riser', who: riser.name, detail: `▲ ${riser.delta} spots` });
     if (faller && faller.delta < 0) awards.push({ title: 'Biggest Faller', who: faller.name, detail: `▼ ${-faller.delta} spots` });
   }
 
@@ -46,8 +46,11 @@ function computeAwards({ history, submissions, fixtures, results, knockout }) {
   return awards;
 }
 
-export function Superlatives(props) {
-  const awards = useMemo(() => computeAwards(props), [props]);
+export function Superlatives({ history, submissions, fixtures, results, knockout }) {
+  const awards = useMemo(
+    () => computeAwards({ history, submissions, fixtures, results, knockout }),
+    [history, submissions, fixtures, results, knockout],
+  );
   if (!awards.length) return null;
   return (
     <section>
