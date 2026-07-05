@@ -44,8 +44,8 @@ export function LiveCeiling({ submissions, groupTotalsByEmail, knockout, results
           padding={0.25}
           colors={({ id }) => (id === 'current' ? '#4ade80' : '#1f3d2b')}
           markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4' } }]}
-          label={(d) => (d.id === 'current' ? `${d.value}` : '')}
-          labelTextColor="#052e16"
+          label={(d) => `${d.value}`}
+          labelTextColor={(d) => (d.id === 'current' ? '#052e16' : '#cbd5e1')}
           enableGridY={false}
           valueFormat={(v) => `${v}`}
           theme={{
