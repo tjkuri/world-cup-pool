@@ -43,10 +43,14 @@ export function LiveCeiling({ submissions, groupTotalsByEmail, knockout, results
           margin={{ top: 10, right: 20, bottom: 30, left: 90 }}
           padding={0.25}
           colors={({ id }) => (id === 'current' ? '#4ade80' : '#1f3d2b')}
-          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4' }, legend: 'leader now', legendOrientation: 'vertical' }]}
+          markers={[{ axis: 'x', value: leaderCurrent, lineStyle: { stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4' }, legend: `leader now · ${leaderCurrent}`, legendPosition: 'top', legendOrientation: 'horizontal', textStyle: { fill: '#fbbf24', fontSize: 11, fontWeight: 600 } }]}
           enableGridY={false}
           valueFormat={(v) => `${v}`}
-          theme={{ text: { fill: '#cbd5e1' }, axis: { ticks: { text: { fill: '#94a3b8' } } } }}
+          theme={{
+            text: { fill: '#cbd5e1' },
+            axis: { ticks: { text: { fill: '#94a3b8' } } },
+            tooltip: { container: { background: '#0b1220', color: '#e2e8f0', border: '1px solid #334155', fontSize: 12, borderRadius: 6 } },
+          }}
         />
       </div>
     </section>
