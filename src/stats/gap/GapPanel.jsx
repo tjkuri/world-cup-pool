@@ -1,16 +1,21 @@
 /**
  * GapPanel.jsx — responsive wrapper for The Gap chart + legend.
  * Measures chart container width; owns hovered/pinned spotlight state;
- * lays out chart (flex-1) + legend (fixed-width sidebar) side-by-side on
- * md+ screens, stacked on narrow.
+ * owns zoom/pan state via useGapZoom; lays out chart (flex-1) + legend
+ * (fixed-width sidebar) side-by-side on md+ screens, stacked on narrow.
  */
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toSeries, leaderEmail } from './series.js';
 import { GapChart } from './GapChart.jsx';
 import { GapLegend } from './GapLegend.jsx';
+import { useGapZoom } from './useGapZoom.js';
 import { phaseBoundaries } from '../../../lib/phases.js';
 
 const CHART_HEIGHT = 380;
+
+// Mirror GapChart's MARGIN so we can compute innerWidth/innerHeight here.
+// These must stay in sync with the MARGIN constant in GapChart.jsx.
+const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
 
 /**
  * Palette for pinned player lines — dark-friendly, avoids gold (#fbbf24 is the leader).
@@ -79,34 +84,96 @@ export function GapPanel({ history, knockout }) {
     return map;
   }, [pinned]);
 
+  // Full data extent — used to seed useGapZoom and passed as domain to GapChart.
+  const { xDomainFull, yDomainFull } = useMemo(() => {
+    const allPoints = series.flatMap((s) => s.data);
+    if (!allPoints.length) return { xDomainFull: null, yDomainFull: null };
+    const xMin = allPoints.reduce((m, p) => (p.x < m ? p.x : m), allPoints[0].x);
+    const xMax = allPoints.reduce((m, p) => (p.x > m ? p.x : m), allPoints[0].x);
+    const yMax = Math.max(...allPoints.map((p) => p.y));
+    return { xDomainFull: [xMin, xMax], yDomainFull: [0, yMax] };
+  }, [series]);
+
+  // Inner plot dimensions (must mirror GapChart MARGIN so zoom transform is accurate).
+  const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
+  const innerHeight = Math.max(0, CHART_HEIGHT - MARGIN.top - MARGIN.bottom);
+
+  // ── Zoom ──────────────────────────────────────────────────────────────────
+  // disabled seam: pass disabled={true} here when Task 9 play mode is active.
+  const {
+    xDomain: zoomedXDomain,
+    yDomain: zoomedYDomain,
+    bind: zoomBind,
+    reset: zoomReset,
+    isZoomed,
+    isDragging,
+  } = useGapZoom({
+    xDomainFull,
+    yDomainFull,
+    innerWidth,
+    innerHeight,
+    disabled: false, // Task 9 will wire a `disabled` prop here
+  });
+
   const hasData = series.length > 0;
 
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">The Gap</h2>
       <p className="text-sm text-slate-400 mb-3">
-        Every entrant's cumulative points over the tournament. Leader in gold — hover a
+        Every entrant&apos;s cumulative points over the tournament. Leader in gold — hover a
         moment for the standing there. Click a name to pin it for comparison.
+        Scroll to zoom · drag to pan.
       </p>
 
       <div className="flex flex-col md:flex-row gap-3 items-start">
         {/* Chart — flex-1 so it takes the remaining width beside the legend */}
         <div
           ref={chartRef}
-          className="flex-1 min-w-0"
+          className="flex-1 min-w-0 relative"
           style={{ minHeight: CHART_HEIGHT }}
         >
           {width > 0 && hasData ? (
-            <GapChart
-              series={series}
-              leader={leader}
-              width={width}
-              height={CHART_HEIGHT}
-              hovered={hovered}
-              pinned={pinned}
-              pinnedColors={pinnedColors}
-              boundaries={boundaries}
-            />
+            <>
+              <GapChart
+                series={series}
+                leader={leader}
+                width={width}
+                height={CHART_HEIGHT}
+                xDomain={zoomedXDomain}
+                yDomain={zoomedYDomain}
+                hovered={hovered}
+                pinned={pinned}
+                pinnedColors={pinnedColors}
+                boundaries={boundaries}
+                zoomBind={zoomBind}
+                isDragging={isDragging}
+              />
+
+              {/* Reset zoom button — shown only when transform deviates from identity */}
+              {isZoomed && (
+                <button
+                  type="button"
+                  onClick={zoomReset}
+                  style={{
+                    position: 'absolute',
+                    top: MARGIN.top + 4,
+                    right: MARGIN.right + 4,
+                    background: 'rgba(15,23,42,0.88)',
+                    border: '1px solid #334155',
+                    borderRadius: 4,
+                    color: '#94a3b8',
+                    fontSize: 11,
+                    padding: '3px 8px',
+                    cursor: 'pointer',
+                    zIndex: 20,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Reset zoom
+                </button>
+              )}
+            </>
           ) : hasData ? null : (
             <p className="text-slate-500">No history yet.</p>
           )}

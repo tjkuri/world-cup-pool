@@ -1,7 +1,6 @@
 /**
  * GapChart.jsx — visx-based SVG chart for "The Gap".
  * Shows every entrant's cumulative points over the tournament.
- * BASE RENDER ONLY — no legend-highlighting, zoom, phase bands, or play mode yet.
  *
  * Props:
  *   series    [{ email_hash, name, data: [{x: Date, y: number}] }]
@@ -12,9 +11,15 @@
  *   yDomain   [number, number]  (optional; defaults to [0, max total])
  *   hovered   email_hash | null  (spotlight — dims others when set)
  *   pinned    Set<email_hash>    (spotlight — dims others when non-empty)
- *   children  React node          (seam for PhaseBands, dot overlays, etc.)
+ *   zoomBind  { onWheel, onPointerDown, onPointerMove, onPointerUp } | null
+ *             from useGapZoom — attached to the interaction surface.
+ *             onWheel is also added via a non-passive addEventListener so that
+ *             event.preventDefault() reliably prevents page scroll during zoom.
+ *   isDragging boolean — when true, the crosshair tooltip is suppressed so it
+ *             doesn't interfere with pan gestures.
+ *   children  React node  (seam for future overlays)
  */
-import { useMemo, useRef, useCallback } from 'react';
+import { useMemo, useRef, useCallback, useId, useEffect } from 'react';
 import { Group } from '@visx/group';
 import { LinePath } from '@visx/shape';
 import { AxisBottom, AxisLeft } from '@visx/axis';
@@ -55,12 +60,21 @@ export function GapChart({
   pinned = null,
   pinnedColors = EMPTY_MAP,
   boundaries = [],
+  zoomBind = null,
+  isDragging = false,
   children,
 }) {
   const { tooltipOpen, tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
     useTooltip();
 
   const svgRef = useRef(null);
+  // Ref for the interaction rect: used to attach a non-passive wheel listener
+  // so event.preventDefault() reliably suppresses page scroll during zoom.
+  const interactionRectRef = useRef(null);
+
+  // Unique clip-path id — useId guarantees no collision across multiple instances.
+  const clipId = useId();
+  const clipPathId = `gap-clip-${clipId.replace(/:/g, '')}`;
 
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
@@ -75,7 +89,7 @@ export function GapChart({
     return times.map((t) => new Date(t));
   }, [allPoints]);
 
-  // Build scales.
+  // Build scales from the (possibly zoomed) xDomain/yDomain props.
   const xScale = useMemo(() => {
     const domain =
       xDomainProp ??
@@ -148,6 +162,7 @@ export function GapChart({
   const yTicks = useMemo(() => yScale.ticks(5), [yScale]);
 
   // Mouse-move handler: snap to nearest snapshot x, build tooltip data.
+  // Only called when NOT dragging (isDragging suppresses it).
   const handleMouseMove = useCallback(
     (event) => {
       if (!svgRef.current || !snapshotXs.length) return;
@@ -202,6 +217,19 @@ export function GapChart({
     [snapshotXs, xScale, series, showTooltip],
   );
 
+  // ── Non-passive wheel listener ────────────────────────────────────────────
+  // Attaching via addEventListener({ passive: false }) ensures event.preventDefault()
+  // reliably suppresses page scroll when the user zooms over the chart.
+  // This supplements (or replaces) the React onWheel prop which may be passive
+  // depending on the React root configuration.
+  useEffect(() => {
+    const el = interactionRectRef.current;
+    const handler = zoomBind?.onWheel;
+    if (!el || !handler) return;
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, [zoomBind?.onWheel]);
+
   if (!series.length || innerWidth <= 0 || innerHeight <= 0) {
     return <p className="text-slate-500">No history yet.</p>;
   }
@@ -214,8 +242,17 @@ export function GapChart({
   return (
     <div style={{ position: 'relative', width, height }}>
       <svg ref={svgRef} width={width} height={height}>
+        {/* Clip path constrains lines/dots to the inner plot area.
+            Applied only to data layers so axes/phase labels stay unclipped. */}
+        <defs>
+          <clipPath id={clipPathId}>
+            <rect x={0} y={0} width={innerWidth} height={innerHeight} />
+          </clipPath>
+        </defs>
+
         <Group left={MARGIN.left} top={MARGIN.top}>
-          {/* Phase bands — backmost layer, behind grid lines and data lines */}
+          {/* Phase bands — backmost layer, behind grid lines and data lines.
+              Not clipped so band labels at the edge remain visible. */}
           <PhaseBands
             boundaries={boundaries}
             xScale={xScale}
@@ -223,7 +260,7 @@ export function GapChart({
             innerHeight={innerHeight}
           />
 
-          {/* Subtle horizontal grid lines */}
+          {/* Subtle horizontal grid lines — not clipped (extend to axis edges) */}
           {yTicks.map((tick) => (
             <line
               key={tick}
@@ -236,59 +273,65 @@ export function GapChart({
             />
           ))}
 
-          {/* One LinePath per series */}
-          {sortedSeries.map((s) => (
-            <LinePath
-              key={s.email_hash}
-              data={s.data}
-              x={getX}
-              y={getY}
-              curve={curveMonotoneX}
-              stroke={lineStroke(s)}
-              strokeWidth={lineWidth(s)}
-              strokeOpacity={lineOpacity(s)}
-              fill="none"
-            />
-          ))}
+          {/* ── Clipped data group ────────────────────────────────────────────
+              Lines, dots, and the crosshair are all clipped to the plot bounds
+              so that when zoomed, data never overflows past the axis lines.   */}
+          <g clipPath={`url(#${clipPathId})`}>
+            {/* One LinePath per series */}
+            {sortedSeries.map((s) => (
+              <LinePath
+                key={s.email_hash}
+                data={s.data}
+                x={getX}
+                y={getY}
+                curve={curveMonotoneX}
+                stroke={lineStroke(s)}
+                strokeWidth={lineWidth(s)}
+                strokeOpacity={lineOpacity(s)}
+                fill="none"
+              />
+            ))}
 
-          {/* Snapshot dots — only on active (hovered / pinned) lines.
-              Rendering all 24 lines × ~115 points would be ~2 800 DOM nodes;
-              limiting to active lines keeps this snappy. */}
-          {hasSpotlight &&
-            sortedSeries.map((s) => {
-              if (!isSpotlit(s)) return null;
-              const color = lineStroke(s);
-              return s.data.map((d, i) => (
-                <circle
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={`${s.email_hash}-dot-${i}`}
-                  cx={getX(d)}
-                  cy={getY(d)}
-                  r={3}
-                  fill={color}
-                  fillOpacity={0.9}
-                  stroke="#0f172a"
-                  strokeWidth={0.5}
-                  pointerEvents="none"
-                />
-              ));
-            })}
+            {/* Snapshot dots — only on active (hovered / pinned) lines.
+                Rendering all 24 lines × ~115 points would be ~2 800 DOM nodes;
+                limiting to active lines keeps this snappy. */}
+            {hasSpotlight &&
+              sortedSeries.map((s) => {
+                if (!isSpotlit(s)) return null;
+                const color = lineStroke(s);
+                return s.data.map((d, i) => (
+                  <circle
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${s.email_hash}-dot-${i}`}
+                    cx={getX(d)}
+                    cy={getY(d)}
+                    r={3}
+                    fill={color}
+                    fillOpacity={0.9}
+                    stroke="#0f172a"
+                    strokeWidth={0.5}
+                    pointerEvents="none"
+                  />
+                ));
+              })}
 
-          {/* Crosshair vertical line */}
-          {tooltipOpen && tooltipData && (
-            <line
-              x1={tooltipData.crosshairX}
-              x2={tooltipData.crosshairX}
-              y1={0}
-              y2={innerHeight}
-              stroke={TICK_COLOR}
-              strokeWidth={1}
-              strokeDasharray="4 2"
-              pointerEvents="none"
-            />
-          )}
+            {/* Crosshair vertical line — suppressed while dragging to pan */}
+            {!isDragging && tooltipOpen && tooltipData && (
+              <line
+                x1={tooltipData.crosshairX}
+                x2={tooltipData.crosshairX}
+                y1={0}
+                y2={innerHeight}
+                stroke={TICK_COLOR}
+                strokeWidth={1}
+                strokeDasharray="4 2"
+                pointerEvents="none"
+              />
+            )}
+          </g>
+          {/* ── End clipped data group ──────────────────────────────────────── */}
 
-          {/* Seam: children slot for phase bands, dot overlays, etc. */}
+          {/* Seam: children slot for future overlays */}
           {children}
 
           {/* X axis */}
@@ -331,24 +374,52 @@ export function GapChart({
             }}
           />
 
-          {/* Transparent mouse-capture rect */}
+          {/* Transparent interaction rect — topmost layer so it captures all events.
+              Zoom handlers (pan + scroll) coexist with the crosshair tooltip:
+                • onPointerMove: calls zoom pan handler first; crosshair only when
+                  not dragging (isDragging prop suppresses it during pan).
+                • onWheel: also attached non-passively via useEffect above so that
+                  event.preventDefault() reliably prevents page scroll.
+                • onPointerDown: hides crosshair tooltip at drag start.
+                • onPointerUp / onPointerLeave: ends drag and hides tooltip.     */}
           <rect
+            ref={interactionRectRef}
             x={0}
             y={0}
             width={innerWidth}
             height={innerHeight}
             fill="transparent"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={hideTooltip}
+            style={{ cursor: isDragging ? 'grabbing' : zoomBind?.onPointerDown ? 'grab' : 'crosshair' }}
+            onPointerDown={
+              zoomBind?.onPointerDown
+                ? (e) => { hideTooltip(); zoomBind.onPointerDown(e); }
+                : undefined
+            }
+            onPointerMove={(e) => {
+              // Pan if dragging; crosshair if hovering.
+              zoomBind?.onPointerMove?.(e);
+              if (!isDragging) handleMouseMove(e);
+            }}
+            onPointerUp={
+              zoomBind?.onPointerUp
+                ? (e) => { zoomBind.onPointerUp(e); }
+                : undefined
+            }
+            onPointerLeave={(e) => {
+              // End drag (pointer capture released) + hide crosshair.
+              zoomBind?.onPointerUp?.(e);
+              hideTooltip();
+            }}
           />
         </Group>
       </svg>
 
       {/* Tooltip — absolutely positioned dark div over the SVG.
+          Hidden while dragging to pan (isDragging=true).
           Selection-aware: when a player is hovered or pinned, shows only those
           players with their ordinal rank at that snapshot. Otherwise shows the
           full tied-bucket standings (existing behaviour). */}
-      {tooltipOpen && tooltipData && (() => {
+      {!isDragging && tooltipOpen && tooltipData && (() => {
         const tooltipStyle = {
           position: 'absolute',
           left: Math.min(tooltipData.crosshairX + MARGIN.left + 10, width - 220),
