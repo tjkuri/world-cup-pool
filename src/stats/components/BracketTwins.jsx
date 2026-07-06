@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ResponsiveNetwork } from '@nivo/network';
 import { twinsGraph } from '../../../lib/twins.js';
 
-// Mirror ChampionSankey's dark theme.
+// Mirror LiveCeiling's dark theme.
 const DARK_THEME = {
   text: { fill: '#cbd5e1' },
   tooltip: {
