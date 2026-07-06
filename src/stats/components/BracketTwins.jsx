@@ -132,7 +132,8 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
       championCode: championByHash[n.id] ?? null,
       baseColor: championColorMap[championByHash[n.id]] ?? '#64748b',
       pts: pointsByHash[n.id] ?? 0,
-      size: 8 + 16 * ((pointsByHash[n.id] ?? 0) - min) / (max - min || 1),
+      // Cap diameter at 18 so max-radius nodes (9px) don't swamp the distanceMin gap.
+      size: Math.min(18, 8 + 16 * ((pointsByHash[n.id] ?? 0) - min) / (max - min || 1)),
     }));
   }, [nodes, pointsByHash, championByHash, championColorMap]);
 
@@ -302,15 +303,27 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
       )}
 
       {/* Network graph */}
-      <div style={{ height: 460 }}>
+      <div style={{ height: 540 }}>
         <ResponsiveNetwork
           data={{ nodes: enrichedNodes, links }}
-          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-          // linkDistance receives InputLink (raw); our links carry .distance.
-          linkDistance={(l) => l.distance}
-          repulsivity={8}
-          centeringStrength={0.05}
-          iterations={120}
+          margin={{ top: 30, right: 40, bottom: 40, left: 40 }}
+          // linkDistance receives InputLink (raw); derive from l.similarity directly.
+          // Base 60px so identical brackets still have breathing room; +140px for
+          // maximally-different pairs to space them well across the canvas.
+          linkDistance={(l) => 60 + (1 - l.similarity) * 140}
+          // repulsivity → forceManyBody.strength(-n); 80 is strong enough to
+          // separate 14 near-identical nodes whose link targets are now ≥60px.
+          repulsivity={80}
+          // centeringStrength → forceLink.strength(); 0.4 makes links firmly pull
+          // to their target distances (cluster spreads) without overwhelming repulsion.
+          centeringStrength={0.4}
+          // distanceMin: charge force caps at this distance so tightly-packed nodes
+          // still receive maximum repulsion rather than infinite/NaN.
+          distanceMin={20}
+          // distanceMax: beyond 220px nodes don't repel each other — loners near
+          // the cluster boundary aren't pushed all the way to the canvas edges.
+          distanceMax={220}
+          iterations={160}
           nodeSize={nodeSize}
           activeNodeSize={(n) => n.size + 4}
           inactiveNodeSize={(n) => n.size}
