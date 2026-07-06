@@ -29,7 +29,7 @@ import { useTooltip } from '@visx/tooltip';
 import { timeFormat } from 'd3-time-format';
 import { PhaseBands } from './PhaseBands.jsx';
 
-const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
+export const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
 const TICK_COLOR = '#94a3b8';
 const GRID_COLOR = '#1e293b';
 const DEFAULT_LINE_COLOR = '#334155';  // idle non-leader

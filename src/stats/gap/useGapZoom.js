@@ -38,7 +38,7 @@
  *   Spread `bind` onto the interaction surface of GapChart.
  *   Attach `onWheel` via addEventListener({passive:false}) for scroll prevention.
  */
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 
 const IDENTITY = Object.freeze({ scaleX: 1, scaleY: 1, translateX: 0, translateY: 0 });
 const ZOOM_SPEED = 0.15;  // fraction of scale per wheel tick
@@ -101,6 +101,15 @@ export function useGapZoom({
 
   // Drag state tracked in a ref so handlers don't re-close over stale state.
   const drag = useRef(null); // { startClientX, startClientY, startTx, startTy }
+
+  // ── Carry-forward fix A: reset drag when disabled transitions to true ────
+  // Guards against a mid-drag → play-start transition leaving the crosshair stuck.
+  useEffect(() => {
+    if (disabled) {
+      drag.current = null;
+      setIsDragging(false);
+    }
+  }, [disabled]);
 
   // ── Derived visible domains ───────────────────────────────────────────────
   const { xDomain, yDomain } = useMemo(() => {

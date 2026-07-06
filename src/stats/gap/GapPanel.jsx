@@ -1,21 +1,28 @@
 /**
  * GapPanel.jsx — responsive wrapper for The Gap chart + legend.
  * Measures chart container width; owns hovered/pinned spotlight state;
- * owns zoom/pan state via useGapZoom; lays out chart (flex-1) + legend
- * (fixed-width sidebar) side-by-side on md+ screens, stacked on narrow.
+ * owns zoom/pan state via useGapZoom; owns playback state via usePlayback.
+ *
+ * Playback (animate mode):
+ *   When `playing` is true OR `index < snapshotCount - 1` (mid-reveal),
+ *   `isPlaybackActive` is true:
+ *     • Each series is sliced to data[0..index] (cumulative reveal).
+ *     • xDomain / yDomain are derived from that slice so the axes
+ *       auto-zoom-out as the reveal grows (the "zoom-out" animation effect).
+ *     • Manual zoom is suspended (disabled={isPlaybackActive} on useGapZoom).
+ *   When the animation completes (index === count-1, playing=false),
+ *   isPlaybackActive becomes false and zoom re-enables automatically.
  */
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toSeries, leaderEmail } from './series.js';
-import { GapChart } from './GapChart.jsx';
+import { GapChart, MARGIN } from './GapChart.jsx';
 import { GapLegend } from './GapLegend.jsx';
 import { useGapZoom } from './useGapZoom.js';
+import { usePlayback } from './usePlayback.js';
+import { PlayControls } from './PlayControls.jsx';
 import { phaseBoundaries } from '../../../lib/phases.js';
 
 const CHART_HEIGHT = 380;
-
-// Mirror GapChart's MARGIN so we can compute innerWidth/innerHeight here.
-// These must stay in sync with the MARGIN constant in GapChart.jsx.
-const MARGIN = { top: 20, right: 40, bottom: 50, left: 52 };
 
 /**
  * Palette for pinned player lines — dark-friendly, avoids gold (#fbbf24 is the leader).
@@ -98,8 +105,57 @@ export function GapPanel({ history, knockout }) {
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerHeight = Math.max(0, CHART_HEIGHT - MARGIN.top - MARGIN.bottom);
 
+  // ── Playback ──────────────────────────────────────────────────────────────
+  const snapshotCount = series.length > 0 ? series[0].data.length : 0;
+  const { index, playing, toggle: playToggle, seek } = usePlayback(snapshotCount);
+
+  // isPlaybackActive: true when mid-reveal (not yet at the last snapshot).
+  // When false (index === count-1, !playing), full series + zoom is restored.
+  const isPlaybackActive = playing || index < snapshotCount - 1;
+
+  // Sliced series + slice-derived domains for the animate mode.
+  // x: [firstDate, sliceLastDate]  y: [0, sliceMaxTotal]
+  const { displaySeries, sliceXDomain, sliceYDomain } = useMemo(() => {
+    if (!isPlaybackActive || !series.length || snapshotCount === 0) {
+      return { displaySeries: series, sliceXDomain: null, sliceYDomain: null };
+    }
+
+    const sliceEnd = index + 1;
+    const slicedSeries = series.map((s) => ({ ...s, data: s.data.slice(0, sliceEnd) }));
+    const slicePoints = slicedSeries.flatMap((s) => s.data);
+
+    if (!slicePoints.length) {
+      return { displaySeries: slicedSeries, sliceXDomain: null, sliceYDomain: null };
+    }
+
+    const xFirst = slicePoints.reduce((m, p) => (p.x < m ? p.x : m), slicePoints[0].x);
+    const xLast = slicePoints.reduce((m, p) => (p.x > m ? p.x : m), slicePoints[0].x);
+    // Guard against zero-width domain when only one snapshot is visible.
+    const xLastAdj =
+      xFirst.getTime() === xLast.getTime()
+        ? new Date(xLast.getTime() + 24 * 60 * 60 * 1000)
+        : xLast;
+
+    const yMax = Math.max(...slicePoints.map((p) => p.y), 1);
+
+    return {
+      displaySeries: slicedSeries,
+      sliceXDomain: [xFirst, xLastAdj],
+      sliceYDomain: [0, yMax],
+    };
+  }, [isPlaybackActive, series, index, snapshotCount]);
+
+  // Date label shown in PlayControls for the current scrubber position.
+  const snapshotDate = useMemo(() => {
+    if (!series.length || !series[0].data.length) return null;
+    const safeIdx = Math.min(index, series[0].data.length - 1);
+    return series[0].data[safeIdx]?.x ?? null;
+  }, [series, index]);
+
   // ── Zoom ──────────────────────────────────────────────────────────────────
-  // disabled seam: pass disabled={true} here when Task 9 play mode is active.
+  // disabled while playback is active so wheel/drag interactions are ignored.
+  // The carry-forward drag-reset useEffect inside useGapZoom ensures a
+  // mid-drag → play-start transition doesn't leave the crosshair stuck.
   const {
     xDomain: zoomedXDomain,
     yDomain: zoomedYDomain,
@@ -112,8 +168,12 @@ export function GapPanel({ history, knockout }) {
     yDomainFull,
     innerWidth,
     innerHeight,
-    disabled: false, // Task 9 will wire a `disabled` prop here
+    disabled: isPlaybackActive,
   });
+
+  // Choose which x/y domains to pass to GapChart.
+  const xDomainForChart = isPlaybackActive ? sliceXDomain : zoomedXDomain;
+  const yDomainForChart = isPlaybackActive ? sliceYDomain : zoomedYDomain;
 
   const hasData = series.length > 0;
 
@@ -126,6 +186,18 @@ export function GapPanel({ history, knockout }) {
         Scroll to zoom · drag to pan.
       </p>
 
+      {/* Play controls — shown when there are at least 2 snapshots */}
+      {hasData && snapshotCount > 1 && (
+        <PlayControls
+          index={index}
+          playing={playing}
+          count={snapshotCount}
+          onToggle={playToggle}
+          onSeek={seek}
+          snapshotDate={snapshotDate}
+        />
+      )}
+
       <div className="flex flex-col md:flex-row gap-3 items-start">
         {/* Chart — flex-1 so it takes the remaining width beside the legend */}
         <div
@@ -136,12 +208,12 @@ export function GapPanel({ history, knockout }) {
           {width > 0 && hasData ? (
             <>
               <GapChart
-                series={series}
+                series={displaySeries}
                 leader={leader}
                 width={width}
                 height={CHART_HEIGHT}
-                xDomain={zoomedXDomain}
-                yDomain={zoomedYDomain}
+                xDomain={xDomainForChart}
+                yDomain={yDomainForChart}
                 hovered={hovered}
                 pinned={pinned}
                 pinnedColors={pinnedColors}
@@ -150,8 +222,10 @@ export function GapPanel({ history, knockout }) {
                 isDragging={isDragging}
               />
 
-              {/* Reset zoom button — shown only when transform deviates from identity */}
-              {isZoomed && (
+              {/* Reset zoom button — shown only when zoomed AND not in playback mode
+                  (during playback the slice domains override zoom, so the button
+                  would be misleading). */}
+              {isZoomed && !isPlaybackActive && (
                 <button
                   type="button"
                   onClick={zoomReset}
@@ -179,11 +253,13 @@ export function GapPanel({ history, knockout }) {
           )}
         </div>
 
-        {/* Legend sidebar */}
+        {/* Legend sidebar — always gets the full series so rankings reflect final totals.
+            When in playback mode the slicedSeries is passed so current-snapshot
+            totals are shown, and the rankings change live as the animation plays. */}
         {hasData && (
           <div className="flex-shrink-0 w-full md:w-44">
             <GapLegend
-              series={series}
+              series={displaySeries}
               leader={leader}
               hovered={hovered}
               pinned={pinned}
