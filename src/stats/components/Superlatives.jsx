@@ -110,7 +110,7 @@ export function Superlatives({ submissions, fixtures, results, knockout, odds })
             <div className="text-sm text-emerald-400">{a.detail}</div>
             {a.matches?.length ? (
               <div
-                className="absolute top-full left-0 mt-1 hidden group-hover:block group-focus-within:block z-10 rounded-lg border border-slate-600 p-3 text-xs text-slate-300 overflow-auto"
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-1 hidden group-hover:block group-focus-within:block z-20 rounded-lg border border-slate-600 p-3 text-xs text-slate-300 overflow-auto"
                 style={{ background: '#0b1220', minWidth: '240px', maxHeight: '16rem' }}
               >
                 {a.matches.map((m) => (
