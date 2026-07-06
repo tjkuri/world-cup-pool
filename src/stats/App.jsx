@@ -51,7 +51,12 @@ export function App() {
               <h2 className="text-base font-semibold uppercase tracking-wide text-slate-500 mb-4">Retrospective</h2>
               <div className="space-y-8">
                 <TeamAdvancement submissions={data.submissions} knockout={data.knockout} />
-                <BracketTwins submissions={data.submissions} />
+                <BracketTwins
+                  submissions={data.submissions}
+                  fixtures={data.fixtures}
+                  results={data.results}
+                  knockout={data.knockout}
+                />
               </div>
             </section>
           </Suspense>
