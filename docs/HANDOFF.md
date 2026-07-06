@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-07-04 (**knockout stage LIVE**). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main`, deployed, locked, and revealed**. **R32 is complete (16/16); R16 is underway** and the cron is scoring live. **Scoring was rebalanced 2026-07-04 (pool vote):** R16→Final winner points **doubled to 16/32/64/128** (R32 frozen at 4), and the knockout **exact-score bonus now requires the real matchup with penalty shootouts forgiven** — both zero-retroactive and live (see "Knockout" → changelog). Remaining work is operational (final tally), not feature work — see "Pending items".
+Last updated: 2026-07-06 (**knockout stage LIVE**; **interactive stats page shipped 2026-07-06** — see "Stats page"). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main`, deployed, locked, and revealed**. **R32 is complete (16/16); R16 is underway** and the cron is scoring live. **Scoring was rebalanced 2026-07-04 (pool vote):** R16→Final winner points **doubled to 16/32/64/128** (R32 frozen at 4), and the knockout **exact-score bonus now requires the real matchup with penalty shootouts forgiven** — both zero-retroactive and live (see "Knockout" → changelog). Remaining work is operational (final tally), not feature work — see "Pending items".
 
 ## TL;DR for next-session-Claude
 
@@ -303,6 +303,43 @@ state (deliberate, NOT a bug — don't "sync" them):
 - `public/config.json` `bracket_notice` (string) renders an amber banner on
   `bracket.html` (currently: submissions closed, stragglers may still enter,
   picks for already-kicked-off matches are voided).
+
+## Stats page (shipped 2026-07-06)
+
+Standalone `stats.html` / `src/stats/` app, linked from the leaderboard TopBar.
+Three sections, all lazy-loaded (`?mockStats=1` dev escape hatch):
+- **The Gap** (`src/stats/gap/`) — bespoke **visx + d3** chart: cumulative points
+  per entrant over a daily-condensed timeline, legend hover-spotlight + click-pin
+  (distinct pin colors), selection-aware tooltip (rank+points), Group→Final phase
+  bands (from knockout kickoffs), bidirectional zoom/pan + reset, and a
+  play/animate mode (rAF cumulative reveal + auto-zoom). Nivo can't do zoom/play,
+  hence the visx rebuild (Ceiling + the deferred Phase-2 charts stay on Nivo).
+- **Live Ceiling** (`LiveCeiling.jsx`, Nivo bar) — current vs max-reachable points
+  ("who can still win"); jewel-tone palette (emerald/violet + amber marker).
+- **Superlatives** (`Superlatives.jsx`) — Most 🎯 Exact (whole-tournament),
+  Live Longshot, Hipster (+ match-detail hover), Giant Slayer.
+
+New tested pure libs: `lib/history.js` (buildHistorySeries / rankMovements /
+rankVolatility), `lib/ceiling.js` (aliveTeams / maxReachablePoints), `lib/phases.js`
+(phaseBoundaries), `lib/consensus.js` (pickConsensus / contrarianCorrect(+Matches) /
+chalkScore / upsetScore). **`npm test` now globs `lib/*.test.js scripts/*.test.mjs`
+(96 tests).**
+
+**`history.json` runbook:** The Gap reads `public/history.json`, produced by
+`node scripts/build-history.mjs` — walks every committed `public/results.json`,
+fetches the locked submissions, and replays the existing pure scorers into
+per-entrant cumulative totals per snapshot. It is a **static committed artifact**:
+re-run + commit + push to refresh The Gap (NOT auto-updated by the cron — wiring
+it into `fetch-results.yml` is a possible follow-up).
+
+**Deferred — Phase 2 charts** (designed in the stats spec, not built): champion/
+advancement **Sankey**, **Bracket Twins** similarity network, **scoreline heatmap**,
+**exact-count histogram**, **contrarian scatter**. `lib/consensus.js` is a down
+payment on Sankey/Twins/contrarian.
+
+Specs: `docs/superpowers/specs/2026-07-04-stats-page-design.md` +
+`2026-07-05-stats-page-phase1.5-design.md`. Plans: `.../plans/2026-07-04-stats-page-phase1.md`
++ `2026-07-05-stats-page-phase1.5.md`.
 
 ## Recent additions (post-restyle)
 
