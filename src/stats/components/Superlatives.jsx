@@ -2,10 +2,9 @@ import { useMemo } from 'react';
 import { scoreSubmission, scoreBracket } from '../../../lib/score.js';
 import { aliveTeams } from '../../../lib/ceiling.js';
 import { pickConsensus, contrarianCorrect, contrarianCorrectMatches, upsetScore } from '../../../lib/consensus.js';
-import { rankVolatility } from '../../../lib/history.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
 
-function computeAwards({ history, submissions, fixtures, results, knockout, odds }) {
+function computeAwards({ submissions, fixtures, results, knockout, odds }) {
   const awards = [];
 
   // 1. Most 🎯 Exact — WHOLE TOURNAMENT (group + knockout combined per email_hash)
@@ -87,22 +86,13 @@ function computeAwards({ history, submissions, fixtures, results, knockout, odds
     }
   }
 
-  // 5. Roller Coaster (NEW) — max cumulative rank movement across snapshots
-  if (history?.snapshots?.length) {
-    const vols = rankVolatility(history);
-    const top = vols.reduce((a, b) => (b.volatility > a.volatility ? b : a), { volatility: 0 });
-    if (top.volatility > 0) {
-      awards.push({ title: 'Roller Coaster', who: top.name, detail: `${top.volatility} places of movement` });
-    }
-  }
-
   return awards;
 }
 
-export function Superlatives({ history, submissions, fixtures, results, knockout, odds }) {
+export function Superlatives({ submissions, fixtures, results, knockout, odds }) {
   const awards = useMemo(
-    () => computeAwards({ history, submissions, fixtures, results, knockout, odds }),
-    [history, submissions, fixtures, results, knockout, odds],
+    () => computeAwards({ submissions, fixtures, results, knockout, odds }),
+    [submissions, fixtures, results, knockout, odds],
   );
   if (!awards.length) return null;
   return (
