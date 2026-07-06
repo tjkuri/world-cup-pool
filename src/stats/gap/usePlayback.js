@@ -14,20 +14,28 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 const STEP_MS = 400; // advance one snapshot every ~400 ms
 
 export function usePlayback(count) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => Math.max(0, count - 1));
   const [playing, setPlaying] = useState(false);
 
   // Mutable state for the rAF loop — avoids stale closure captures.
   // stateRef.current is the single source of truth for the rAF loop;
   // React state (index / playing) is kept in sync for re-renders.
-  const stateRef = useRef({ playing: false, index: 0, count });
+  const stateRef = useRef({ playing: false, index: Math.max(0, count - 1), count });
   const rafRef = useRef(null);
   const lastTsRef = useRef(null);
 
-  // Keep count in stateRef current.
+  // Keep count in stateRef current, and keep the resting index at the last
+  // snapshot when data arrives or grows (e.g. first render has count=0, then
+  // data loads and count grows to ~40). Only runs when not actively playing so
+  // it does not interrupt a live animation.
   useEffect(() => {
     stateRef.current.count = count;
-  }, [count]);
+    if (!stateRef.current.playing) {
+      const restIdx = Math.max(0, count - 1);
+      stateRef.current.index = restIdx;
+      setIndex(restIdx);
+    }
+  }, [count]); // intentionally omits `playing` — only re-sync on count change
 
   // Cancel rAF on unmount.
   useEffect(() => {
@@ -120,13 +128,14 @@ export function usePlayback(count) {
     [_cancelRaf],
   );
 
-  /** Reset to index 0, paused. */
+  /** Reset to the full view (index = count-1), paused — the resting state. */
   const reset = useCallback(() => {
     stateRef.current.playing = false;
     setPlaying(false);
     _cancelRaf();
-    stateRef.current.index = 0;
-    setIndex(0);
+    const restIdx = Math.max(0, stateRef.current.count - 1);
+    stateRef.current.index = restIdx;
+    setIndex(restIdx);
   }, [_cancelRaf]);
 
   return { index, playing, play, pause, toggle, seek, reset };
