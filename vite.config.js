@@ -15,6 +15,7 @@ export default defineConfig({
         form: resolve(here, 'form.html'),          // retired group-stage form (locked)
         leaderboard: resolve(here, 'leaderboard.html'),
         bracket: resolve(here, 'bracket.html'),
+        stats: resolve(here, 'stats.html'),
       },
     },
   },
