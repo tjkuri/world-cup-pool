@@ -7,6 +7,7 @@ import { ErrorBoundary } from './ErrorBoundary.jsx';
 const GapPanel = lazy(() => import('./gap/GapPanel.jsx').then((m) => ({ default: m.GapPanel })));
 const LiveCeiling = lazy(() => import('./components/LiveCeiling.jsx').then((m) => ({ default: m.LiveCeiling })));
 const Superlatives = lazy(() => import('./components/Superlatives.jsx').then((m) => ({ default: m.Superlatives })));
+const ChampionSankey = lazy(() => import('./components/ChampionSankey.jsx').then((m) => ({ default: m.ChampionSankey })));
 
 export function App() {
   const data = useStatsData();
@@ -45,6 +46,12 @@ export function App() {
             <GapPanel history={data.history} knockout={data.knockout} />
             <Superlatives history={data.history} submissions={data.submissions} fixtures={data.fixtures} results={data.results} knockout={data.knockout} odds={data.odds} />
             <LiveCeiling submissions={data.submissions} groupTotalsByEmail={groupTotalsByEmail} knockout={data.knockout} results={data.results} />
+            <section>
+              <h2 className="text-base font-semibold uppercase tracking-wide text-slate-500 mb-4">Retrospective</h2>
+              <div className="space-y-8">
+                <ChampionSankey submissions={data.submissions} knockout={data.knockout} />
+              </div>
+            </section>
           </Suspense>
         </ErrorBoundary>
       </div>
