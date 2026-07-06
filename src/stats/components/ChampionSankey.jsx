@@ -20,7 +20,7 @@ const DARK_THEME = {
 
 // PropertyAccessor: receives Omit<SankeyNodeDatum, 'color'|'label'>, still has `id`.
 function nodeLabel(node) {
-  const code = node.id.split(':')[1];
+  const code = node.id.split(':')[1] ?? '';
   return `${teamFlag(code)} ${teamName(code)}`;
 }
 
@@ -33,7 +33,7 @@ export function ChampionSankey({ submissions, knockout }) {
   if (!links.length) {
     return (
       <section>
-        <h2 className="text-lg font-semibold mb-1">Advancement Flow</h2>
+        <h3 className="text-lg font-semibold mb-1">Advancement Flow</h3>
         <p className="text-sm text-slate-500">No bracket data yet.</p>
       </section>
     );
@@ -41,7 +41,7 @@ export function ChampionSankey({ submissions, knockout }) {
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">Advancement Flow</h2>
+      <h3 className="text-lg font-semibold mb-1">Advancement Flow</h3>
       <p className="text-sm text-slate-400 mb-3">
         Ribbon width = number of brackets routing that team to the next round (R16 → QF → SF → Final → Champion).
       </p>
@@ -68,7 +68,7 @@ export function ChampionSankey({ submissions, knockout }) {
           labelPadding={14}
           labelTextColor="#cbd5e1"
           theme={DARK_THEME}
-          valueFormat=" >-d"
+          valueFormat={(v) => `${v} bracket${v === 1 ? '' : 's'}`}
         />
       </div>
     </section>
