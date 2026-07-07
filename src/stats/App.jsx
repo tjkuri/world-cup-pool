@@ -8,7 +8,6 @@ const GapPanel = lazy(() => import('./gap/GapPanel.jsx').then((m) => ({ default:
 const LiveCeiling = lazy(() => import('./components/LiveCeiling.jsx').then((m) => ({ default: m.LiveCeiling })));
 const Superlatives = lazy(() => import('./components/Superlatives.jsx').then((m) => ({ default: m.Superlatives })));
 const TeamAdvancement = lazy(() => import('./components/TeamAdvancement.jsx').then((m) => ({ default: m.TeamAdvancement })));
-const BracketTwins = lazy(() => import('./components/BracketTwins.jsx').then((m) => ({ default: m.BracketTwins })));
 
 export function App() {
   const data = useStatsData();
@@ -51,12 +50,6 @@ export function App() {
               <h2 className="text-base font-semibold uppercase tracking-wide text-slate-500 mb-4">Retrospective</h2>
               <div className="space-y-8">
                 <TeamAdvancement submissions={data.submissions} knockout={data.knockout} />
-                <BracketTwins
-                  submissions={data.submissions}
-                  fixtures={data.fixtures}
-                  results={data.results}
-                  knockout={data.knockout}
-                />
               </div>
             </section>
           </Suspense>
