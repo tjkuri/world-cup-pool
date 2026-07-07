@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-07T20:08:24.619Z",
+  "updated_at": "2026-07-07T23:01:31.517Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -500,7 +500,8 @@
     "760508": {
       "home_score": 0,
       "away_score": 0,
-      "status": "STATUS_FIRST_HALF"
+      "status": "STATUS_FINAL_PEN",
+      "advances": "SUI"
     },
     "760509": {
       "home_score": 3,
