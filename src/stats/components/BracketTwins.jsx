@@ -1,8 +1,20 @@
-import { useMemo, useState, useCallback, useRef } from 'react';
-import { ResponsiveNetwork } from '@nivo/network';
+import { useMemo, useState, useCallback } from 'react';
+import { ResponsiveCirclePacking } from '@nivo/circle-packing';
 import { twinsGraph, twinFor } from '../../../lib/twins.js';
 import { scoreSubmission, scoreBracket } from '../../../lib/score.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
+
+// Champion camp palette — readable on dark backgrounds, ordered by distinctness.
+const CHAMPION_PALETTE = [
+  '#38bdf8', // sky
+  '#f472b6', // pink
+  '#a3e635', // lime
+  '#fb923c', // orange
+  '#a78bfa', // violet
+  '#22d3ee', // cyan
+  '#facc15', // yellow
+  '#f87171', // red
+];
 
 // Mirror LiveCeiling's dark theme.
 const DARK_THEME = {
@@ -18,20 +30,22 @@ const DARK_THEME = {
   },
 };
 
-// Champion camp palette — readable on dark backgrounds, ordered by distinctness.
-const CHAMPION_PALETTE = [
-  '#38bdf8', // sky
-  '#f472b6', // pink
-  '#a3e635', // lime
-  '#fb923c', // orange
-  '#a78bfa', // violet
-  '#22d3ee', // cyan
-  '#facc15', // yellow
-  '#f87171', // red
-];
+// Stable filter: show labels only on leaf nodes (entrants), not champion group circles.
+// Defined at module level so its reference never changes → nivo skips the memo re-run.
+const LEAF_ONLY_LABELS = (l) => l.node.height === 0;
 
-// nodeTooltip: receives { node: ComputedNode<enrichedNode> }.
-function NodeTooltip({ node }) {
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// Tooltip component — receives the ComputedDatum object as props.
+// OrdinalColorScaleConfig<ComputedDatum> means tooltip(props: ComputedDatum) => JSX.Element.
+function CircleTooltip({ depth, height, data }) {
+  if (depth === 0) return null; // root circle — no tooltip
+  const isLeaf = height === 0;
   return (
     <div
       style={{
@@ -41,16 +55,27 @@ function NodeTooltip({ node }) {
         borderRadius: 6,
         padding: '6px 10px',
         fontSize: 12,
+        lineHeight: 1.5,
       }}
     >
-      <strong>{node.data.name}</strong>
-      {node.data.championCode && (
-        <div style={{ marginTop: 2, color: '#94a3b8' }}>
-          {teamFlag(node.data.championCode)} {teamName(node.data.championCode)} to win
-        </div>
-      )}
-      {node.data.pts != null && (
-        <div style={{ marginTop: 2, color: '#64748b' }}>{node.data.pts} pts</div>
+      {isLeaf ? (
+        <>
+          <strong style={{ display: 'block' }}>{data.name}</strong>
+          {data.champion && (
+            <span style={{ color: '#94a3b8' }}>
+              {teamFlag(data.champion)} {teamName(data.champion)} to win
+            </span>
+          )}
+          <span style={{ color: '#64748b', marginLeft: data.champion ? 8 : 0 }}>
+            {data.value} pts
+          </span>
+        </>
+      ) : (
+        <strong>
+          {data.champion
+            ? `${teamFlag(data.champion)} ${data.name}`
+            : data.name}
+        </strong>
       )}
     </div>
   );
@@ -62,8 +87,9 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
   // Final bracket slot = the champion slot in the knockout tree.
   const finalSlot = knockout?.rounds?.F?.[0]?.slot;
 
-  // Graph: nodes/links/similarity from twinsGraph (filters to phase=knockout).
-  const { nodes, links, similarity } = useMemo(
+  // Similarity map + node list from twinsGraph (filters to phase=knockout).
+  // We no longer need `links` — circle-packing is position-based, not link-based.
+  const { nodes, similarity } = useMemo(
     () => twinsGraph(submissions || []),
     [submissions],
   );
@@ -81,7 +107,6 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
   }, [submissions, finalSlot]);
 
   // Total points per email_hash: group submission total + bracket total.
-  // Group sub identified by phase !== 'knockout' with same email_hash.
   const pointsByHash = useMemo(() => {
     const map = {};
     if (!submissions || !fixtures || !results) return map;
@@ -104,7 +129,7 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
     return map;
   }, [submissions, fixtures, results, knockout]);
 
-  // Champion color map: most-picked first → palette[0], etc.
+  // Champion color map: most-picked camp first → palette[0], etc.
   const { championColorMap, sortedChampions } = useMemo(() => {
     const freq = {};
     for (const code of Object.values(championByHash)) {
@@ -120,23 +145,6 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
     return { championColorMap: colorMap, sortedChampions: sorted };
   }, [championByHash]);
 
-  // Enrich input nodes with stable visual data (no selection dependency).
-  // nodeSize + nodeColor functions read from these fields, keeping data stable
-  // so @nivo/network doesn't re-run the force simulation on selection changes.
-  const enrichedNodes = useMemo(() => {
-    const allPts = nodes.map((n) => pointsByHash[n.id] ?? 0);
-    const min = allPts.length ? Math.min(...allPts) : 0;
-    const max = allPts.length ? Math.max(...allPts) : 0;
-    return nodes.map((n) => ({
-      ...n,
-      championCode: championByHash[n.id] ?? null,
-      baseColor: championColorMap[championByHash[n.id]] ?? '#64748b',
-      pts: pointsByHash[n.id] ?? 0,
-      // Cap diameter at 18 so max-radius nodes (9px) don't swamp the distanceMin gap.
-      size: Math.min(18, 8 + 16 * ((pointsByHash[n.id] ?? 0) - min) / (max - min || 1)),
-    }));
-  }, [nodes, pointsByHash, championByHash, championColorMap]);
-
   // name → hash map for twinFor callout.
   const nameByHash = useMemo(() => {
     const m = {};
@@ -144,100 +152,114 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
     return m;
   }, [nodes]);
 
-  // Selection state (null = nothing selected).
+  // Build the d3-hierarchy-compatible data tree:
+  //   root → [champion group circles] → [entrant leaf bubbles]
+  // Champion groups ordered by camp size desc; entrant value = total points.
+  // Math.max(..., 1) so 0-point entrants still render a small bubble.
+  const hierarchyData = useMemo(() => {
+    const campsByChamp = {};
+    for (const n of nodes) {
+      const champ = championByHash[n.id] ?? '__none__';
+      if (!campsByChamp[champ]) campsByChamp[champ] = [];
+      campsByChamp[champ].push({
+        id: n.id,
+        champion: champ === '__none__' ? null : champ,
+        name: n.name,
+        value: Math.max(pointsByHash[n.id] ?? 0, 1),
+      });
+    }
+    const champEntries = Object.entries(campsByChamp).sort(
+      (a, b) => b[1].length - a[1].length,
+    );
+    return {
+      id: 'root',
+      children: champEntries.map(([champ, members]) => ({
+        id: `champ_${champ}`,
+        champion: champ === '__none__' ? null : champ,
+        name: champ === '__none__' ? 'No pick' : teamName(champ),
+        children: members,
+      })),
+    };
+  }, [nodes, championByHash, pointsByHash]);
+
+  // Selection state (null = nothing selected; non-null = an email_hash).
   const [selected, setSelected] = useState(null);
 
-  // Set of neighbor IDs (nodes sharing a link with the selected node).
-  const neighborSet = useMemo(() => {
-    if (!selected) return new Set();
-    const s = new Set();
-    for (const l of links) {
-      if (l.source === selected) s.add(l.target);
-      if (l.target === selected) s.add(l.source);
-    }
-    return s;
-  }, [selected, links]);
-
-  // Callout data: the selected node + its twin/evil-twin from similarity map.
+  // Callout data for the twin/evil-twin panel.
   const callout = useMemo(() => {
     if (!selected) return null;
-    const node = enrichedNodes.find((n) => n.id === selected);
-    if (!node) return null;
+    const n = nodes.find((nd) => nd.id === selected);
+    if (!n) return null;
     const { twin, evil } = twinFor(selected, similarity, nameByHash);
-    return { node, twin, evil };
-  }, [selected, enrichedNodes, similarity, nameByHash]);
+    return {
+      name: n.name,
+      champion: championByHash[selected] ?? null,
+      twin,
+      evil,
+    };
+  }, [selected, nodes, similarity, nameByHash, championByHash]);
 
-  // Ref used by the stable custom layer to read current selection without
-  // invalidating the layer function reference (which would cause nivo to
-  // unmount + remount the layer component, resetting spring animations).
-  const layerState = useRef({ selected: null, neighborSet: new Set() });
-  layerState.current = { selected, neighborSet };
-
-  // Stable custom labels layer — created once, reads from ref on each render.
-  // nivo re-renders this when nodeColor prop changes (see nodeColor below),
-  // which is the mechanism that propagates selection → label dimming.
-  const LabelsLayer = useMemo(() => {
-    function LabelsAndDim({ nodes: computedNodes }) {
-      const { selected: sel, neighborSet: nbrs } = layerState.current;
-      return (
-        <g aria-hidden="true">
-          {computedNodes.map((node) => {
-            const dimmed = sel && node.id !== sel && !nbrs.has(node.id);
-            return (
-              <text
-                key={node.id}
-                x={node.x}
-                y={node.y + node.size / 2 + 11}
-                textAnchor="middle"
-                dominantBaseline="hanging"
-                fill={dimmed ? '#334155' : '#94a3b8'}
-                fontSize={10}
-                style={{ pointerEvents: 'none', userSelect: 'none' }}
-              >
-                {node.data.name}
-              </text>
-            );
-          })}
-        </g>
-      );
-    }
-    LabelsAndDim.displayName = 'LabelsAndDim';
-    return LabelsAndDim;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Intentionally stable — reads selection from layerState ref.
-
-  // nodeColor: champion color when selected/neighbor, '#1e293b' when dimmed.
-  // useCallback with [selected, neighborSet] deps means the function reference
-  // changes on selection → nivo picks up the new prop → recomputes node colors
-  // WITHOUT re-running the force simulation (simulation only re-runs on data change).
-  const nodeColor = useCallback(
-    (n) => {
-      if (!selected) return n.baseColor;
-      if (n.id === selected || neighborSet.has(n.id)) return n.baseColor;
-      return '#1e293b';
+  // colors: OrdinalColorScaleConfig supports a plain function — nivo/colors returns it
+  // directly from useOrdinalColorScale when typeof config === 'function', so this IS
+  // called per node. Receives ComputedDatum (minus color/fill).
+  // Depth 0 = root (blend to bg), depth 1 = champion group (faint tint), depth 2 = leaf.
+  const colorFn = useMemo(
+    () => (node) => {
+      if (node.depth === 0) return '#0b1220'; // root: paint over with bg → invisible
+      const champ = node.data.champion;
+      const base = champ ? (championColorMap[champ] ?? '#475569') : '#475569';
+      if (node.depth === 1) {
+        // Champion group container: faint tint so grouping reads without overpowering leaves.
+        return hexToRgba(base, 0.15);
+      }
+      // Leaf (entrant bubble)
+      if (selected) {
+        const isSelected = node.data.id === selected;
+        if (isSelected) return base;
+        const selectedChamp = championByHash[selected];
+        // Same-camp peers: partial dim; out-of-camp: strong dim.
+        return hexToRgba(base, champ === selectedChamp ? 0.45 : 0.18);
+      }
+      return base;
     },
-    [selected, neighborSet],
+    [championColorMap, selected, championByHash],
   );
 
-  // nodeSize: stable function reading from baked-in node data.
-  const nodeSize = useCallback((n) => n.size, []);
+  // borderColor: InheritedColorConfig also supports plain functions (nivo/colors
+  // getInheritedColorGenerator returns the function directly when typeof config === 'function').
+  // White ring on selected leaf; champion-tinted stroke on group circles; transparent elsewhere.
+  const borderColorFn = useMemo(
+    () => (node) => {
+      if (node.depth === 0) return 'transparent';
+      if (node.height === 0 && node.data.id === selected) return '#ffffff';
+      if (node.depth === 1) {
+        const champ = node.data.champion;
+        const base = champ ? (championColorMap[champ] ?? '#334155') : '#334155';
+        return hexToRgba(base, 0.5);
+      }
+      return 'transparent';
+    },
+    [selected, championColorMap],
+  );
 
-  // linkColor: dims non-incident links when something is selected.
-  // InheritedColorConfig accepts a plain (datum) => string function where datum
-  // is ComputedLink<Node,Link> minus color/thickness — includes source/target nodes.
-  const linkColor = useCallback(
-    (link) => {
-      if (!selected) return 'rgba(148,163,184,0.3)';
-      const incident =
-        link.source.id === selected || link.target.id === selected;
-      return incident ? 'rgba(148,163,184,0.55)' : 'rgba(15,23,42,0.2)';
+  // labelTextColor: same InheritedColorConfig function support.
+  // Dim non-selected leaf labels when something is selected.
+  const labelTextColorFn = useMemo(
+    () => (node) => {
+      if (selected && node.height === 0 && node.data.id !== selected) {
+        return '#334155'; // dimmed
+      }
+      return '#94a3b8';
     },
     [selected],
   );
 
-  // Click handler: toggle selection.
+  // Click handler: toggle selection on leaf nodes (height === 0).
+  // onClick signature from nivo: (datum: ComputedDatum, event: MouseEvent) => void.
   const handleClick = useCallback((node) => {
-    setSelected((s) => (s === node.id ? null : node.id));
+    if (node.height === 0) {
+      setSelected((s) => (s === node.data.id ? null : node.data.id));
+    }
   }, []);
 
   // ── Conditional return after all hooks ──────────────────────────────────
@@ -255,10 +277,10 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
     <section>
       <h3 className="text-lg font-semibold mb-1">Bracket Twins</h3>
       <p className="text-sm text-slate-400 mb-3">
-        Color = champion pick · Size = total points · Click a dot to find your twin
+        Grouped by champion pick · bubble size = total points · click a bubble to find your twin
       </p>
 
-      {/* Twin / evil-twin callout — appears above the graph when a node is selected */}
+      {/* Twin / evil-twin callout — appears above the chart when a bubble is clicked */}
       {callout && (
         <div className="relative mb-3 rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm">
           <button
@@ -269,11 +291,11 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
             ✕
           </button>
           <div className="font-semibold text-slate-100 mb-1">
-            {callout.node.name}
-            {callout.node.championCode && (
+            {callout.name}
+            {callout.champion && (
               <span className="ml-2 font-normal text-slate-400">
-                {teamFlag(callout.node.championCode)}{' '}
-                {teamName(callout.node.championCode)}
+                {teamFlag(callout.champion)}{' '}
+                {teamName(callout.champion)}
               </span>
             )}
           </div>
@@ -302,42 +324,30 @@ export function BracketTwins({ submissions, fixtures, results, knockout }) {
         </div>
       )}
 
-      {/* Network graph */}
-      <div style={{ height: 540 }}>
-        <ResponsiveNetwork
-          data={{ nodes: enrichedNodes, links }}
-          margin={{ top: 30, right: 40, bottom: 40, left: 40 }}
-          // linkDistance receives InputLink (raw); derive from l.similarity directly.
-          // Base 60px so identical brackets still have breathing room; +140px for
-          // maximally-different pairs to space them well across the canvas.
-          linkDistance={(l) => 60 + (1 - l.similarity) * 140}
-          // repulsivity → forceManyBody.strength(-n); 80 is strong enough to
-          // separate 14 near-identical nodes whose link targets are now ≥60px.
-          repulsivity={80}
-          // centeringStrength → forceLink.strength(); 0.4 makes links firmly pull
-          // to their target distances (cluster spreads) without overwhelming repulsion.
-          centeringStrength={0.4}
-          // distanceMin: charge force caps at this distance so tightly-packed nodes
-          // still receive maximum repulsion rather than infinite/NaN.
-          distanceMin={20}
-          // distanceMax: beyond 220px nodes don't repel each other — loners near
-          // the cluster boundary aren't pushed all the way to the canvas edges.
-          distanceMax={220}
-          iterations={160}
-          nodeSize={nodeSize}
-          activeNodeSize={(n) => n.size + 4}
-          inactiveNodeSize={(n) => n.size}
-          nodeColor={nodeColor}
-          nodeBorderWidth={0}
-          // linkThickness receives ComputedLink (minus color/thickness); raw data at .data.
-          linkThickness={(l) => 1 + l.data.similarity * 3}
-          linkColor={linkColor}
-          layers={['links', 'nodes', 'annotations', LabelsLayer]}
-          nodeTooltip={NodeTooltip}
+      {/* Circle-packing chart: deterministic layout, always fits, no clipping possible */}
+      <div style={{ height: 520 }}>
+        <ResponsiveCirclePacking
+          data={hierarchyData}
+          id="id"
+          value="value"
+          margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+          padding={6}
+          leavesOnly={false}
+          colors={colorFn}
+          colorBy="id"
+          borderWidth={1.5}
+          borderColor={borderColorFn}
+          enableLabels={true}
+          label={(node) => node.data.name ?? ''}
+          labelsFilter={LEAF_ONLY_LABELS}
+          labelsSkipRadius={16}
+          labelTextColor={labelTextColorFn}
           onClick={handleClick}
+          tooltip={CircleTooltip}
           theme={DARK_THEME}
           animate={true}
           motionConfig="gentle"
+          isInteractive={true}
         />
       </div>
 
