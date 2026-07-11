@@ -106,6 +106,7 @@ export function TeamAdvancement({ submissions, knockout }) {
       {/* height: 340px; ResponsiveFunnel fills its container. */}
       <div style={{ height: 340 }}>
         <ResponsiveFunnel
+          key={team}
           data={funnelData}
           direction="horizontal"
           colors={TEAL_COLORS}
