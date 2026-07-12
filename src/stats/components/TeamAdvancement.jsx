@@ -1,26 +1,30 @@
-import { useMemo, useState } from 'react';
-import { ResponsiveFunnel } from '@nivo/funnel';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { area, curveMonotoneX } from 'd3-shape';
 import { teamRoundCounts } from '../../../lib/advancement.js';
 import { teamName, teamFlag } from '../../shared/teamNames.js';
 
-// Mirror LiveCeiling's dark theme — tooltip container bg + text.
-const DARK_THEME = {
-  text: { fill: '#cbd5e1' },
-  axis: { ticks: { text: { fill: '#94a3b8' } } },
-  tooltip: {
-    container: {
-      background: '#0b1220',
-      color: '#e2e8f0',
-      border: '1px solid #334155',
-      fontSize: 12,
-      borderRadius: 6,
-    },
-  },
-};
+// Stage order, R16 → Champion. tc keys mirror teamRoundCounts output.
+const STAGES = [
+  { key: 'R16', label: 'R16' },
+  { key: 'QF', label: 'QF' },
+  { key: 'SF', label: 'SF' },
+  { key: 'Final', label: 'Final' },
+  { key: 'Champion', label: '🏆' },
+];
 
-// Teal/emerald hues — 5 stages, darkens toward Champion.
-// OrdinalColorScaleConfigCustomColors = string[] is supported by @nivo/colors.
-const TEAL_COLORS = ['#2dd4bf', '#14b8a6', '#0d9488', '#0f766e', '#065f46'];
+// SVG geometry.
+const HEIGHT = 340;
+const LABEL_TOP_Y = 22; // stage labels row
+const FUNNEL_TOP = 48;
+const FUNNEL_BOTTOM = 296;
+const CENTER_Y = (FUNNEL_TOP + FUNNEL_BOTTOM) / 2;
+const MAX_BAR = FUNNEL_BOTTOM - FUNNEL_TOP;
+const VALUE_Y = 322; // value labels row
+const PAD_X = 44;
+const DUR = 500;
+
+// easeInOutCubic
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 // Default team: highest Champion count; tiebreak Final → SF → QF → R16 → name.
 function pickDefault(teams, counts) {
@@ -52,11 +56,69 @@ export function TeamAdvancement({ submissions, knockout }) {
     [counts],
   );
 
+  // Global max = the biggest single-stage count across every team, so a
+  // funnel's absolute size is comparable team-to-team (it grows/shrinks
+  // on swap instead of always filling the height).
+  const globalMax = useMemo(() => {
+    let m = 1;
+    for (const code of teams) {
+      for (const s of STAGES) m = Math.max(m, counts[code][s.key]);
+    }
+    return m;
+  }, [teams, counts]);
+
   const defaultTeam = useMemo(() => pickDefault(teams, counts), [teams, counts]);
 
   // null = "user hasn't chosen" → fall back to computed default.
   const [picked, setPicked] = useState(null);
   const team = picked ?? defaultTeam;
+  const tc = counts[team] || { R16: 0, QF: 0, SF: 0, Final: 0, Champion: 0 };
+
+  // Responsive width via ResizeObserver (mirrors ExactHistogram/GapPanel).
+  const wrapRef = useRef(null);
+  const [width, setWidth] = useState(720);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width;
+      if (w) setWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Animated thickness values (one per stage), tweened frame-by-frame so a
+  // team swap morphs the shape instead of jumping.
+  const [displayed, setDisplayed] = useState([0, 0, 0, 0, 0]);
+  const displayedRef = useRef([0, 0, 0, 0, 0]);
+  const rafRef = useRef(0);
+  const target = tc ? STAGES.map((s) => tc[s.key]) : [0, 0, 0, 0, 0];
+
+  useEffect(() => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      displayedRef.current = target;
+      setDisplayed(target);
+      return;
+    }
+    const from = displayedRef.current.slice();
+    const start = performance.now();
+    cancelAnimationFrame(rafRef.current);
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / DUR);
+      const e = ease(t);
+      const cur = target.map((v, i) => from[i] + (v - from[i]) * e);
+      displayedRef.current = cur;
+      setDisplayed(cur);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team, target[0], target[1], target[2], target[3], target[4]]);
 
   // Empty-data guard — after all hooks.
   if (!teams.length) {
@@ -68,17 +130,25 @@ export function TeamAdvancement({ submissions, knockout }) {
     );
   }
 
-  const tc = counts[team] || { R16: 0, QF: 0, SF: 0, Final: 0, Champion: 0 };
+  const xs = STAGES.map(
+    (_, i) => PAD_X + (i * (width - 2 * PAD_X)) / (STAGES.length - 1),
+  );
+  const pts = xs.map((x, i) => ({
+    x,
+    h: (displayed[i] / globalMax) * MAX_BAR,
+  }));
 
-  // @nivo/funnel data shape: { id: string|number, value: number, label?: string }
-  // Stages with value 0 render as zero-width parts (thin slivers); acceptable.
-  const funnelData = [
-    { id: 'R16',      label: 'R16',   value: tc.R16 },
-    { id: 'QF',       label: 'QF',    value: tc.QF },
-    { id: 'SF',       label: 'SF',    value: tc.SF },
-    { id: 'Final',    label: 'Final', value: tc.Final },
-    { id: 'Champion', label: '🏆',    value: tc.Champion },
-  ];
+  const bandPath = area()
+    .x((d) => d.x)
+    .y0((d) => CENTER_Y - d.h / 2)
+    .y1((d) => CENTER_Y + d.h / 2)
+    .curve(curveMonotoneX)(pts);
+
+  const topLine = area()
+    .x((d) => d.x)
+    .y0((d) => CENTER_Y - d.h / 2)
+    .y1((d) => CENTER_Y - d.h / 2)
+    .curve(curveMonotoneX)(pts);
 
   return (
     <section>
@@ -100,27 +170,62 @@ export function TeamAdvancement({ submissions, knockout }) {
       </div>
 
       <p className="text-sm text-slate-400 mb-3">
-        How many brackets had {teamName(team)} reach each round. Funnel narrows R16 → 🏆.
+        How many brackets had {teamName(team)} reach each round. Funnel narrows
+        R16 → 🏆.
       </p>
 
-      {/* height: 340px; ResponsiveFunnel fills its container. */}
-      <div style={{ height: 340 }}>
-        <ResponsiveFunnel
-          data={funnelData}
-          direction="horizontal"
-          colors={TEAL_COLORS}
-          labelColor="#cbd5e1"
-          valueFormat={(v) => `${v} bracket${v === 1 ? '' : 's'}`}
-          theme={DARK_THEME}
-          enableLabel={true}
-          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-          spacing={4}
-          shapeBlending={0.66}
-          borderWidth={0}
-          fillOpacity={0.85}
-          animate={true}
-          motionConfig="gentle"
-        />
+      <div ref={wrapRef} style={{ width: '100%' }}>
+        <svg width={width} height={HEIGHT} role="img" aria-label={`${teamName(team)} advancement funnel`}>
+          <defs>
+            <linearGradient id="ta-fill" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#2dd4bf" />
+              <stop offset="100%" stopColor="#065f46" />
+            </linearGradient>
+          </defs>
+
+          {/* stage labels (top) + value labels (bottom) */}
+          {STAGES.map((s, i) => (
+            <text
+              key={`lbl-${s.key}`}
+              x={xs[i]}
+              y={LABEL_TOP_Y}
+              textAnchor="middle"
+              fill="#94a3b8"
+              fontSize={13}
+              fontWeight={600}
+            >
+              {s.label}
+            </text>
+          ))}
+
+          {/* funnel band */}
+          <path d={bandPath} fill="url(#ta-fill)" fillOpacity={0.9} />
+          <path d={topLine} fill="none" stroke="#5eead4" strokeWidth={1.5} strokeOpacity={0.5} />
+          <path
+            d={area()
+              .x((d) => d.x)
+              .y0((d) => CENTER_Y + d.h / 2)
+              .y1((d) => CENTER_Y + d.h / 2)
+              .curve(curveMonotoneX)(pts)}
+            fill="none"
+            stroke="#5eead4"
+            strokeWidth={1.5}
+            strokeOpacity={0.5}
+          />
+
+          {STAGES.map((s, i) => (
+            <text
+              key={`val-${s.key}`}
+              x={xs[i]}
+              y={VALUE_Y}
+              textAnchor="middle"
+              fill="#cbd5e1"
+              fontSize={13}
+            >
+              {target[i]}
+            </text>
+          ))}
+        </svg>
       </div>
     </section>
   );

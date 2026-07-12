@@ -332,10 +332,24 @@ per-entrant cumulative totals per snapshot. It is a **static committed artifact*
 re-run + commit + push to refresh The Gap (NOT auto-updated by the cron — wiring
 it into `fetch-results.yml` is a possible follow-up).
 
-**Deferred — Phase 2 charts** (designed in the stats spec, not built): champion/
-advancement **Sankey**, **Bracket Twins** similarity network, **scoreline heatmap**,
-**exact-count histogram**, **contrarian scatter**. `lib/consensus.js` is a down
-payment on Sankey/Twins/contrarian.
+**Phase 2 — Retrospective charts** (spec `2026-07-06-stats-page-phase2-design.md`;
+IN PROGRESS on branch **`feat/stats-phase2`**, NOT yet on `main`). Status:
+- **Team Advancement** (built): dropdown + custom SVG funnel — `lib/advancement.js`
+  `teamRoundCounts` + a bespoke `d3-shape` `area()` band (thickness = # brackets
+  reaching each round, rAF-tweened on team-swap, global-max scaled for cross-team
+  size comparison). Replaced an abandoned Nivo funnel (`@nivo/funnel` is now dead —
+  remove at landing).
+- **Exact-Score Distribution** (built): `lib/distributions.js` `exactCountHistogram`
+  (whole-tournament exact count) → shaded **visx** density curve.
+- **Contrarian scatter** (pending, LAST chart): boldness-vs-group-points; needs a
+  `contrarianPayoff` lib helper on top of `lib/consensus.js`.
+- **SCRAPPED**: champion/advancement **Sankey** (→ became the funnel), **Bracket
+  Twins** similarity network (network + circle-pack both unreadable), **scoreline
+  heatmap** (dropped in design). `lib/consensus.js` remains a down payment on the
+  contrarian scatter.
+- **Landing checklist** lives in `.superpowers/sdd/progress.md` → "RESUME POINT"
+  (drop dead dep, merge cron results, regen + cron-wire `history.json`, merge to
+  main, fold this section in as shipped).
 
 Specs: `docs/superpowers/specs/2026-07-04-stats-page-design.md` +
 `2026-07-05-stats-page-phase1.5-design.md`. Plans: `.../plans/2026-07-04-stats-page-phase1.md`
