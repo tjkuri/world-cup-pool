@@ -12,7 +12,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # fetch-depth: 0 — build-history.mjs walks the FULL commit history of
+      # public/results.json; a shallow clone would only see the latest snapshot.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -21,13 +25,22 @@ jobs:
       - name: Run fetch script
         run: node scripts/fetch-results.mjs
 
-      - name: Commit and push if changed
+      - name: Commit results, rebuild The Gap history, push
         run: |
           if [[ -n "$(git status --porcelain public/results.json)" ]]; then
             git config user.name "github-actions"
             git config user.email "github-actions@users.noreply.github.com"
             git add public/results.json
             git commit -m "results update"
+            # Regenerate history.json from the full committed results timeline so
+            # The Gap stays in sync with the leaderboard. Best-effort: if the
+            # submissions endpoint hiccups, still push the results commit.
+            if node scripts/build-history.mjs; then
+              git add public/history.json
+              git commit -m "history update" || echo "history.json unchanged"
+            else
+              echo "build-history failed; pushing results only"
+            fi
             git push
           else
             echo "No public/results.json changes."
