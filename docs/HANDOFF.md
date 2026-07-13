@@ -1,6 +1,6 @@
 # World Cup 2026 Pool — Session Handoff
 
-Last updated: 2026-07-06 (**knockout stage LIVE**; **interactive stats page shipped 2026-07-06** — see "Stats page"). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main`, deployed, locked, and revealed**. **R32 is complete (16/16); R16 is underway** and the cron is scoring live. **Scoring was rebalanced 2026-07-04 (pool vote):** R16→Final winner points **doubled to 16/32/64/128** (R32 frozen at 4), and the knockout **exact-score bonus now requires the real matchup with penalty shootouts forgiven** — both zero-retroactive and live (see "Knockout" → changelog). Remaining work is operational (final tally), not feature work — see "Pending items".
+Last updated: 2026-07-13 (**knockout stage LIVE**; **interactive stats page shipped 2026-07-06, Phase 2 retrospective charts shipped 2026-07-13** — see "Stats page"; The Gap history now auto-refreshes in the cron). Pool is **24 entrants / $720 pot**. v2 knockout bracket is **merged to `main`, deployed, locked, and revealed**. **R32 is complete (16/16); R16 is underway** and the cron is scoring live. **Scoring was rebalanced 2026-07-04 (pool vote):** R16→Final winner points **doubled to 16/32/64/128** (R32 frozen at 4), and the knockout **exact-score bonus now requires the real matchup with penalty shootouts forgiven** — both zero-retroactive and live (see "Knockout" → changelog). Remaining work is operational (final tally), not feature work — see "Pending items".
 
 ## TL;DR for next-session-Claude
 
@@ -304,52 +304,52 @@ state (deliberate, NOT a bug — don't "sync" them):
   `bracket.html` (currently: submissions closed, stragglers may still enter,
   picks for already-kicked-off matches are voided).
 
-## Stats page (shipped 2026-07-06)
+## Stats page (shipped 2026-07-06; Phase 2 retrospective shipped 2026-07-13)
 
 Standalone `stats.html` / `src/stats/` app, linked from the leaderboard TopBar.
-Three sections, all lazy-loaded (`?mockStats=1` dev escape hatch):
+Four sections, all lazy-loaded (`?mockStats=1` dev escape hatch):
 - **The Gap** (`src/stats/gap/`) — bespoke **visx + d3** chart: cumulative points
   per entrant over a daily-condensed timeline, legend hover-spotlight + click-pin
   (distinct pin colors), selection-aware tooltip (rank+points), Group→Final phase
   bands (from knockout kickoffs), bidirectional zoom/pan + reset, and a
   play/animate mode (rAF cumulative reveal + auto-zoom). Nivo can't do zoom/play,
-  hence the visx rebuild (Ceiling + the deferred Phase-2 charts stay on Nivo).
+  hence the visx rebuild.
 - **Live Ceiling** (`LiveCeiling.jsx`, Nivo bar) — current vs max-reachable points
   ("who can still win"); jewel-tone palette (emerald/violet + amber marker).
 - **Superlatives** (`Superlatives.jsx`) — Most 🎯 Exact (whole-tournament),
   Live Longshot, Hipster (+ match-detail hover), Giant Slayer.
+- **Retrospective** (Phase 2) — two charts:
+  - **Team Advancement** (`TeamAdvancement.jsx`) — team dropdown + a **custom SVG
+    funnel** (`d3-shape` `area()` band, NOT Nivo): thickness = # brackets reaching
+    each round (`lib/advancement.js` `teamRoundCounts`), rAF-tweened on team-swap,
+    scaled against the global max stage-count so funnel size is comparable
+    team-to-team. Nivo's funnel was tried and abandoned (thickness/animation bugs);
+    `@nivo/funnel` is gone from deps.
+  - **Exact-Score Distribution** (`ExactHistogram.jsx`) — shaded **visx** density
+    curve of how many players nailed N exact scorelines (`lib/distributions.js`
+    `exactCountHistogram`, whole-tournament group+knockout).
 
 New tested pure libs: `lib/history.js` (buildHistorySeries / rankMovements /
 rankVolatility), `lib/ceiling.js` (aliveTeams / maxReachablePoints), `lib/phases.js`
 (phaseBoundaries), `lib/consensus.js` (pickConsensus / contrarianCorrect(+Matches) /
-chalkScore / upsetScore). **`npm test` now globs `lib/*.test.js scripts/*.test.mjs`
-(96 tests).**
+chalkScore / upsetScore), `lib/advancement.js` (teamRoundCounts), `lib/distributions.js`
+(exactCountHistogram). **`npm test` globs `lib/*.test.js scripts/*.test.mjs` (99 tests).**
 
 **`history.json` runbook:** The Gap reads `public/history.json`, produced by
 `node scripts/build-history.mjs` — walks every committed `public/results.json`,
 fetches the locked submissions, and replays the existing pure scorers into
-per-entrant cumulative totals per snapshot. It is a **static committed artifact**:
-re-run + commit + push to refresh The Gap (NOT auto-updated by the cron — wiring
-it into `fetch-results.yml` is a possible follow-up).
+per-entrant cumulative totals per snapshot. **The cron auto-regenerates it every
+2h** (`fetch-results.yml` runs build-history after each results commit, best-effort;
+requires `fetch-depth: 0` on checkout so the full results timeline is walkable). To
+refresh manually: re-run + commit + push.
 
-**Phase 2 — Retrospective charts** (spec `2026-07-06-stats-page-phase2-design.md`;
-IN PROGRESS on branch **`feat/stats-phase2`**, NOT yet on `main`). Status:
-- **Team Advancement** (built): dropdown + custom SVG funnel — `lib/advancement.js`
-  `teamRoundCounts` + a bespoke `d3-shape` `area()` band (thickness = # brackets
-  reaching each round, rAF-tweened on team-swap, global-max scaled for cross-team
-  size comparison). Replaced an abandoned Nivo funnel (`@nivo/funnel` is now dead —
-  remove at landing).
-- **Exact-Score Distribution** (built): `lib/distributions.js` `exactCountHistogram`
-  (whole-tournament exact count) → shaded **visx** density curve.
-- **Contrarian scatter** (pending, LAST chart): boldness-vs-group-points; needs a
-  `contrarianPayoff` lib helper on top of `lib/consensus.js`.
-- **SCRAPPED**: champion/advancement **Sankey** (→ became the funnel), **Bracket
-  Twins** similarity network (network + circle-pack both unreadable), **scoreline
-  heatmap** (dropped in design). `lib/consensus.js` remains a down payment on the
-  contrarian scatter.
-- **Landing checklist** lives in `.superpowers/sdd/progress.md` → "RESUME POINT"
-  (drop dead dep, merge cron results, regen + cron-wire `history.json`, merge to
-  main, fold this section in as shipped).
+**Phase 2 follow-up — Contrarian scatter (NOT built, deferred):** the 4th planned
+retrospective chart — boldness (avg `1 - consensus share of picked outcome`, group)
+vs group points. Needs a `contrarianPayoff` lib helper on top of `lib/consensus.js`
++ `@nivo/scatterplot` (already installed). **SCRAPPED from the original Phase 2
+design**: champion/advancement **Sankey** (→ became the Team Advancement funnel),
+**Bracket Twins** similarity network (network + circle-pack both unreadable),
+**scoreline heatmap** (dropped in design).
 
 Specs: `docs/superpowers/specs/2026-07-04-stats-page-design.md` +
 `2026-07-05-stats-page-phase1.5-design.md`. Plans: `.../plans/2026-07-04-stats-page-phase1.md`
