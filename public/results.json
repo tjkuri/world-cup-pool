@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-14T20:59:51.123Z",
+  "updated_at": "2026-07-14T22:56:32.687Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -536,7 +536,8 @@
     "760514": {
       "home_score": 0,
       "away_score": 2,
-      "status": "STATUS_SECOND_HALF"
+      "status": "STATUS_FULL_TIME",
+      "advances": "ESP"
     },
     "760515": {
       "home_score": 0,
