@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-15T21:00:06.996Z",
+  "updated_at": "2026-07-15T22:58:10.398Z",
   "matches": {
     "760414": {
       "home_score": 2,
@@ -542,7 +542,8 @@
     "760515": {
       "home_score": 1,
       "away_score": 2,
-      "status": "STATUS_IN_PROGRESS"
+      "status": "STATUS_FULL_TIME",
+      "advances": "ARG"
     },
     "760517": {
       "home_score": 0,
