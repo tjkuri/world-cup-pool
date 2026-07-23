@@ -1,7 +1,7 @@
 {
   "group_lock_iso": "2026-06-11T19:00:00Z",
-  "knockout_lock_iso": "2026-06-30T04:00:00Z",
+  "knockout_lock_iso": "2026-06-28T19:00:00Z",
   "apps_script_url": "https://script.google.com/macros/s/AKfycbzDwzX5PzDP5g0EifAdzysKsNrSmzJND6C92Zmq-R74XBmMFcC-okTTjRIE2vYQ1B1jjA/exec",
   "buy_in_usd": 30,
-  "bracket_notice": "🔒 Bracket submissions are closed — your bracket is locked in and any new submission will be rejected. If you never submitted, you can still get one in — but any pick for a match that has already kicked off will be voided (scored as a miss), so you earn no points on games already underway or finished."
+  "bracket_notice": "🏆 The tournament is over — a champion has been crowned. Bracket submissions are permanently closed. Head to the leaderboard for the final standings."
 }

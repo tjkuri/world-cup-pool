@@ -1,9 +1,12 @@
 name: fetch-results
 
 on:
-  schedule:
-    # Every 2 hours, on the hour, UTC.
-    - cron: '0 */2 * * *'
+  # Tournament over (2026-07); the scheduled poll is retired so it stops
+  # committing no-op results/history pairs every 2h. Re-enable by uncommenting
+  # the schedule block if a future tournament reuses this repo.
+  # schedule:
+  #   # Every 2 hours, on the hour, UTC.
+  #   - cron: '0 */2 * * *'
   workflow_dispatch: {}
 
 jobs:
